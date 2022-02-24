@@ -1,0 +1,21 @@
+{
+  "name": "attendeer",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "debug": "nodemon --ext js,mjs,json,njk index.js"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "express": "^4.17.3",
+    "express-nunjucks": "^2.2.5",
+    "firebase": "^9.6.7",
+    "html": "^1.0.0",
+    "nodemon": "^2.0.15",
+    "nunjucks": "^3.2.3"
+  }
+}
