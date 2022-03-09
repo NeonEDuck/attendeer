@@ -1,0 +1,14 @@
+{% extends "util/base.njk" %}
+
+{% block script %}
+    <script src="/js/meeting.js" type="module" defer></script>
+{% endblock script %}
+
+{% block content %}
+    <video id="localVideo" autoplay></video>
+    <input id="uidInput" type="text">
+    <button id="webcamBtn">start</button>
+    <button id="callBtn" disabled>call</button>
+    <input id="callInput" type="text">
+    <div id="remoteVideoTray" style="display: flex; flex-direction: column;"></div>
+{% endblock content %}

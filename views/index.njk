@@ -1,5 +1,13 @@
 {% extends "util/base.njk" %}
 
+{% block script %}
+    <script src="/js/index.js" type="module" defer></script>
+{% endblock script %}
+
 {% block content %}
-    main page
-{% endblock %}
+    {% if displayName %}
+        Welcome! {{ displayName }}!
+    {% else %}
+        You are not login!
+    {% endif %}
+{% endblock content %}

@@ -3,21 +3,27 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node index.js",
-    "debug": "nodemon --ext js,mjs,json,njk index.js"
+    "start": "node app.js",
+    "debug": "nodemon --ext js,mjs,json,njk app.js"
   },
   "author": "",
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "body-parser": "^1.19.2",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "express-nunjucks": "^2.2.5",
+    "express-session": "^1.17.2",
     "firebase": "^9.6.7",
     "firebase-admin": "^10.0.2",
+    "google-auth-library": "^7.14.0",
     "html": "^1.0.0",
     "nodemon": "^2.0.15",
-    "nunjucks": "^3.2.3"
+    "nunjucks": "^3.2.3",
+    "passport": "^0.5.2",
+    "passport-google-oauth20": "^2.0.0"
   }
 }

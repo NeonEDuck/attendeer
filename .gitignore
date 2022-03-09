@@ -195,3 +195,8 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# Service account file
+service-account.json
+
+public/js
