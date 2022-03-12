@@ -6,7 +6,10 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "debug": "nodemon --ext js,mjs,json,njk app.js"
+    "watch:webpack": "webpack --watch",
+    "watch:nodemon": "nodemon --ext js,mjs,json,njk app.js --ignore src/",
+    "watch:sass": "sass ./src/scss/main.scss ./public/css/main.css --watch",
+    "debug": "run-p watch:webpack watch:sass watch:nodemon"
   },
   "author": "",
   "license": "GPL-3.0-or-later",
@@ -22,8 +25,10 @@
     "google-auth-library": "^7.14.0",
     "html": "^1.0.0",
     "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5",
     "nunjucks": "^3.2.3",
     "passport": "^0.5.2",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "sass": "^1.49.9"
   }
 }

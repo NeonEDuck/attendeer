@@ -5,10 +5,13 @@
 {% endblock script %}
 
 {% block content %}
-    <video id="localVideo" autoplay></video>
-    <input id="uidInput" type="text">
-    <button id="webcamBtn">start</button>
-    <button id="callBtn" disabled>call</button>
-    <input id="callInput" type="text">
-    <div id="remoteVideoTray" style="display: flex; flex-direction: column;"></div>
+    <div class="cam" hidden>
+        <video class="cam__video" autoplay></video>
+        <span class="cam__name"></span>
+    </div>
+    <input id="uid-input" type="text">
+    <button id="webcam-btn">start</button>
+    <button id="call-btn" disabled>call</button>
+    <input id="call-input" type="text">
+    <div id="video-tray"></div>
 {% endblock content %}

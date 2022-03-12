@@ -1,0 +1,9 @@
+.cam {
+    position: relative;
+
+    &__name {
+        position: absolute;
+        right: 1em;
+        bottom: 1em;
+    }
+}

@@ -1,30 +1,30 @@
-import express from "express";
-import "dotenv/config";
+import express from 'express';
+import 'dotenv/config';
 
 let PORT = 80;
 let app = express();
 
 // static folder
 
-app.use("/", express.static("public"));
-app.use("/js/firebase", express.static("node_modules/firebase"));
+app.use('/', express.static('public'));
+app.use('/js/firebase', express.static('node_modules/firebase'));
 
 // body parser
 
-import bodyParser from "body-parser";
+import bodyParser from 'body-parser';
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 // cookie parser
 
-import cookieParser from "cookie-parser";
+import cookieParser from 'cookie-parser';
 
 app.use(cookieParser());
 
 // view engine
 
-import nunjucks from "nunjucks";
+import nunjucks from 'nunjucks';
 nunjucks.configure('views', {
     autoescape: true,
     cache: false,
@@ -64,7 +64,7 @@ passport.use(
     new GoogleStrategy({
         clientID: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
-        callbackURL: (process.env.DOMAIN_NAME.match("https?://")?.input || "http://localhost") + "/auth/google/callback"
+        callbackURL: (process.env.DOMAIN_NAME.match('https?://')?.input || 'http://localhost') + '/auth/google/callback'
     },
     function(accessToken, refreshToken, profile, done) {
         if (profile) {
@@ -77,10 +77,10 @@ passport.use(
 
 // router
 
-import index from "./routes/index.js";
-import login from "./routes/login.js";
-import meeting from "./routes/meeting.js";
-import test from "./routes/test.js";
+import index from './routes/index.js';
+import login from './routes/login.js';
+import meeting from './routes/meeting.js';
+import test from './routes/test.js';
 
 app.use('/', index);
 app.use('/', login);

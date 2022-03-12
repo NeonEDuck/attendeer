@@ -1,5 +1,6 @@
-import { firestore } from "./firebase-config.js";
-import { collection, doc, getDocs, addDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { firestore } from './firebase-config.js';
+import { collection, doc, getDocs, addDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import './navbar.js'
 
 const servers = {
     iceServers: [
@@ -10,52 +11,70 @@ const servers = {
     iceCandidatePoolSize: 10,
 };
 
-// Global State
+// Global variable
 const pcDict = {};
+let localUserId = null;
 let localStream = null;
 
 // HTML elements
-const localVideo = document.querySelector('#localVideo');
-const uidInput = document.querySelector('#uidInput');
-const webcamBtn = document.querySelector('#webcamBtn');
-const callBtn = document.querySelector('#callBtn');
-const callInput = document.querySelector('#callInput');
-// const answerBtn = document.querySelector('#answerBtn');
-// const hangupBtn = document.querySelector('#hangupBtn');
-const remoteVideoTray = document.querySelector('#remoteVideoTray');
+const camPrefab = document.querySelector('.cam');
+const uidInput = document.querySelector('#uid-input');
+const webcamBtn = document.querySelector('#webcam-btn');
+const callBtn = document.querySelector('#call-btn');
+const callInput = document.querySelector('#call-input');
+const videoTray = document.querySelector('#video-tray');
 
-function addRemoteVideo(track) {
-    let remoteVideo = localVideo.cloneNode(true);
+// Delete prefab
+camPrefab.remove()
+camPrefab.removeAttribute('hidden');
+
+function addTrackToRemoteVideo(track, userId) {
+    let remoteCam = videoTray.querySelector(`#user-${userId}`);
+    if (!remoteCam) {
+        remoteCam = camPrefab.cloneNode(true);
+        remoteCam.id = `user-${userId}`;
+        videoTray.appendChild(remoteCam);
+    }
+    let remoteVideo = remoteCam.querySelector('.cam__video');
+    let remoteName = remoteCam.querySelector('.cam__name');
     let remoteStream = new MediaStream();
+    remoteName.innerHTML = userId;
     remoteStream.addTrack(track);
     remoteVideo.srcObject = remoteStream;
-    remoteVideoTray.appendChild(remoteVideo);
 }
 
-function createPc() {
+function createPc(userId) {
     let pc = new RTCPeerConnection(servers);
     localStream.getTracks().forEach((track) => {
         pc.addTrack(track, localStream);
     });
 
     pc.ontrack = (event) => {
-        event.streams[0].getTracks().forEach((track) => {
-            addRemoteVideo(track);
+        event.streams.forEach((stream, idx) => {
+            stream.getTracks().forEach((track) => {
+                addTrackToRemoteVideo(track, userId);
+            });
         });
     };
     return pc;
 }
 
 webcamBtn.addEventListener('click', async () => {
+    localUserId = uidInput.value || null;
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    let localCam = camPrefab.cloneNode(true);
+    let localVideo = localCam.querySelector('.cam__video');
+    let localName = localCam.querySelector('.cam__name');
+    localName.innerHTML = localUserId;
     localVideo.srcObject = localStream;
+    videoTray.appendChild(localCam);
 
+    uidInput.disabled = true;
     callBtn.disabled = false;
     webcamBtn.disabled = true;
 });
 
 callBtn.addEventListener('click', async () => {
-    const localUserId = uidInput.value || null;
     const calls = collection(firestore, 'calls');
     let callDoc = doc(calls);
     if (callInput.value) {
@@ -71,7 +90,7 @@ callBtn.addEventListener('click', async () => {
 
     callInput.value = callDoc.id;
 
-    // offer to every other user in the call
+    // Offer to every other user in the call
     userDocs.forEach(async (remoteUserDoc) => {
         if (remoteUserDoc.id === localUserId) {
             return;
@@ -79,7 +98,7 @@ callBtn.addEventListener('click', async () => {
 
         const localUserDoc = doc(collection(remoteUserDoc.ref, 'clients'), localUserId);
         const offerCandidates = collection(localUserDoc, 'offerCandidates');
-        pcDict[remoteUserDoc.id] = createPc();
+        pcDict[remoteUserDoc.id] = createPc(remoteUserDoc.id);
 
         pcDict[remoteUserDoc.id].onicecandidate = (event) => {
             event.candidate && addDoc(offerCandidates, event.candidate.toJSON());
@@ -95,7 +114,7 @@ callBtn.addEventListener('click', async () => {
 
         await setDoc(localUserDoc, { offer });
 
-        // await for user to answer back
+        // Listening for user to answer back
         const answerCandidates = collection(localUserDoc, 'answerCandidates');
         onSnapshot(localUserDoc, (snapshot) => {
             const data = snapshot.data();
@@ -105,7 +124,7 @@ callBtn.addEventListener('click', async () => {
             }
         });
 
-        // listening for answer candidates
+        // Listening for answer candidates
         onSnapshot(answerCandidates, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === 'added') {
@@ -118,7 +137,7 @@ callBtn.addEventListener('click', async () => {
         });
     });
 
-    // new clients that want us to answer
+    // New clients that want us to answer
     onSnapshot(collection(localUserDoc, 'clients'), (snapshot) => {
         snapshot.docChanges().forEach( async (change) => {
             if (change.type === 'added') {
@@ -127,7 +146,7 @@ callBtn.addEventListener('click', async () => {
                 console.log(change.doc.id);
 
                 let remoteUserDoc = change.doc.ref;
-                pcDict[remoteUserDoc.id] = new createPc();
+                pcDict[remoteUserDoc.id] = new createPc(remoteUserDoc.id);
 
                 pcDict[remoteUserDoc.id].onicecandidate = (event) => {
                     event.candidate && addDoc(answerCandidates, event.candidate.toJSON());
@@ -147,7 +166,7 @@ callBtn.addEventListener('click', async () => {
 
                 await setDoc(remoteUserDoc, docData);
 
-                // listening for offer candidates
+                // Listening for offer candidates
                 onSnapshot(offerCandidates, (snapshot) => {
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === 'added') {
@@ -160,3 +179,19 @@ callBtn.addEventListener('click', async () => {
         });
     });
 });
+
+window.addEventListener('beforeOnLoad', (e) => {
+    e.preventDefault();
+
+    if (confirm('You sure you want to leave?')) {
+        alert('good bye');
+    }
+    // else {
+
+    // }
+
+    // e.returnValue = 'Do you want to leave?';
+    return '';
+});
+
+//TODO: Handle failed, disconnection and hangup

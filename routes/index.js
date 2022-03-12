@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { adminAuth } from "../firebase-admin.js";
+import { Router } from 'express';
+import { adminAuth } from '../firebase-admin.js';
 
 const router = Router();
 
@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
 
     if (id) {
         console.log(req.session.passport);
-        let user = await adminAuth.getUserByProviderUid("google.com", id);
+        let user = await adminAuth.getUserByProviderUid('google.com', id);
         console.log(user);
     }
 

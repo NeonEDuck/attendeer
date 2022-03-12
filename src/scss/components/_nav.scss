@@ -1,0 +1,11 @@
+@use '../abstracts' as *;
+
+#navbar {
+    width: 100%;
+
+    ul {
+        display: flex;
+        flex-direction: row;
+        gap: 1em;
+    }
+}
