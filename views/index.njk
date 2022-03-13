@@ -5,9 +5,10 @@
 {% endblock script %}
 
 {% block content %}
-    {% if displayName %}
-        Welcome! {{ displayName }}!
+    {% if name %}
+        Welcome! {{ name }}!
     {% else %}
         You are not login!
     {% endif %}
+    {% include "util/login.njk" %}
 {% endblock content %}

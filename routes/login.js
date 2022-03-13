@@ -1,30 +1,29 @@
 import { Router } from 'express';
-import passport from 'passport';
+import { adminAuth } from '../firebase-admin.js';
 
 const router = Router();
 
-router.get('/login',
-    passport.authenticate('google', { scope: ['email', 'profile'] })
-);
+router.get('/login', (req, res) => {
+    res.render('login');
+});
 
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-    // console.log(req.session.passport.user.id);
-    // console.log(req.session.passport.user.displayName);
-    // console.log(req.session.passport.user.emails[0].value);
-    // console.log(req.session.passport.user.photos[0].value);
+router.post("/sessionLogin", (req, res) => {
+    const idToken = req.body.idToken.toString();
+    let expiresIn = Number(process.env.SESSION_MAX_AGE);
 
-    res.redirect('/');
+    adminAuth.createSessionCookie(idToken, { expiresIn })
+        .then(
+            (sessionCookie) => {
+                req.session.idToken = sessionCookie;
+                res.end(JSON.stringify({ status: "success" }));
+            },
+            (error) => {
+                res.status(401).send("UNAUTHORIZED REQUEST!");
+            });
 });
 
 router.get('/logout', (req, res) => {
-    req.logout();
-
-    try {
-        req.session.passport.user.id = null;
-    }
-    catch (e) {
-
-    }
+    req.session.idToken = undefined;
 
     res.redirect('/');
 });

@@ -1,6 +1,6 @@
 import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, addDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import './navbar.js'
+import './base.js'
 
 const servers = {
     iceServers: [

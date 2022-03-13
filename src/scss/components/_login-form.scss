@@ -1,0 +1,10 @@
+#login-form {
+    display: flex;
+    flex-direction: column;
+    background-color: #999;
+    width: fit-content;
+    padding: 1em;
+    button {
+        width: auto;
+    }
+}

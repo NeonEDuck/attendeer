@@ -1,1 +1,1 @@
-import './navbar.js'
+import './base.js'

@@ -4,6 +4,10 @@ import 'dotenv/config';
 let PORT = 80;
 let app = express();
 
+// globle variable
+
+process.env.SESSION_MAX_AGE = 60 * 60 * 24 * 5 * 1000;
+
 // static folder
 
 app.use('/', express.static('public'));
@@ -35,45 +39,40 @@ app.set('views', './views');
 app.set('view engine', 'njk');
 app.engine('njk', nunjucks.render);
 
+// session
+import session from 'express-session';
 
-// passport-google-oauth20
-import passport from 'passport';
-import sess from 'express-session';
-import oauth from 'passport-google-oauth20';
-
-app.use(sess({
+app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { maxAge: Number(process.env.SESSION_MAX_AGE), httpOnly: true },
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser(function(user, done) {
-    done(null, user);
+// csrf middleware
+import csrf from 'csurf';
+const csrfMiddleware = csrf({ cookie: true });
+app.use(csrfMiddleware);
+app.all('*', (req, res, next) => {
+    res.cookie("XSRF-TOKEN", req.csrfToken());
+    next();
 });
 
-passport.deserializeUser(function(user, done) {
-    done(null, user);
+// auth check
+import { adminAuth } from './firebase-admin.js';
+
+app.all('*', async (req, res, next) => {
+    const sessionCookie = req.session.idToken || '';
+
+    req.local = {};
+    await adminAuth.verifySessionCookie(sessionCookie, true)
+        .then((decodedToken) => {
+            req.local.decodedToken = decodedToken;
+        }, (error) => {
+            req.local.decodedToken = {};
+        });
+    next();
 });
-
-var GoogleStrategy = oauth.Strategy;
-
-passport.use(
-    new GoogleStrategy({
-        clientID: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
-        callbackURL: (process.env.DOMAIN_NAME.match('https?://')?.input || 'http://localhost') + '/auth/google/callback'
-    },
-    function(accessToken, refreshToken, profile, done) {
-        if (profile) {
-            return done(null, profile);
-        }else {
-            return done(null, false);
-        }
-    }
-));
 
 // router
 
