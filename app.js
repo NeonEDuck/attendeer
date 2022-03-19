@@ -77,14 +77,10 @@ app.all('*', async (req, res, next) => {
 // router
 
 import index from './routes/index.js';
-import login from './routes/login.js';
 import meeting from './routes/meeting.js';
-import test from './routes/test.js';
 
 app.use('/', index);
-app.use('/', login);
 app.use('/meeting', meeting);
-app.use('/test', test);
 
 // listen
 

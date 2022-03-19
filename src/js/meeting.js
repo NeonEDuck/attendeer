@@ -1,5 +1,6 @@
-import { firestore } from './firebase-config.js';
-import { collection, doc, getDocs, addDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { firestore, auth } from './firebase-config.js';
+import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import './base.js'
 
 const servers = {
@@ -13,20 +14,26 @@ const servers = {
 
 // Global variable
 const pcDict = {};
+const snapshotListeners = [];
 let localUserId = null;
 let localStream = null;
 
 // HTML elements
 const camPrefab = document.querySelector('.cam');
-const uidInput = document.querySelector('#uid-input');
 const webcamBtn = document.querySelector('#webcam-btn');
 const callBtn = document.querySelector('#call-btn');
+const hangUpBtn = document.querySelector('#hang-up-btn');
 const callInput = document.querySelector('#call-input');
 const videoTray = document.querySelector('#video-tray');
 
 // Delete prefab
 camPrefab.remove()
 camPrefab.removeAttribute('hidden');
+
+onAuthStateChanged(auth, (user) => {
+    localUserId = user.uid;
+    webcamBtn.disabled = false;
+})
 
 function addTrackToRemoteVideo(track, userId) {
     let remoteCam = videoTray.querySelector(`#user-${userId}`);
@@ -60,8 +67,12 @@ function createPc(userId) {
 }
 
 webcamBtn.addEventListener('click', async () => {
-    localUserId = uidInput.value || null;
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    if (!localUserId) {
+        alert('please login');
+        return;
+    }
+
+    localStream = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
     let localCam = camPrefab.cloneNode(true);
     let localVideo = localCam.querySelector('.cam__video');
     let localName = localCam.querySelector('.cam__name');
@@ -69,28 +80,28 @@ webcamBtn.addEventListener('click', async () => {
     localVideo.srcObject = localStream;
     videoTray.appendChild(localCam);
 
-    uidInput.disabled = true;
     callBtn.disabled = false;
     webcamBtn.disabled = true;
 });
 
 callBtn.addEventListener('click', async () => {
     const calls = collection(firestore, 'calls');
-    let callDoc = doc(calls);
+    let callDoc;
     if (callInput.value) {
         callDoc = doc(calls, callInput.value);
     }
     else {
-        setDoc(callDoc, {});
+        callDoc = doc(calls);
+        await setDoc(callDoc, {});
     }
     const participants = collection(callDoc, 'participants');
-    const userDocs = await getDocs(participants);
     const localUserDoc = doc(participants, localUserId);
     await setDoc(localUserDoc, {});
 
     callInput.value = callDoc.id;
 
     // Offer to every other user in the call
+    const userDocs = await getDocs(participants);
     userDocs.forEach(async (remoteUserDoc) => {
         if (remoteUserDoc.id === localUserId) {
             return;
@@ -98,6 +109,7 @@ callBtn.addEventListener('click', async () => {
 
         const localUserDoc = doc(collection(remoteUserDoc.ref, 'clients'), localUserId);
         const offerCandidates = collection(localUserDoc, 'offerCandidates');
+        const answerCandidates = collection(localUserDoc, 'answerCandidates');
         pcDict[remoteUserDoc.id] = createPc(remoteUserDoc.id);
 
         pcDict[remoteUserDoc.id].onicecandidate = (event) => {
@@ -112,86 +124,160 @@ callBtn.addEventListener('click', async () => {
             type: offerDescription.type,
         };
 
+        await deleteDoc(localUserDoc);
         await setDoc(localUserDoc, { offer });
 
         // Listening for user to answer back
-        const answerCandidates = collection(localUserDoc, 'answerCandidates');
-        onSnapshot(localUserDoc, (snapshot) => {
-            const data = snapshot.data();
-            if (!pcDict[remoteUserDoc.id].currentRemoteDescription && data?.answer) {
-                const answerDescription = new RTCSessionDescription(data.answer);
-                pcDict[remoteUserDoc.id].setRemoteDescription(answerDescription);
-            }
-        });
+        snapshotListeners.push(
+            onSnapshot(localUserDoc, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (!pcDict[remoteUserDoc.id].currentRemoteDescription && data?.answer) {
+                        const answerDescription = new RTCSessionDescription(data.answer);
+                        pcDict[remoteUserDoc.id].setRemoteDescription(answerDescription);
+                    }
+                }
+                else {
+
+                    pcDict[remoteUserDoc.id].close();
+                    pcDict[remoteUserDoc.id].onicecandidate = null;
+                    pcDict[remoteUserDoc.id].onaddstream = null;
+                    pcDict[remoteUserDoc.id] = null;
+                    let remoteCam = videoTray.querySelector(`#user-${remoteUserDoc.id}`);
+                    remoteCam.remove();
+                }
+            })
+        );
 
         // Listening for answer candidates
-        onSnapshot(answerCandidates, (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === 'added') {
-                    let i = 0;
-                    let data = change.doc.data();
-                    console.log(data);
-                    pcDict[remoteUserDoc.id].addIceCandidate(new RTCIceCandidate(data));
-                }
-            });
-        });
+        snapshotListeners.push(
+            onSnapshot(answerCandidates, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        let i = 0;
+                        let data = change.doc.data();
+                        pcDict[remoteUserDoc.id].addIceCandidate(new RTCIceCandidate(data));
+                    }
+                });
+            })
+        );
     });
 
     // New clients that want us to answer
-    onSnapshot(collection(localUserDoc, 'clients'), (snapshot) => {
-        snapshot.docChanges().forEach( async (change) => {
-            if (change.type === 'added') {
-                const offerCandidates = collection(change.doc.ref, 'offerCandidates');
-                const answerCandidates = collection(change.doc.ref, 'answerCandidates');
-                console.log(change.doc.id);
+    snapshotListeners.push(
+        onSnapshot(collection(localUserDoc, 'clients'), (snapshot) => {
+            snapshot.docChanges().forEach( async (change) => {
+                if (change.type === 'added') {
+                    const offerCandidates = collection(change.doc.ref, 'offerCandidates');
+                    const answerCandidates = collection(change.doc.ref, 'answerCandidates');
 
-                let remoteUserDoc = change.doc.ref;
-                pcDict[remoteUserDoc.id] = new createPc(remoteUserDoc.id);
+                    let remoteUserDoc = change.doc.ref;
+                    pcDict[remoteUserDoc.id] = new createPc(remoteUserDoc.id);
 
-                pcDict[remoteUserDoc.id].onicecandidate = (event) => {
-                    event.candidate && addDoc(answerCandidates, event.candidate.toJSON());
-                };
+                    pcDict[remoteUserDoc.id].onicecandidate = (event) => {
+                        event.candidate && addDoc(answerCandidates, event.candidate.toJSON());
+                    };
 
-                const docData = change.doc.data();
-                const offerDescription = docData.offer;
-                await pcDict[remoteUserDoc.id].setRemoteDescription(new RTCSessionDescription(offerDescription));
+                    const docData = change.doc.data();
+                    const offerDescription = docData.offer;
+                    await pcDict[remoteUserDoc.id].setRemoteDescription(new RTCSessionDescription(offerDescription));
 
-                const answerDescription = await pcDict[remoteUserDoc.id].createAnswer();
-                await pcDict[remoteUserDoc.id].setLocalDescription(answerDescription);
+                    const answerDescription = await pcDict[remoteUserDoc.id].createAnswer();
+                    await pcDict[remoteUserDoc.id].setLocalDescription(answerDescription);
 
-                docData.answer = {
-                    type: answerDescription.type,
-                    sdp: answerDescription.sdp,
-                };
+                    docData.answer = {
+                        type: answerDescription.type,
+                        sdp: answerDescription.sdp,
+                    };
 
-                await setDoc(remoteUserDoc, docData);
+                    await setDoc(remoteUserDoc, docData);
 
-                // Listening for offer candidates
-                onSnapshot(offerCandidates, (snapshot) => {
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === 'added') {
-                            let data = change.doc.data();
-                            pcDict[remoteUserDoc.id].addIceCandidate(new RTCIceCandidate(data));
-                        }
-                    });
-                });
-            }
-        });
+                    // Listening for offer candidates
+                    snapshotListeners.push(
+                        onSnapshot(offerCandidates, (snapshot) => {
+                            snapshot.docChanges().forEach((change) => {
+                                if (change.type === 'added') {
+                                    let data = change.doc.data();
+                                    pcDict[remoteUserDoc.id].addIceCandidate(new RTCIceCandidate(data));
+                                }
+                            });
+                        })
+                    );
+                }
+                else if (change.type === 'removed') {
+                    let remoteUserDoc = change.doc.ref;
+
+                    pcDict[remoteUserDoc.id].close();
+                    pcDict[remoteUserDoc.id].onicecandidate = null;
+                    pcDict[remoteUserDoc.id].onaddstream = null;
+                    pcDict[remoteUserDoc.id] = null;
+                    let remoteCam = videoTray.querySelector(`#user-${remoteUserDoc.id}`);
+                    remoteCam.remove();
+                }
+            });
+        })
+    );
+
+    callBtn.disabled = true;
+    hangUpBtn.disabled = false;
+});
+
+hangUpBtn.addEventListener('click', async () => {
+    const calls = collection(firestore, 'calls');
+    const callDoc = doc(calls, callInput.value);
+    const participants = collection(callDoc, 'participants');
+    const localUserDoc = doc(participants, localUserId);
+    const userDocs = await getDocs(participants);
+
+    snapshotListeners.forEach((listener) => {
+        listener();
     });
+
+    userDocs.forEach(async (remoteUserDoc) => {
+        if (remoteUserDoc.id === localUserId || !Object.keys(pcDict).includes(remoteUserDoc.id)) {
+            return;
+        }
+
+        pcDict[remoteUserDoc.id].close();
+        pcDict[remoteUserDoc.id].onicecandidate = null;
+        pcDict[remoteUserDoc.id].ontrack = null;
+        pcDict[remoteUserDoc.id] = null;
+        let remoteCam = videoTray.querySelector(`#user-${remoteUserDoc.id}`);
+        remoteCam.remove();
+
+        console.dir(doc(collection(remoteUserDoc.ref, 'clients'), localUserId));
+        const localUserDoc = doc(collection(remoteUserDoc.ref, 'clients'), localUserId);
+        await deleteDoc(localUserDoc);
+    });
+
+    let clientDocs = await getDocs(collection(localUserDoc, 'clients'));
+    clientDocs.forEach(async (clientDoc) => {
+        let offerCandidates = await getDocs(collection(clientDoc.ref, 'offerCandidates'));
+        let answerCandidates = await getDocs(collection(clientDoc.ref, 'answerCandidates'));
+        offerCandidates.forEach(async (offerDoc) => {
+            await deleteDoc(offerDoc.ref);
+        })
+        answerCandidates.forEach(async (answerDoc) => {
+            await deleteDoc(answerDoc.ref);
+        })
+        await deleteDoc(clientDoc.ref);
+    });
+    await deleteDoc(localUserDoc);
+
+    callBtn.disabled = false;
+    hangUpBtn.disabled = true;
 });
 
-window.addEventListener('beforeOnLoad', (e) => {
-    e.preventDefault();
+// window.addEventListener('beforeOnLoad', (e) => {
+//     e.preventDefault();
 
-    if (confirm('You sure you want to leave?')) {
-        alert('good bye');
-    }
-    // else {
+//     if (confirm('You sure you want to leave?')) {
+//         alert('good bye');
+//     }
+//     // else {
 
-    // }
+//     // }
 
-    // e.returnValue = 'Do you want to leave?';
-    return '';
-});
-
-//TODO: Handle failed, disconnection and hangup
+//     // e.returnValue = 'Do you want to leave?';
+//     return '';
+// });

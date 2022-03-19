@@ -1,24 +1,14 @@
-// import { auth } from './firebase-config.js';
-// import { signOut } from 'firebase/auth';
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged } from "firebase/auth";
+import './login-form.js'
 
-// const loginBtn = document.querySelector('#loginBtn');
-// const logoutBtn = document.querySelector('#logoutBtn');
+const loginText = document.querySelector('#login-text');
 
-// loginBtn?.addEventListener('click', () => {
-//     window.location.assign('/login');
-// });
-
-// logoutBtn?.addEventListener('click', async () => {
-//     document.cookie = 'jwt=';
-//     signOut(auth);
-//     await fetch('/login/sessionLogout', {
-//         method: 'POST',
-//         credentials: 'include',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//     }).then((msg) => {
-//         console.log(msg);
-//     });
-//     window.location.assign('/');
-// });
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        loginText.innerHTML = user.uid;
+    }
+    else {
+        loginText.innerHTML = 'You are not login!';
+    }
+})
