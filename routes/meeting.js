@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { adminAuth } from '../firebase-admin.js';
 
 const router = Router();
 

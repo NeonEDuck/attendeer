@@ -21,30 +21,43 @@ let localStream = null;
 // HTML elements
 const camPrefab = document.querySelector('.cam');
 const webcamBtn = document.querySelector('#webcam-btn');
-const callBtn = document.querySelector('#call-btn');
+const callBtn   = document.querySelector('#call-btn');
 const hangUpBtn = document.querySelector('#hang-up-btn');
 const callInput = document.querySelector('#call-input');
 const videoTray = document.querySelector('#video-tray');
+
+// Default state
+webcamBtn.disabled = true;
+callBtn.disabled = true;
+hangUpBtn.disabled = true;
 
 // Delete prefab
 camPrefab.remove()
 camPrefab.removeAttribute('hidden');
 
+// Check login
 onAuthStateChanged(auth, (user) => {
     localUserId = user.uid;
-    webcamBtn.disabled = false;
+    webcamBtn.disabled = !Boolean(localUserId);
 })
 
 function addTrackToRemoteVideo(track, userId) {
     let remoteCam = videoTray.querySelector(`#user-${userId}`);
+    let remoteStream;
+
     if (!remoteCam) {
         remoteCam = camPrefab.cloneNode(true);
         remoteCam.id = `user-${userId}`;
         videoTray.appendChild(remoteCam);
+        remoteStream = new MediaStream();
     }
+    else {
+        remoteStream = remoteVideo.srcObject;
+    }
+
     let remoteVideo = remoteCam.querySelector('.cam__video');
     let remoteName = remoteCam.querySelector('.cam__name');
-    let remoteStream = new MediaStream();
+
     remoteName.innerHTML = userId;
     remoteStream.addTrack(track);
     remoteVideo.srcObject = remoteStream;
@@ -57,7 +70,7 @@ function createPc(userId) {
     });
 
     pc.ontrack = (event) => {
-        event.streams.forEach((stream, idx) => {
+        event.streams.forEach((stream) => {
             stream.getTracks().forEach((track) => {
                 addTrackToRemoteVideo(track, userId);
             });
@@ -67,15 +80,11 @@ function createPc(userId) {
 }
 
 webcamBtn.addEventListener('click', async () => {
-    if (!localUserId) {
-        alert('please login');
-        return;
-    }
-
     localStream = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
     let localCam = camPrefab.cloneNode(true);
     let localVideo = localCam.querySelector('.cam__video');
     let localName = localCam.querySelector('.cam__name');
+
     localName.innerHTML = localUserId;
     localVideo.srcObject = localStream;
     videoTray.appendChild(localCam);
@@ -154,7 +163,6 @@ callBtn.addEventListener('click', async () => {
             onSnapshot(answerCandidates, (snapshot) => {
                 snapshot.docChanges().forEach((change) => {
                     if (change.type === 'added') {
-                        let i = 0;
                         let data = change.doc.data();
                         pcDict[remoteUserDoc.id].addIceCandidate(new RTCIceCandidate(data));
                     }
@@ -281,3 +289,7 @@ hangUpBtn.addEventListener('click', async () => {
 //     // e.returnValue = 'Do you want to leave?';
 //     return '';
 // });
+
+// TODO: 斷線問題處理，如果回來時使用者底下有answer或offer的話會導致不預期的狀況發生
+// TODO: - 主因在於斷線時，使用者資料不會被刪除，造成房間有新成員加入時，會照樣傳送offer給不再通話(斷線)的使用者
+// TODO: - 所以當使用者連線回來時，會導致問題發生。
