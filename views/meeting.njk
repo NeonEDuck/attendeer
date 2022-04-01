@@ -6,7 +6,8 @@
 
 {% block content %}
     <div class="cam" hidden>
-        <video class="cam__video" autoplay></video>
+        <video class="cam__video" autoplay control=true></video>
+        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
         <span class="cam__name"></span>
     </div>
     <button id="webcam-btn" disabled>start</button>
