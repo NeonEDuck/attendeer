@@ -53,7 +53,6 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         localUserId = user.uid;
         localCam.name.innerHTML = localUserId;
-        // start();
         webcamBtn.disabled = false;
         callBtn.disabled = false;
         callInput.disabled = false;
@@ -65,7 +64,6 @@ webcamBtn.addEventListener('click', async () => {
 });
 
 callBtn.addEventListener('click', async () => {
-
     if (callInput.value) {
         callDoc = doc(calls, callInput.value);
     }
@@ -96,6 +94,16 @@ callBtn.addEventListener('click', async () => {
     });
 
     callBtn.disabled = true;
+    hangUpBtn.disabled = false;
+});
+
+hangUpBtn.addEventListener('click', async () => {
+    for (let userId in peerDict) {
+        closePeer(userId);
+    }
+
+    hangUpBtn.disabled = true;
+    callBtn.disabled = false;
 });
 
 async function offerToUser(remoteId) {
@@ -125,8 +133,6 @@ async function offerToUser(remoteId) {
     }
     await setDoc(remoteClientsLocalDoc, data);
     console.log('throw offer');
-
-    // closePeer(remoteId);
 }
 
 async function answerToUser(remoteId) {
@@ -167,6 +173,11 @@ function setupNewUserListener() {
                     console.log('setupNewUserListener setupUserListener');
                     setupUserListener(change.doc.id);
                     setupCandidateListener(change.doc.id);
+                }
+            }
+            else if (change.type === 'removed') {
+                if (peerDict[change.doc.id]) {
+                    closePeer(change.doc.id);
                 }
             }
         });
@@ -218,11 +229,6 @@ function listenerLogic(doc) {
             peerDict[doc.id].pc.setRemoteDescription(desc);
             peerDict[doc.id].streams = streams;
             console.log('set remote offer');
-            // console.log(peerDict[doc.id].usersListener)
-            // console.log(!peerDict[doc.id].usersListener)
-            // if (!peerDict[doc.id].usersListener) {
-            //     setupUserListener(doc.id);
-            // }
             answerToUser(doc.id);
         }
         else {
@@ -245,7 +251,6 @@ async function closePeer(id) {
         if (peerDict[id].pc) {
             peerDict[id].pc.close();
             peerDict[id].pc.onicecandidate = null;
-            peerDict[id].pc.onaddstream = null;
             peerDict[id].pc = null;
         }
         peerDict[id] = null;
@@ -290,9 +295,6 @@ function createPC(userId) {
     console.log('create PC');
     let pc = new RTCPeerConnection(servers);
     let senders = [];
-    // pc.onaddstream = () => {
-    //     console.log('onaddstream');
-    // }
     webcamOn && localStreams.webcam?.getTracks().forEach((track) => {
         console.log('set track');
         senders.push(pc.addTrack(track, localStreams.webcam));
@@ -311,9 +313,6 @@ function createPC(userId) {
                 }
             };
             addStreamToRemoteVideo(stream, userId);
-            // stream.getTracks().forEach((track) => {
-            //     addTrackToRemoteVideo(track, userId);
-            // });
             console.log(`stream ${stream.id} was added.`);
         });
     };
