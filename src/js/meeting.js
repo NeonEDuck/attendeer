@@ -16,6 +16,7 @@ const servers = {
 const camPrefab = document.querySelector('.cam');
 const webcamBtn = document.querySelector('#webcam-btn');
 const callBtn   = document.querySelector('#call-btn');
+const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn = document.querySelector('#hang-up-btn');
 const callInput = document.querySelector('#call-input');
 const videoTray = document.querySelector('#video-tray');
@@ -38,8 +39,12 @@ let localStreams = {
     'screenShare': null,
 };
 let localCam = createCam();
-localCam.cam.id = `user-local`;
+localCam.cam.id = `user-local-webcam`;
 videoTray.appendChild(localCam.cam);
+let localScreenShare = createCam();
+localScreenShare.cam.id = `user-local-screen-share`;
+localScreenShare.cam.hidden = true;
+videoTray.appendChild(localScreenShare.cam);
 
 // Firestore
 const calls = collection(firestore, 'calls');
@@ -53,7 +58,9 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         localUserId = user.uid;
         localCam.name.innerHTML = localUserId;
+        localScreenShare.name.innerHTML = localUserId;
         webcamBtn.disabled = false;
+        screenShareBtn.disabled = false;
         callBtn.disabled = false;
         callInput.disabled = false;
     }
@@ -106,6 +113,10 @@ hangUpBtn.addEventListener('click', async () => {
     callBtn.disabled = false;
 });
 
+screenShareBtn.addEventListener('click', async () => {
+    setupScreenShare();
+})
+
 async function offerToUser(remoteId) {
     console.log('offer to user');
     const remoteUserDoc = doc(participants, remoteId);
@@ -123,8 +134,10 @@ async function offerToUser(remoteId) {
     console.log('set local offer');
 
     const streams = {};
-    for (let type in localStreams) {
-        streams[type] = localStreams[type]?.id;
+    for (let streamType in localStreams) {
+        if (localStreams[streamType] && localStreams[streamType].length != 0) {
+            streams[streamType] = localStreams[streamType].id;
+        }
     }
 
     const data = {
@@ -150,8 +163,10 @@ async function answerToUser(remoteId) {
     console.log('set local answer');
 
     const streams = {};
-    for (let type in localStreams) {
-        streams[type] = localStreams[type]?.id;
+    for (let streamType in localStreams) {
+        if (localStreams[streamType] && localStreams[streamType].length != 0) {
+            streams[streamType] = localStreams[streamType].id;
+        }
     }
 
     const data = {
@@ -220,6 +235,7 @@ function listenerLogic(doc) {
         if (desc.type === 'answer') {
             console.log('saw answer');
             peerDict[doc.id].pc.setRemoteDescription(desc);
+            peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
             peerDict[doc.id].streams = streams;
             console.log('set remote answer');
         }
@@ -227,6 +243,7 @@ function listenerLogic(doc) {
             console.log('saw offer');
             addPeer(doc.id);
             peerDict[doc.id].pc.setRemoteDescription(desc);
+            peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
             peerDict[doc.id].streams = streams;
             console.log('set remote offer');
             answerToUser(doc.id);
@@ -281,12 +298,11 @@ function addPeer(id) {
         let [pc, senders] = createPC(id);
         peerDict[id] = {
             pc,
-            senders: {
-                webcam: senders
-            },
+            senders,
             usersListener: null,
             candidatesListener: null,
             streams: null,
+            oldStreams: null,
         };
     }
 }
@@ -294,11 +310,14 @@ function addPeer(id) {
 function createPC(userId) {
     console.log('create PC');
     let pc = new RTCPeerConnection(servers);
-    let senders = [];
-    webcamOn && localStreams.webcam?.getTracks().forEach((track) => {
-        console.log('set track');
-        senders.push(pc.addTrack(track, localStreams.webcam));
-    });
+    let senders = {};
+    for (let streamType in localStreams) {
+        senders[streamType] = []
+        localStreams[streamType]?.getTracks().forEach((track) => {
+            console.log(`set track of ${streamType}`);
+            senders[streamType].push(pc.addTrack(track, localStreams[streamType]));
+        });
+    }
 
     console.log('set ontrack');
     pc.ontrack = (event) => {
@@ -361,11 +380,12 @@ function removeRemoteCam(userId, streamType) {
 function addStreamToRemoteVideo(stream, userId) {
     console.log('addStreamToRemoteVideo');
     let [ track ] = stream.getTracks();
-    let streamType = Object.keys(peerDict[userId].streams).find(key => peerDict[userId].streams[key] === stream.id);
+    let streamType = Object.keys(peerDict[userId].streams).find(key => peerDict[userId].streams[key] === stream.id)
+                    || Object.keys(peerDict[userId].oldStreams).find(key => peerDict[userId].oldStreams[key] === stream.id);
     let remoteCam = createRemoteCam(userId, streamType);
     let remoteVideo = remoteCam.querySelector('.cam__video');
     let remoteProfile = remoteCam.querySelector('.cam__profile');
-    remoteProfile.style.display = 'none';
+    remoteProfile.hidden = true;
     let remoteStream = new MediaStream();
     remoteStream.addTrack(track);
     remoteVideo.srcObject = remoteStream;
@@ -373,27 +393,28 @@ function addStreamToRemoteVideo(stream, userId) {
 
 function removeStreamFromRemoteVideo(stream, userId) {
     console.log('removeStreamFromRemoteVideo');
-    let streamType = Object.keys(peerDict[userId].streams).find(key => peerDict[userId].streams[key] === stream.id);
+    let streamType = Object.keys(peerDict[userId].streams).find(key => peerDict[userId].streams[key] === stream.id)
+                    || Object.keys(peerDict[userId].oldStreams).find(key => peerDict[userId].oldStreams[key] === stream.id);
     let remoteCam = createRemoteCam(userId, streamType);
     let remoteVideo = remoteCam.querySelector('.cam__video');
     remoteVideo.srcObject = null;
-    let remoteProfile = remoteCam.querySelector('.cam__profile');
-    remoteProfile.style.display = 'block';
+    if (streamType === 'webcam') {
+        let remoteProfile = remoteCam.querySelector('.cam__profile');
+        remoteProfile.hidden = false;
+    }
+    else {
+        remoteCam.remove();
+    }
 }
 
-let webcamOn = false;
 async function setupLocalStream() {
-    if (!localStreams.webcam) {
-        console.log('init webcam');
-        localStreams.webcam = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
-    }
 
-    if (webcamOn) {
+    if (localStreams.webcam) {
         console.log('turn off webcam');
-        localCam.profile.style.display = 'block';
+        localStreams.webcam = null;
+        localCam.profile.hidden = false;
         localCam.video.srcObject = null;
         for (const [id, peer] of Object.entries(peerDict)) {
-            localCam.profile.hidden = false;
             for (let sender of peer.senders.webcam) {
                 console.log(`remove from ${id} ${sender}`)
                 peer.pc.removeTrack(sender);
@@ -404,7 +425,8 @@ async function setupLocalStream() {
     }
     else {
         console.log('turn on webcam');
-        localCam.profile.style.display = 'none';
+        localStreams.webcam = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        localCam.profile.hidden = true;
         localCam.video.srcObject = localStreams.webcam;
         for (const [id, peer] of Object.entries(peerDict)) {
             localStreams.webcam.getTracks().forEach((track) => {
@@ -414,7 +436,43 @@ async function setupLocalStream() {
             offerToUser(id);
         }
     }
-    webcamOn = !webcamOn;
+}
+
+async function setupScreenShare() {
+    if (localStreams.screenShare) {
+        console.log('turn off screen share');
+        localStreams.screenShare = null;
+        localScreenShare.cam.hidden = true;
+        localScreenShare.video.srcObject = null;
+        for (const [id, peer] of Object.entries(peerDict)) {
+            for (let sender of peer.senders.screenShare) {
+                console.log(`remove from ${id} ${sender}`)
+                peer.pc.removeTrack(sender);
+            }
+            peer.senders.screenShare = [];
+            offerToUser(id);
+        }
+    }
+    else {
+        console.log('turn on screen share');
+        const displayMediaStreamConstraints = {
+            localStream: true // or pass HINTS
+        };
+        if (navigator.mediaDevices.getDisplayMedia) {
+            localStreams.screenShare = await navigator.mediaDevices.getDisplayMedia(displayMediaStreamConstraints);
+        } else {
+            localStreams.screenShare = await navigator.getDisplayMedia(displayMediaStreamConstraints);
+        }
+        localScreenShare.cam.hidden = false;
+        localScreenShare.video.srcObject = localStreams.screenShare;
+        for (const [id, peer] of Object.entries(peerDict)) {
+            localStreams.screenShare.getTracks().forEach((track) => {
+                console.log(`add to ${id}`)
+                peer.senders.screenShare.push(peer.pc.addTrack(track, localStreams.screenShare));
+            });
+            offerToUser(id);
+        }
+    }
 }
 
 function createCam() {
