@@ -1,9 +1,28 @@
 .cam {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #222;
+    aspect-ratio: 16/9;
 
+    &__video {
+        max-height: 100%;
+        max-width: 100%;
+    }
     &__name {
         position: absolute;
         right: 1em;
         bottom: 1em;
+        background-color: #444;
+        border-radius: 3em;
+        padding: 0.5em;
+        color: white;
+    }
+    &__profile {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
     }
 }
