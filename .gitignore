@@ -90,6 +90,9 @@ web_modules/
 # Service account file
 service-account.json
 
-# Source generated file
+# Source generated files
 public/js
 public/css
+
+# Certification files
+certs
