@@ -6,7 +6,7 @@ const loginText = document.querySelector('#login-text');
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        loginText.innerHTML = user.uid;
+        loginText.innerHTML = user.displayName;
     }
     else {
         loginText.innerHTML = 'You are not login!';

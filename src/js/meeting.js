@@ -57,8 +57,10 @@ let localClients;
 onAuthStateChanged(auth, (user) => {
     if (user) {
         localUserId = user.uid;
-        localCam.name.innerHTML = localUserId;
-        localScreenShare.name.innerHTML = localUserId;
+        localCam.name.innerHTML = user.displayName;
+        localCam.profile.src = user.photoURL;
+        localScreenShare.name.innerHTML = user.displayName;
+        localScreenShare.profile.hidden = true;
         webcamBtn.disabled = false;
         screenShareBtn.disabled = false;
         callBtn.disabled = false;
@@ -352,10 +354,17 @@ function createRemoteCam(userId, streamType) {
     let remoteCam = videoTray.querySelector(`#user-${userId}-${streamType}`);
 
     if (!remoteCam) {
-        let { cam, name } = createCam();
+        const users = collection(firestore, 'users');
+        const remoteUserDoc = doc(users, userId);
+
+        let { cam, name, profile } = createCam();
         cam.id = `user-${userId}-${streamType}`;
         cam.setAttribute('data-user', userId);
-        name.innerHTML = userId;
+        getDoc(remoteUserDoc)
+        .then((snapshot) => {
+            name.innerHTML = snapshot.data().name;
+            profile.src = snapshot.data().photo;
+        });
 
         remoteCam = cam;
         videoTray.appendChild(remoteCam);
