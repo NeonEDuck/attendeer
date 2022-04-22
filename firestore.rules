@@ -13,12 +13,8 @@ service cloud.firestore {
         match /clients/{otherId} {
           allow read, write: if request.auth.uid == otherId || request.auth.uid == userId;
 
-          match /offerCandidates/{offer} {
+          match /candidates/{offer} {
             allow read, write: if request.auth.uid == otherId || request.auth.uid == userId;
-          }
-          match /answerCandidates/{answer} {
-            allow read: if request.auth.uid == otherId || request.auth.uid == userId;
-            allow write: if request.auth.uid == userId;
           }
         }
       }
