@@ -1,33 +1,29 @@
 import express from 'express';
 import 'dotenv/config';
 
-let PORT = 80;
-let app = express();
+const HTTP_PORT = process.env.HTTP_PORT || 80;
+const HTTPS_PORT = process.env.HTTPS_PORT || 443;
+const app = express();
 
 // globle variable
-
 process.env.SESSION_MAX_AGE = 60 * 60 * 24 * 5 * 1000;
 
 // static folder
-
 app.use('/', express.static('public'));
 app.use('/js/firebase', express.static('node_modules/firebase'));
 
 // body parser
-
 import bodyParser from 'body-parser';
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 // cookie parser
-
 import cookieParser from 'cookie-parser';
 
 app.use(cookieParser());
 
 // view engine
-
 import nunjucks from 'nunjucks';
 nunjucks.configure('views', {
     autoescape: true,
@@ -75,7 +71,6 @@ app.all('*', async (req, res, next) => {
 });
 
 // router
-
 import index from './routes/index.js';
 import meeting from './routes/meeting.js';
 
@@ -83,5 +78,32 @@ app.use('/', index);
 app.use('/meeting', meeting);
 
 // listen
+import http from 'http';
 
-app.listen(PORT, () => {console.log(`> Listening on port ${PORT}`)});
+http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
+
+import fs from 'fs';
+import path from 'path';
+import https from 'https';
+
+if (process.env.RELEASE?.toLowerCase() === 'true') {
+    try {
+        const options = {
+            key:  fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'private.key') , 'utf-8'),
+            cert: fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'certificate.crt') , 'utf-8'),
+            ca:   fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'ca_bundle.crt') , 'utf-8'),
+        };
+        https.createServer(options, app).listen(HTTPS_PORT, () => {console.log(`> Listening on port ${HTTPS_PORT}`)});
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            console.error(
+                `Error: certification file missing, finding '${err.path}'.\n` +
+                `    Maybe you forgot to put certification files in the correct folder.\n` +
+                `    Configure "CERT_DIR_PATH" in .env file if needed.`
+            );
+        }
+        else {
+            console.error(err);
+        }
+    }
+}
