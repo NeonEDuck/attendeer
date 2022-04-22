@@ -25,6 +25,7 @@ const callBtn   = document.querySelector('#call-btn');
 const hangUpBtn = document.querySelector('#hang-up-btn');
 const callInput = document.querySelector('#call-input');
 const videoTray = document.querySelector('#video-tray');
+var chatForm = document.getElementById('chat-form');
 
 // Default state
 webcamBtn.disabled = true;
@@ -228,6 +229,35 @@ callBtn.addEventListener('click', async () => {
 
     callBtn.disabled = true;
     hangUpBtn.disabled = false;
+
+    //-----------------------------------------------------------------//
+
+    chatForm.style.display = 'block';
+
+    let messages = collection(callDoc, 'messages');
+    
+    var html;
+    onSnapshot(messages, (snapshot) => {    
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+                console.log(change.doc.data().user);
+                console.log(change.doc.data().text);
+                console.log(change.doc.data().time);
+                console.log(change.doc.data().timestamp); 
+
+                html ="";
+                html += '<li style="text-align:left;">';
+                html += change.doc.data().user + " " + change.doc.data().time.substring(0,6) + "<br>" + change.doc.data().text;
+                html += "</li>";
+    
+                document.getElementById("messages").innerHTML += html;
+            }
+        });
+        var messageBody = document.querySelector('#messageBody');
+        messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+    });
+
+     //-----------------------------------------------------------------//
 });
 
 hangUpBtn.addEventListener('click', async () => {

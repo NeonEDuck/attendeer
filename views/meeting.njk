@@ -2,7 +2,9 @@
 
 {% block script %}
     <script src="/js/meeting.js" type="module" defer></script>
+    <script src="/js/test.js" type="module" defer></script>
 {% endblock script %}
+
 
 {% block content %}
     <div class="cam" hidden>
@@ -13,5 +15,40 @@
     <button id="call-btn" disabled>call</button>
     <button id="hang-up-btn" disabled>hang up</button>
     <input id="call-input" type="text">
+
+    <div id="chat-form" style="margin:50px; border:2px solid; display:none; height:300px; weight:500px; text-align: center;padding:10px" class="chat-messages" >
+        
+        <div class="msger-chat" style="height:270px;overflow-x:auto" id="messageBody">
+            <ul id="messages" style="height:260px;"></ul>
+        </div>
+        
+        <div id="msger-inputarea" style="margin:5px display:none;">
+            <input
+                id="msg"
+                name="msg"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+                style="width:90%;height:20px;"
+            />
+            <button id="send-msg-btn"> Send</button>
+        </div>
+    </div>
+
+    
+
     <div id="video-tray"></div>
+
+    <script>
+        var inputText = document.getElementById("msg");
+        var div = document.getElementById('msger-chat');
+        inputText.addEventListener("keyup", function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById("send-msg-btn").click();
+                inputText.value="";
+            }
+        });
+   </script>
 {% endblock content %}
