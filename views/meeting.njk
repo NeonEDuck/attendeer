@@ -2,7 +2,6 @@
 
 {% block script %}
     <script src="/js/meeting.js" type="module" defer></script>
-    <script src="/js/test.js" type="module" defer></script>
 {% endblock script %}
 
 
@@ -11,44 +10,37 @@
         <video class="cam__video" autoplay></video>
         <span class="cam__name"></span>
     </div>
+    <li class="msg" hidden>
+        <p>
+            <span class="msg__user"></span>
+            <span class="msg__timestamp"></span>
+        </p>
+        <p class="msg__text"></p>
+    </li>
+
+
     <button id="webcam-btn" disabled>start</button>
     <button id="call-btn" disabled>call</button>
     <button id="hang-up-btn" disabled>hang up</button>
     <input id="call-input" type="text">
 
-    <div id="chat-form" style="margin:50px; border:2px solid; display:none; height:300px; weight:500px; text-align: center;padding:10px" class="chat-messages" >
-        
-        <div class="msger-chat" style="height:270px;overflow-x:auto" id="messageBody">
-            <ul id="messages" style="height:260px;"></ul>
-        </div>
-        
-        <div id="msger-inputarea" style="margin:5px display:none;">
+    <div id="chat" hidden>
+        <ul id="chat__room"></ul>
+
+        <div id="chat__bar">
             <input
-                id="msg"
-                name="msg"
+                id="msg-input"
+                name="msg-input"
                 type="text"
                 placeholder="Enter Message"
-                required
                 autocomplete="off"
-                style="width:90%;height:20px;"
+                required
             />
-            <button id="send-msg-btn"> Send</button>
+            <button id="send-msg-btn">send</button>
         </div>
     </div>
 
-    
+
 
     <div id="video-tray"></div>
-
-    <script>
-        var inputText = document.getElementById("msg");
-        var div = document.getElementById('msger-chat');
-        inputText.addEventListener("keyup", function(event) {
-            if (event.keyCode === 13) {
-                event.preventDefault();
-                document.getElementById("send-msg-btn").click();
-                inputText.value="";
-            }
-        });
-   </script>
 {% endblock content %}

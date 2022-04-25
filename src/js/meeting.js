@@ -19,13 +19,17 @@ let localUserId = null;
 let localStream = null;
 
 // HTML elements
-const camPrefab = document.querySelector('.cam');
-const webcamBtn = document.querySelector('#webcam-btn');
-const callBtn   = document.querySelector('#call-btn');
-const hangUpBtn = document.querySelector('#hang-up-btn');
-const callInput = document.querySelector('#call-input');
-const videoTray = document.querySelector('#video-tray');
-var chatForm = document.getElementById('chat-form');
+const camPrefab  = document.querySelector('.cam');
+const msgPrefab  = document.querySelector('.msg');
+const webcamBtn  = document.querySelector('#webcam-btn');
+const callBtn    = document.querySelector('#call-btn');
+const hangUpBtn  = document.querySelector('#hang-up-btn');
+const callInput  = document.querySelector('#call-input');
+const videoTray  = document.querySelector('#video-tray');
+const chat       = document.querySelector('#chat');
+const chatRoom   = document.querySelector('#chat__room')
+const msgInput   = document.querySelector('#msg-input')
+const sendMsgBtn = document.querySelector('#send-msg-btn')
 
 // Default state
 webcamBtn.disabled = true;
@@ -35,6 +39,8 @@ hangUpBtn.disabled = true;
 // Delete prefab
 camPrefab.remove()
 camPrefab.removeAttribute('hidden');
+msgPrefab.remove()
+msgPrefab.removeAttribute('hidden');
 
 // Check login
 onAuthStateChanged(auth, (user) => {
@@ -232,29 +238,27 @@ callBtn.addEventListener('click', async () => {
 
     //-----------------------------------------------------------------//
 
-    chatForm.style.display = 'block';
+    chat.hidden = false;
 
-    let messages = collection(callDoc, 'messages');
-    
-    var html;
-    onSnapshot(messages, (snapshot) => {    
+    const messages = collection(callDoc, 'messages');
+
+    onSnapshot(messages, (snapshot) => {
         snapshot.docChanges().forEach((change) => {
             if (change.type === 'added') {
-                console.log(change.doc.data().user);
-                console.log(change.doc.data().text);
-                console.log(change.doc.data().time);
-                console.log(change.doc.data().timestamp); 
+                const { user, text, timestamp } = change.doc.data();
+                const timeString = new Date(timestamp).toLocaleString();
 
-                html ="";
-                html += '<li style="text-align:left;">';
-                html += change.doc.data().user + " " + change.doc.data().time.substring(0,6) + "<br>" + change.doc.data().text;
-                html += "</li>";
-    
-                document.getElementById("messages").innerHTML += html;
+                const msg = msgPrefab.cloneNode(true);
+                const msgUser = msg.querySelector('.msg__user');
+                const msgTime = msg.querySelector('.msg__timestamp');
+                const msgText = msg.querySelector('.msg__text');
+                msgUser.innerHTML = user;
+                msgTime.innerHTML = timeString;
+                msgText.innerHTML = text;
+                chatRoom.appendChild(msg);
             }
         });
-        var messageBody = document.querySelector('#messageBody');
-        messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+        chatRoom.scrollTop = chatRoom.scrollHeight - chatRoom.clientHeight;
     });
 
      //-----------------------------------------------------------------//
@@ -306,19 +310,30 @@ hangUpBtn.addEventListener('click', async () => {
     hangUpBtn.disabled = true;
 });
 
-// window.addEventListener('beforeOnLoad', (e) => {
-//     e.preventDefault();
+sendMsgBtn.addEventListener('click', async () => {
+    let text = msgInput?.value?.trim();
+    if (text) {
+        const calls = collection(firestore, 'calls');
+        const callDoc = doc(calls, callInput.value);
+        const messages = collection(callDoc, 'messages');
+        const msgDoc = doc(messages);
+        const data = {
+            user: localUserId,
+            text,
+            timestamp: (new Date()).toJSON(),
+        };
 
-//     if (confirm('You sure you want to leave?')) {
-//         alert('good bye');
-//     }
-//     // else {
+        await setDoc(msgDoc, data);
+    }
+    msgInput.value = '';
+});
 
-//     // }
-
-//     // e.returnValue = 'Do you want to leave?';
-//     return '';
-// });
+msgInput.addEventListener("keyup", function(event) {
+    if (event.keyCode === 13) { // press enter
+        event.preventDefault();
+        sendMsgBtn.click();
+    }
+});
 
 // TODO: 斷線問題處理，如果回來時使用者底下有answer或offer的話會導致不預期的狀況發生
 // TODO: - 主因在於斷線時，使用者資料不會被刪除，造成房間有新成員加入時，會照樣傳送offer給不再通話(斷線)的使用者
