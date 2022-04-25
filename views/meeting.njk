@@ -4,16 +4,42 @@
     <script src="/js/meeting.js" type="module" defer></script>
 {% endblock script %}
 
+
 {% block content %}
     <div class="cam" hidden>
         <video class="cam__video" autoplay control=true></video>
         <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
         <span class="cam__name"></span>
     </div>
+    <li class="msg" hidden>
+        <p>
+            <span class="msg__user"></span>
+            <span class="msg__timestamp"></span>
+        </p>
+        <p class="msg__text"></p>
+    </li>
+
     <button id="webcam-btn" disabled>open webcam</button>
     <button id="screen-share-btn" disabled>screen share</button>
     <button id="call-btn" disabled>call</button>
     <button id="hang-up-btn" disabled>hang up</button>
     <input id="call-input" type="text">
+
+    <div id="chat" hidden>
+        <ul id="chat__room"></ul>
+
+        <div id="chat__bar">
+            <input
+                id="msg-input"
+                name="msg-input"
+                type="text"
+                placeholder="Enter Message"
+                autocomplete="off"
+                required
+            />
+            <button id="send-msg-btn">send</button>
+        </div>
+    </div>
+
     <div id="video-tray"></div>
 {% endblock content %}

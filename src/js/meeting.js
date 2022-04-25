@@ -14,12 +14,17 @@ const servers = {
 
 // HTML elements
 const camPrefab = document.querySelector('.cam');
+const msgPrefab  = document.querySelector('.msg');
 const webcamBtn = document.querySelector('#webcam-btn');
 const callBtn   = document.querySelector('#call-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn = document.querySelector('#hang-up-btn');
 const callInput = document.querySelector('#call-input');
 const videoTray = document.querySelector('#video-tray');
+const chat       = document.querySelector('#chat');
+const chatRoom   = document.querySelector('#chat__room')
+const msgInput   = document.querySelector('#msg-input')
+const sendMsgBtn = document.querySelector('#send-msg-btn')
 
 // Default state
 webcamBtn.disabled = true;
@@ -30,6 +35,8 @@ callInput.disabled = true;
 // Delete prefab
 camPrefab.remove()
 camPrefab.removeAttribute('hidden');
+msgPrefab.remove()
+msgPrefab.removeAttribute('hidden');
 
 // Global variable
 const peerDict = {};
@@ -50,6 +57,7 @@ videoTray.appendChild(localScreenShare.cam);
 const calls = collection(firestore, 'calls');
 let callDoc;
 let participants;
+let messages;
 let localUserDoc;
 let localClients;
 
@@ -80,6 +88,7 @@ callBtn.addEventListener('click', async () => {
         callInput.value = callDoc.id;
     }
     participants = collection(callDoc, 'participants');
+    messages = collection(callDoc, 'messages');
     localUserDoc = doc(participants, localUserId);
     localClients = collection(localUserDoc, 'clients')
 
@@ -100,6 +109,26 @@ callBtn.addEventListener('click', async () => {
         setupCandidateListener(remoteDoc.id);
     });
 
+    onSnapshot(messages, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+                const { user, text, timestamp } = change.doc.data();
+                const timeString = new Date(timestamp).toLocaleString();
+
+                const msg = msgPrefab.cloneNode(true);
+                const msgUser = msg.querySelector('.msg__user');
+                const msgTime = msg.querySelector('.msg__timestamp');
+                const msgText = msg.querySelector('.msg__text');
+                msgUser.innerHTML = user;
+                msgTime.innerHTML = timeString;
+                msgText.innerHTML = text;
+                chatRoom.appendChild(msg);
+            }
+        });
+        chatRoom.scrollTop = chatRoom.scrollHeight - chatRoom.clientHeight;
+    });
+
+    chat.hidden = false;
     callBtn.disabled = true;
     hangUpBtn.disabled = false;
 });
@@ -116,6 +145,31 @@ hangUpBtn.addEventListener('click', async () => {
 screenShareBtn.addEventListener('click', async () => {
     setupScreenShare();
 })
+
+sendMsgBtn.addEventListener('click', async () => {
+    let text = msgInput?.value?.trim();
+    if (text) {
+        const calls = collection(firestore, 'calls');
+        const callDoc = doc(calls, callInput.value);
+        const messages = collection(callDoc, 'messages');
+        const msgDoc = doc(messages);
+        const data = {
+            user: localUserId,
+            text,
+            timestamp: (new Date()).toJSON(),
+        };
+
+        await setDoc(msgDoc, data);
+    }
+    msgInput.value = '';
+});
+
+msgInput.addEventListener("keyup", function(event) {
+    if (event.keyCode === 13) { // press enter
+        event.preventDefault();
+        sendMsgBtn.click();
+    }
+});
 
 async function offerToUser(remoteId) {
     console.log('offer to user');

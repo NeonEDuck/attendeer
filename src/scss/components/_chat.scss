@@ -1,0 +1,33 @@
+#chat {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid black;
+    height: 20em;
+    width: 40em;
+    text-align: center;
+    padding: 0.5em;
+
+    &__room {
+        flex-grow: 1;
+        overflow-x: scroll;
+        .msg:last-child {
+            margin-bottom: auto;
+        }
+    }
+
+    &__bar {
+        display: flex;
+        flex-direction: row;
+        height: 2em;
+
+        input {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        #send-msg-btn {
+            height: 100%;
+            width: 5em;
+        }
+    }
+}
