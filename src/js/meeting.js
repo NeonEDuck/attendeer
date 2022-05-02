@@ -33,9 +33,7 @@ hangUpBtn.disabled = true;
 
 // Delete prefab
 camPrefab.remove()
-camPrefab.removeAttribute('hidden');
 msgPrefab.remove()
-msgPrefab.removeAttribute('hidden');
 
 // Global variable
 const userDict = {};

@@ -11,6 +11,10 @@
     {% endblock script %}
 </head>
 <body>
+    <div class="prefab" hidden>
+        {% block prefab %}
+        {% endblock prefab %}
+    </div>
     {% block navbar %}
         {% include './navbar.njk' %}
     {% endblock navbar %}

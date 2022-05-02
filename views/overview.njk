@@ -4,50 +4,66 @@
     <script src="/js/overview.js" type="module" defer></script>
 {% endblock script %}
 
+{% block prefab %}
+    <div class="class-card">
+        <img class="class-card__background" src="/imgs/dummy_profile.png">
+        <p class="class-card__name"></p>
+        <p class="class-card__id"></p>
+        <button class="class-card__setting">setting</button>
+    </div>
+    <table>
+        <tr class="attendee-row" data-id="">
+            <td class="attendee-row__name"></td>
+            <td class="attendee-row__email"></td>
+        </tr>
+    </table>
+{% endblock prefab %}
+
 {% block content %}
     <button id="add-class-btn">Add class</button>
 
     <div class="class-list">
-        <div class="class-card">
-            <img class="class-card__background" src="/imgs/dummy_profile.png">
-            <p class="class-card__name"></p>
-            <p class="class-card__id"></p>
-            <button class="class-card__setting">setting</button>
-        </div>
     </div>
 
-    <dialog id="add-class-modal">
-        <h1>Add a class</h1>
-        {{ settingForm('submit-add-class', 'Add class') }}
-    </dialog>
+    <dialog id="class-modal">
+        <h1 id="class-modal__title"></h1>
 
-    <dialog id="setting-modal">
-        <h1>Setting</h1>
+        <button id="close-modal-btn">X</button>
+            <form id="close-modal__form">
+                <input id="class-id" name="class-id" type="text" hidden>
 
-        {{ settingForm('submit-setting', 'Confirm') }}
+                <fieldset>
+                    <legend>Info</legend>
+                    <label for="class-name">Class name:</label>
+                    <input id="class-name" name="class-name" type="text" autocomplete="off" required>
+                </fieldset>
+                <fieldset>
+                    <legend>Alert</legend>
+                    <label for="alert-interval">Alert interval:</label>
+                    <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                    <label for="alert-interval">minite(s)</label>
+                    <br/>
+                    <label for="alert-time">Alert time:</label>
+                    <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
+                    <label for="alert-time">minite(s)</label>
+                </fieldset>
+                <fieldset>
+                    <legend>Attendees</legend>
+
+                    <label for="attendee-input">Email:</label>
+                    <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
+                    <button type="button" id="add-attendee-btn">Add User</button>
+                    <table id="attendee-table">
+                        <thead>
+                            <th>email</th>
+                            <th>name</th>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </fieldset>
+                <input type="submit" id="submit-form" hidden disabled/>
+            </form>
+            <button type="button" id="submit-class">Add Class</button>
+            <button type="button" id="submit-setting">Confirm</button>
     </dialog>
 {% endblock content %}
-
-
-{% macro settingForm(btn_id, btn_name) %}
-    <button class="close-modal-btn">X</button>
-    <form id="setting-form">
-        <input id="classId" name="classId" type="text" hidden>
-        <fieldset>
-            <legend>Info</legend>
-            <label for="className">Class name:</label>
-            <input id="className" name="className" type="text" autocomplete="off">
-        </fieldset>
-        <fieldset>
-            <legend>Alert</legend>
-            <label for="alertInterval">Alert interval:</label>
-            <input id="alertInterval" name="alertInterval" type="number" min="5" max="50">
-            <label for="alertInterval">minite(s)</label>
-            <br/>
-            <label for="alertTime">Alert time:</label>
-            <input id="alertTime" name="alertTime" type="number" min="1" max="3">
-            <label for="alertTime">minite(s)</label>
-        </fieldset>
-        <button type='submit' id="{{ btn_id }}">{{ btn_name }}</button>
-    </form>
-{% endmacro %}

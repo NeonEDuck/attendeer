@@ -7,20 +7,22 @@
 {% block navbar %}
 {% endblock navbar %}
 
-{% block content %}
-    <div class="cam" hidden>
+{% block prefab %}
+    <div class="cam">
         <video class="cam__video" autoplay control=true></video>
         <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
         <span class="cam__name"></span>
     </div>
-    <li class="msg" hidden>
+    <li class="msg">
         <p>
             <span class="msg__user"></span>
             <span class="msg__timestamp"></span>
         </p>
         <p class="msg__text"></p>
     </li>
+{% endblock prefab %}
 
+{% block content %}
     <div id="video-tray"></div>
 
     <div id="chat" hidden>

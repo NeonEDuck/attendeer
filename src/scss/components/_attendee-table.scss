@@ -1,0 +1,13 @@
+#attendee-table {
+    width: 100%;
+    tbody {
+        height: 0.5em; // min-height
+    }
+    tr {
+        td, th {
+            text-align: left;
+            min-width: 40%;
+            padding: 0.1em 0.25em;
+        }
+    }
+}
