@@ -11,7 +11,9 @@
     {% endblock script %}
 </head>
 <body>
-    {% include './navbar.njk' %}
+    {% block navbar %}
+        {% include './navbar.njk' %}
+    {% endblock navbar %}
     {% block content %}
         Hello World!
     {% endblock %}

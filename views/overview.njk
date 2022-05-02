@@ -1,0 +1,53 @@
+{% extends 'util/base.njk' %}
+
+{% block script %}
+    <script src="/js/overview.js" type="module" defer></script>
+{% endblock script %}
+
+{% block content %}
+    <button id="add-class-btn">Add class</button>
+
+    <div class="class-list">
+        <div class="class-card">
+            <img class="class-card__background" src="/imgs/dummy_profile.png">
+            <p class="class-card__name"></p>
+            <p class="class-card__id"></p>
+            <button class="class-card__setting">setting</button>
+        </div>
+    </div>
+
+    <dialog id="add-class-modal">
+        <h1>Add a class</h1>
+        {{ settingForm('submit-add-class', 'Add class') }}
+    </dialog>
+
+    <dialog id="setting-modal">
+        <h1>Setting</h1>
+
+        {{ settingForm('submit-setting', 'Confirm') }}
+    </dialog>
+{% endblock content %}
+
+
+{% macro settingForm(btn_id, btn_name) %}
+    <button class="close-modal-btn">X</button>
+    <form id="setting-form">
+        <input id="classId" name="classId" type="text" hidden>
+        <fieldset>
+            <legend>Info</legend>
+            <label for="className">Class name:</label>
+            <input id="className" name="className" type="text" autocomplete="off">
+        </fieldset>
+        <fieldset>
+            <legend>Alert</legend>
+            <label for="alertInterval">Alert interval:</label>
+            <input id="alertInterval" name="alertInterval" type="number" min="5" max="50">
+            <label for="alertInterval">minite(s)</label>
+            <br/>
+            <label for="alertTime">Alert time:</label>
+            <input id="alertTime" name="alertTime" type="number" min="1" max="3">
+            <label for="alertTime">minite(s)</label>
+        </fieldset>
+        <button type='submit' id="{{ btn_id }}">{{ btn_name }}</button>
+    </form>
+{% endmacro %}

@@ -1,7 +1,7 @@
 import { firestore, auth } from './firebase-config.js';
-import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import './base.js'
+import { delay } from './util.js';
 
 const servers = {
     iceServers: [
@@ -12,25 +12,24 @@ const servers = {
     iceCandidatePoolSize: 10,
 };
 
+
 // HTML elements
 const camPrefab = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
 const webcamBtn = document.querySelector('#webcam-btn');
-const callBtn   = document.querySelector('#call-btn');
+const enterBtn   = document.querySelector('#enter-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn = document.querySelector('#hang-up-btn');
-const callInput = document.querySelector('#call-input');
 const videoTray = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
 const msgInput   = document.querySelector('#msg-input')
 const sendMsgBtn = document.querySelector('#send-msg-btn')
+const callId = document.querySelector('#call-id').innerHTML.trim();
 
 // Default state
 webcamBtn.disabled = true;
-callBtn.disabled = true;
 hangUpBtn.disabled = true;
-callInput.disabled = true;
 
 // Delete prefab
 camPrefab.remove()
@@ -39,6 +38,7 @@ msgPrefab.remove()
 msgPrefab.removeAttribute('hidden');
 
 // Global variable
+const userDict = {};
 const peerDict = {};
 let localUserId = null;
 let localStreams = {
@@ -55,14 +55,15 @@ videoTray.appendChild(localScreenShare.cam);
 
 // Firestore
 const calls = collection(firestore, 'calls');
-let callDoc;
-let participants;
-let messages;
+const users = collection(firestore, 'users');
+const callDoc = doc(calls, callId);
+const participants = collection(callDoc, 'participants');
+let messages = collection(callDoc, 'messages');
 let localUserDoc;
 let localClients;
 
 // Check login
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         localUserId = user.uid;
         localCam.name.innerHTML = user.displayName;
@@ -71,8 +72,10 @@ onAuthStateChanged(auth, (user) => {
         localScreenShare.profile.hidden = true;
         webcamBtn.disabled = false;
         screenShareBtn.disabled = false;
-        callBtn.disabled = false;
-        callInput.disabled = false;
+        const callDocSnapshot = await getDoc(callDoc);
+        enterBtn.disabled = !callDocSnapshot.exists();
+        localUserDoc = doc(participants, localUserId);
+        localClients = collection(localUserDoc, 'clients');
     }
 });
 
@@ -80,20 +83,7 @@ webcamBtn.addEventListener('click', async () => {
     setupLocalStream();
 });
 
-callBtn.addEventListener('click', async () => {
-    if (callInput.value) {
-        callDoc = doc(calls, callInput.value);
-    }
-    else {
-        callDoc = doc(calls);
-        await setDoc(callDoc, {})
-        callInput.value = callDoc.id;
-    }
-    participants = collection(callDoc, 'participants');
-    messages = collection(callDoc, 'messages');
-    localUserDoc = doc(participants, localUserId);
-    localClients = collection(localUserDoc, 'clients')
-
+enterBtn.addEventListener('click', async () => {
     console.log('create user doc');
     await setDoc(localUserDoc, {});
 
@@ -111,28 +101,35 @@ callBtn.addEventListener('click', async () => {
         setupCandidateListener(remoteDoc.id);
     });
 
-    onSnapshot(messages, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-            if (change.type === 'added') {
-                const { user, text, timestamp } = change.doc.data();
-                const timeString = new Date(timestamp).toLocaleString();
+    let chatInit = true;
 
-                const msg = msgPrefab.cloneNode(true);
-                const msgUser = msg.querySelector('.msg__user');
-                const msgTime = msg.querySelector('.msg__timestamp');
-                const msgText = msg.querySelector('.msg__text');
-                msgUser.innerHTML = user;
-                msgTime.innerHTML = timeString;
-                msgText.innerHTML = text;
-                chatRoom.appendChild(msg);
-            }
-        });
-        chatRoom.scrollTop = chatRoom.scrollHeight - chatRoom.clientHeight;
+    onSnapshot(messages, async (snapshot) => {
+        if (chatInit) {
+            chatInit = false;
+
+            const q = query(messages, orderBy('timestamp', 'asc'));
+            const messageDocs = await getDocs(q);
+
+            messageDocs.forEach(async (msgDoc) => {
+                await addMessageToChat(msgDoc.data());
+            })
+        }
+        else {
+            snapshot.docChanges().forEach(async (change) => {
+                if (change.type === 'added') {
+                    await addMessageToChat(change.doc.data());
+                }
+            });
+        }
+
+        await delay(100);
+
+        chatRoom.scrollTop = chatRoom.scrollHeight;
     });
 
     chat.hidden = false;
-    callBtn.disabled = true;
     hangUpBtn.disabled = false;
+    enterBtn.disabled = true;
 });
 
 hangUpBtn.addEventListener('click', async () => {
@@ -141,7 +138,7 @@ hangUpBtn.addEventListener('click', async () => {
     }
 
     hangUpBtn.disabled = true;
-    callBtn.disabled = false;
+    enterBtn.disabled = false;
 });
 
 screenShareBtn.addEventListener('click', async () => {
@@ -151,9 +148,6 @@ screenShareBtn.addEventListener('click', async () => {
 sendMsgBtn.addEventListener('click', async () => {
     let text = msgInput?.value?.trim();
     if (text) {
-        const calls = collection(firestore, 'calls');
-        const callDoc = doc(calls, callInput.value);
-        const messages = collection(callDoc, 'messages');
         const msgDoc = doc(messages);
         const data = {
             user: localUserId,
@@ -259,7 +253,7 @@ function setupUserListener(remoteId) {
     console.log('setup user listener for: ' + remoteId);
     const remoteDoc = doc(localClients, remoteId);
 
-    peerDict[remoteId].usersListener = onSnapshot(remoteDoc, (doc) => {
+    peerDict[remoteId].usersListener = onSnapshot(remoteDoc, async (doc) => {
         listenerLogic(doc);
     });
 }
@@ -283,7 +277,7 @@ function setupCandidateListener(remoteId) {
     });
 }
 
-function listenerLogic(doc) {
+async function listenerLogic(doc) {
     let { desc, streams } = doc.data() || {};
     if ( desc ) {
         desc = JSON.parse(desc);
@@ -308,7 +302,7 @@ function listenerLogic(doc) {
             console.error('unknown sdp type');
             return;
         }
-        createRemoteCam(doc.id, 'webcam');
+        await createRemoteCam(doc.id, 'webcam');
     }
 }
 
@@ -403,22 +397,18 @@ function createPC(userId) {
     return [pc, senders];
 }
 
-function createRemoteCam(userId, streamType) {
+async function createRemoteCam(userId, streamType) {
     console.log(`add remote cam for ${userId}`);
-    let remoteCam = videoTray.querySelector(`#user-${userId}-${streamType}`);
+    const remoteCam = videoTray.querySelector(`#user-${userId}-${streamType}`);
 
     if (!remoteCam) {
-        const users = collection(firestore, 'users');
-        const remoteUserDoc = doc(users, userId);
 
-        let { cam, name, profile } = createCam();
+        const { cam, name, profile } = createCam();
         cam.id = `user-${userId}-${streamType}`;
         cam.setAttribute('data-user', userId);
-        getDoc(remoteUserDoc)
-        .then((snapshot) => {
-            name.innerHTML = snapshot.data().name;
-            profile.src = snapshot.data().photo;
-        });
+        const remoteUserData = await getUserData(userId);
+        name.innerHTML = remoteUserData.name;
+        profile.src = remoteUserData.photo;
 
         remoteCam = cam;
         videoTray.appendChild(remoteCam);
@@ -440,12 +430,12 @@ function removeRemoteCam(userId, streamType) {
     }
 }
 
-function addStreamToRemoteVideo(stream, userId) {
+async function addStreamToRemoteVideo(stream, userId) {
     console.log('addStreamToRemoteVideo');
     let [ track ] = stream.getTracks();
     let streamType = Object.keys(peerDict[userId].streams).find(key => peerDict[userId].streams[key] === stream.id)
                     || Object.keys(peerDict[userId].oldStreams).find(key => peerDict[userId].oldStreams[key] === stream.id);
-    let remoteCam = createRemoteCam(userId, streamType);
+    let remoteCam = await createRemoteCam(userId, streamType);
     let remoteVideo = remoteCam.querySelector('.cam__video');
     let remoteProfile = remoteCam.querySelector('.cam__profile');
     remoteProfile.hidden = true;
@@ -454,11 +444,11 @@ function addStreamToRemoteVideo(stream, userId) {
     remoteVideo.srcObject = remoteStream;
 }
 
-function removeStreamFromRemoteVideo(stream, userId) {
+async function removeStreamFromRemoteVideo(stream, userId) {
     console.log('removeStreamFromRemoteVideo');
     let streamType = Object.keys(peerDict[userId].streams).find(key => peerDict[userId].streams[key] === stream.id)
                     || Object.keys(peerDict[userId].oldStreams).find(key => peerDict[userId].oldStreams[key] === stream.id);
-    let remoteCam = createRemoteCam(userId, streamType);
+    let remoteCam = await createRemoteCam(userId, streamType);
     let remoteVideo = remoteCam.querySelector('.cam__video');
     remoteVideo.srcObject = null;
     if (streamType === 'webcam') {
@@ -544,4 +534,30 @@ function createCam() {
     let name = cam.querySelector('.cam__name');
     let profile = cam.querySelector('.cam__profile');
     return { cam, video, name, profile };
+}
+
+async function getUserData(userId) {
+    if (!userDict[userId]) {
+        const userDoc = doc(users, userId);
+
+        const userSnapshot = await getDoc(userDoc)
+        userDict[userId] = userSnapshot.data();
+    }
+
+    return userDict[userId];
+}
+
+async function addMessageToChat(msgData) {
+    const { user, text, timestamp } = msgData;
+    const timeString = new Date(timestamp).toLocaleString();
+    const { name } = await getUserData(user) || { name: "???" };
+
+    const msg = msgPrefab.cloneNode(true);
+    const msgUser = msg.querySelector('.msg__user');
+    const msgTime = msg.querySelector('.msg__timestamp');
+    const msgText = msg.querySelector('.msg__text');
+    msgUser.innerHTML = name;
+    msgTime.innerHTML = timeString;
+    msgText.innerHTML = text;
+    chatRoom.appendChild(msg);
 }

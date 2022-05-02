@@ -4,6 +4,8 @@
     <script src="/js/meeting.js" type="module" defer></script>
 {% endblock script %}
 
+{% block navbar %}
+{% endblock navbar %}
 
 {% block content %}
     <div class="cam" hidden>
@@ -19,11 +21,7 @@
         <p class="msg__text"></p>
     </li>
 
-    <button id="webcam-btn" disabled>open webcam</button>
-    <button id="screen-share-btn" disabled>screen share</button>
-    <button id="call-btn" disabled>call</button>
-    <button id="hang-up-btn" disabled>hang up</button>
-    <input id="call-input" type="text">
+    <div id="video-tray"></div>
 
     <div id="chat" hidden>
         <ul id="chat__room"></ul>
@@ -41,5 +39,11 @@
         </div>
     </div>
 
-    <div id="video-tray"></div>
+
+    <span id="call-id">{{ callId }}</span>
+    <button id="webcam-btn" disabled>open webcam</button>
+    <button id="screen-share-btn" disabled>screen share</button>
+    <button id="enter-btn" disabled>enter</button>
+    <button id="hang-up-btn" disabled>hang up</button>
+    <input id="call-input" type="text">
 {% endblock content %}

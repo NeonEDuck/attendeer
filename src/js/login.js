@@ -1,10 +1,14 @@
 import { firestore, auth } from './firebase-config.js';
 import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { delay } from './util.js';
+
+let _user = null;
 
 // Check login
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+        _user = user
         const users = collection(firestore, 'users');
         const userDoc = doc(users, user.uid);
         const userSnapshot = await getDoc(userDoc);
@@ -28,3 +32,12 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
 });
+
+export function getUser() {
+    return new Promise(async (resolve) => {
+        while (_user === null) {
+            await delay(1);
+        }
+        resolve(_user);
+    });
+}
