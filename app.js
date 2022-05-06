@@ -73,9 +73,11 @@ app.all('*', async (req, res, next) => {
 // router
 import index from './routes/index.js';
 import meeting from './routes/meeting.js';
+import overview from './routes/overview.js';
 
 app.use('/', index);
 app.use('/meeting', meeting);
+app.use('/overview', overview);
 
 // listen
 import http from 'http';

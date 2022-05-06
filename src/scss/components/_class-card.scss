@@ -1,0 +1,16 @@
+.class-card {
+    border: 1px solid gray;
+    aspect-ratio: 5 / 6;
+    // flex-basis: 10em;
+    // flex-grow: 1;
+    cursor: pointer;
+
+    &__background {
+        width: 100%;
+        aspect-ratio: 2 / 1;
+    }
+
+    &__name {
+
+    }
+}

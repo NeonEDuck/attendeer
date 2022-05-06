@@ -1,6 +1,9 @@
 .cam {
     position: relative;
     display: flex;
+    flex-basis: 40em;
+    flex-grow: 1;
+    max-width: 50em;
     justify-content: center;
     align-items: center;
     background-color: #222;
