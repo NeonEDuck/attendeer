@@ -1,4 +1,4 @@
-import { onSnapshot, collection, doc, getDoc, setDoc, updateDoc, getDocs, query, where, limit } from "firebase/firestore";
+import { onSnapshot, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { firestore } from "./firebase-config.js";
 import { getUser } from "./login.js";
 import { generateCallId } from './util.js';
@@ -128,7 +128,6 @@ document.onreadystatechange = async () => {
                         //! 警醒加進來後要更新
 
                         deleteDoc(callDoc);
-                        classCard.remove();
                         confirmModel.close();
                     });
                     cancelBtn.addEventListener('click', () => {
@@ -150,6 +149,11 @@ document.onreadystatechange = async () => {
                 classCard.dataset.alertInterval = data.alert?.interval;
                 classCard.dataset.alertTime = data.alert?.time;
                 classCard.dataset.attendees = data.attendees;
+            }
+            else if (change.type === 'removed') {
+                const data = change.doc.data();
+                const classCard = document.querySelector(`.class-card[data-id=${change.doc.id}]`);
+                classCard.remove();
             }
         });
     });
