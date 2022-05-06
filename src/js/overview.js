@@ -11,6 +11,12 @@ const attendeeRowPrefab  = document.querySelector('.attendee-row');
 const classModel         = document.querySelector('#class-modal');
 const classModelForm     = classModel.querySelector('#close-modal__form');
 const classModelTitle    = classModel.querySelector('#class-modal__title');
+
+const confirmModel       = document.querySelector('#confirm-modal');
+const confirmModelTitle  = document.querySelector('#confirm-modal__title');
+const cancelBtn          = document.querySelector('#modal-cancel-btn');
+const confirmBtn         = document.querySelector('#modal-confirm-btn');
+
 const classId            = classModel.querySelector("#class-id");
 const className          = classModel.querySelector("#class-name");
 const alertInterval      = classModel.querySelector("#alert-interval");
@@ -38,57 +44,115 @@ document.onreadystatechange = async () => {
     const user = await getUser();
 
     const q = query(calls, where('attendees', 'array-contains', user.uid));
-    const callDocs = await getDocs(q);
-    callDocs.forEach((callDoc) => {
-        const data = callDoc.data();
-        const classCard        = classCardPrefab.cloneNode(true);
-        const classCardName    = classCard.querySelector('.class-card__name');
-        const classCardId      = classCard.querySelector('.class-card__id');
-        const classCardSetting = classCard.querySelector('.class-card__setting');
-        classCardName.innerHTML = data.name || 'Unnamed';
-        classCardId.innerHTML = callDoc.id;
+    onSnapshot(q, async (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+            if (change.type === 'added') {
+                const data = change.doc.data();
+                const classCard        = classCardPrefab.cloneNode(true);
+                const classCardName    = classCard.querySelector('.class-card__name');
+                const classCardId      = classCard.querySelector('.class-card__id');
+                const classCardSetting = classCard.querySelector('.class-card__setting');
+                const classCardRemove = classCard.querySelector('.class-card__remove');
+                classCardName.innerHTML = data.name || 'Unnamed';
+                classCardId.innerHTML = change.doc.id;
 
-        classCard.dataset.id = callDoc.id;
-        classCard.dataset.name = classCardName.innerHTML;
-        classCard.dataset.alertInterval = data.alert?.interval;
-        classCard.dataset.alertTime = data.alert?.time;
-        classCard.dataset.attendees = data.attendees;
+                classCard.dataset.id = change.doc.id;
+                classCard.dataset.name = classCardName.innerHTML;
+                classCard.dataset.alertInterval = data.alert?.interval;
+                classCard.dataset.alertTime = data.alert?.time;
+                classCard.dataset.attendees = data.attendees;
 
-        classCard.addEventListener('click', () => {
-            window.location.href = `/meeting/${callDoc.id}`;
+                classCard.addEventListener('click', () => {
+                    window.location.href = `/meeting/${change.id}`;
+                });
+
+                classCardSetting.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    classId.value       = classCard.dataset.id;
+                    className.value     = classCard.dataset.name;
+                    alertInterval.value = classCard.dataset.alertInterval;
+                    alertTime.value     = classCard.dataset.alertTime;
+
+                    attendeeTableTBody.innerHTML = '';
+                    classCard.dataset.attendees.split(',').forEach(async (userId) => {
+                        const user = doc(users, userId);
+                        const data = (await getDoc(user)).data();
+                        attendeeDict[data.email] = user.id;
+
+                        const row = attendeeRowPrefab.cloneNode(true);
+                        const rowName  = row.querySelector('.attendee-row__name');
+                        const rowEmail = row.querySelector('.attendee-row__email');
+                        row.dataset.id = user.id;
+                        rowName.innerHTML  = data.name;
+                        rowEmail.innerHTML = data.email;
+
+                        attendeeTableTBody.append(row);
+                    });
+
+                    classModelTitle.innerHTML = 'Setting';
+                    submitClassBtn.hidden = true;
+                    submitSettingBtn.hidden = false;
+                    classModel.showModal();
+                });
+
+                classCardRemove.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    confirmModelTitle.innerHTML = `Are you sure you want to remove ${classCard.dataset.name}?`;
+                    const confirmBtn = confirmModel.querySelector('#modal-confirm-btn');
+                    const cancelBtn  = confirmModel.querySelector('#modal-cancel-btn');
+                    confirmBtn.addEventListener('click', async () => {
+                        const callDoc = doc(calls, classCard.dataset.id);
+
+                        const participants = collection(callDoc, 'participants');
+                        const userDocs = await getDocs(participants);
+                        userDocs.forEach(async (userDoc) => {
+                            const clients = collection(userDoc.ref, 'clients');
+                            const clientDocs = await getDocs(clients);
+                            clientDocs.forEach(async (clientDoc) => {
+                                const candidates = collection(clientDoc.ref, 'candidates');
+                                const candidateDocs = await getDocs(candidates);
+                                candidateDocs.forEach(async (c) => {
+                                    deleteDoc(c.ref);
+                                });
+                                deleteDoc(clientDoc.ref);
+                            });
+                            deleteDoc(userDoc.ref);
+                        });
+
+                        const messages = collection(callDoc, 'messages');
+                        const messageDocs = await getDocs(messages);
+                        messageDocs.forEach((msg) => {
+                            deleteDoc(msg.ref);
+                        });
+
+                        //! 警醒加進來後要更新
+
+                        deleteDoc(callDoc);
+                        classCard.remove();
+                        confirmModel.close();
+                    });
+                    cancelBtn.addEventListener('click', () => {
+                        confirmModel.close()
+                    });
+                    confirmModel.showModal();
+                });
+
+                classList.append(classCard);
+            }
+            else if (change.type === 'modified') {
+                const data = change.doc.data();
+                const classCard = document.querySelector(`.class-card[data-id=${change.doc.id}]`);
+                const classCardName    = classCard.querySelector('.class-card__name');
+                const classCardId      = classCard.querySelector('.class-card__id');
+                classCardName.innerHTML = data.name || 'Unnamed';
+
+                classCard.dataset.name = classCardName.innerHTML;
+                classCard.dataset.alertInterval = data.alert?.interval;
+                classCard.dataset.alertTime = data.alert?.time;
+                classCard.dataset.attendees = data.attendees;
+            }
         });
-
-        classCardSetting.addEventListener('click', (e) => {
-            e.stopPropagation();
-            classId.value       = classCard.dataset.id;
-            className.value     = classCard.dataset.name;
-            alertInterval.value = classCard.dataset.alertInterval;
-            alertTime.value     = classCard.dataset.alertTime;
-
-            attendeeTableTBody.innerHTML = '';
-            classCard.dataset.attendees.split(',').forEach(async (userId) => {
-                const user = doc(users, userId);
-                const data = (await getDoc(user)).data();
-                attendeeDict[data.email] = user.id;
-
-                const row = attendeeRowPrefab.cloneNode(true);
-                const rowName  = row.querySelector('.attendee-row__name');
-                const rowEmail = row.querySelector('.attendee-row__email');
-                row.dataset.id = user.id;
-                rowName.innerHTML  = data.name;
-                rowEmail.innerHTML = data.email;
-
-                attendeeTableTBody.append(row);
-            });
-
-            classModelTitle.innerHTML = 'Setting';
-            submitClassBtn.hidden = true;
-            submitSettingBtn.hidden = false;
-            classModel.showModal();
-        });
-
-        classList.append(classCard);
-    })
+    });
 };
 
 addClassBtn.addEventListener('click', async () => {
@@ -162,7 +226,6 @@ classModelForm.addEventListener('submit', async (e) => {
     }
 
     classModel.close();
-    window.location.reload();
 });
 
 addAttendeeBtn.addEventListener('click', async () => {

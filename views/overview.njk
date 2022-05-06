@@ -10,7 +10,9 @@
         <p class="class-card__name"></p>
         <p class="class-card__id"></p>
         <button class="class-card__setting">setting</button>
+        <button class="class-card__remove">remove</button>
     </div>
+
     <table>
         <tr class="attendee-row" data-id="">
             <td class="attendee-row__name"></td>
@@ -29,41 +31,50 @@
         <h1 id="class-modal__title"></h1>
 
         <button id="close-modal-btn">X</button>
-            <form id="close-modal__form">
-                <input id="class-id" name="class-id" type="text" hidden>
+        <form id="close-modal__form">
+            <input id="class-id" name="class-id" type="text" hidden>
 
-                <fieldset>
-                    <legend>Info</legend>
-                    <label for="class-name">Class name:</label>
-                    <input id="class-name" name="class-name" type="text" autocomplete="off" required>
-                </fieldset>
-                <fieldset>
-                    <legend>Alert</legend>
-                    <label for="alert-interval">Alert interval:</label>
-                    <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
-                    <label for="alert-interval">minite(s)</label>
-                    <br/>
-                    <label for="alert-time">Alert time:</label>
-                    <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
-                    <label for="alert-time">minite(s)</label>
-                </fieldset>
-                <fieldset>
-                    <legend>Attendees</legend>
+            <fieldset>
+                <legend>Info</legend>
+                <label for="class-name">Class name:</label>
+                <input id="class-name" name="class-name" type="text" autocomplete="off" required>
+            </fieldset>
+            <fieldset>
+                <legend>Alert</legend>
+                <label for="alert-interval">Alert interval:</label>
+                <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                <label for="alert-interval">minite(s)</label>
+                <br/>
+                <label for="alert-time">Alert time:</label>
+                <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
+                <label for="alert-time">minite(s)</label>
+            </fieldset>
+            <fieldset>
+                <legend>Attendees</legend>
 
-                    <label for="attendee-input">Email:</label>
-                    <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
-                    <button type="button" id="add-attendee-btn">Add User</button>
-                    <table id="attendee-table">
-                        <thead>
-                            <th>email</th>
-                            <th>name</th>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </fieldset>
-                <input type="submit" id="submit-form" hidden disabled/>
-            </form>
-            <button type="button" id="submit-class">Add Class</button>
-            <button type="button" id="submit-setting">Confirm</button>
+                <label for="attendee-input">Email:</label>
+                <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
+                <button type="button" id="add-attendee-btn">Add User</button>
+                <table id="attendee-table">
+                    <thead>
+                        <th>email</th>
+                        <th>name</th>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </fieldset>
+            <input type="submit" id="submit-form" hidden disabled/>
+        </form>
+        <button type="button" id="submit-class">Add Class</button>
+        <button type="button" id="submit-setting">Confirm</button>
+    </dialog>
+
+    <dialog id="confirm-modal">
+        <h1 id="confirm-modal__title"></h1>
+
+        <div class="btn-group">
+            <button id="modal-cancel-btn">cancel</button>
+            <button id="modal-confirm-btn">confirm</button>
+        </div>
     </dialog>
 {% endblock content %}
