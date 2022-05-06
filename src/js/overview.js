@@ -37,8 +37,6 @@ let attendeeDict = {}
 document.onreadystatechange = async () => {
     const user = await getUser();
 
-    console.log(user);
-
     const q = query(calls, where('attendees', 'array-contains', user.uid));
     const callDocs = await getDocs(q);
     callDocs.forEach((callDoc) => {

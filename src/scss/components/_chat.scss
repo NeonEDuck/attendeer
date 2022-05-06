@@ -9,7 +9,8 @@
 
     &__room {
         flex-grow: 1;
-        overflow-x: scroll;
+        overflow-x: hidden;
+        overflow-y: scroll;
         .msg:last-child {
             margin-bottom: auto;
         }

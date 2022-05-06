@@ -1,6 +1,7 @@
 import { firestore, auth } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { getUser } from './login.js';
 import { delay } from './util.js';
 
 const servers = {
@@ -14,18 +15,21 @@ const servers = {
 
 
 // HTML elements
-const camPrefab = document.querySelector('.cam');
+const camPrefab  = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
-const webcamBtn = document.querySelector('#webcam-btn');
+const confirmPanel = document.querySelector('#confirm-panel');
+const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
+const webcamBtn  = document.querySelector('#webcam-btn');
 const enterBtn   = document.querySelector('#enter-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
-const hangUpBtn = document.querySelector('#hang-up-btn');
-const videoTray = document.querySelector('#video-tray');
+const hangUpBtn  = document.querySelector('#hang-up-btn');
+const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
+const toolbar    = document.querySelector('#toolbar');
 const msgInput   = document.querySelector('#msg-input')
 const sendMsgBtn = document.querySelector('#send-msg-btn')
-const callId = document.querySelector('#call-id').innerHTML.trim();
+const callId     = document.querySelector('#call-id').innerHTML.trim();
 
 // Default state
 webcamBtn.disabled = true;
@@ -45,11 +49,11 @@ let localStreams = {
 };
 let localCam = createCam();
 localCam.cam.id = `user-local-webcam`;
-videoTray.appendChild(localCam.cam);
+cpVideoTray.appendChild(localCam.cam);
 let localScreenShare = createCam();
 localScreenShare.cam.id = `user-local-screen-share`;
 localScreenShare.cam.hidden = true;
-videoTray.appendChild(localScreenShare.cam);
+cpVideoTray.appendChild(localScreenShare.cam);
 
 // Firestore
 const calls = collection(firestore, 'calls');
@@ -61,21 +65,36 @@ let localUserDoc;
 let localClients;
 
 // Check login
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        localUserId = user.uid;
-        localCam.name.innerHTML = user.displayName;
-        localCam.profile.src = user.photoURL;
-        localScreenShare.name.innerHTML = user.displayName;
-        localScreenShare.profile.hidden = true;
-        webcamBtn.disabled = false;
-        screenShareBtn.disabled = false;
-        const callDocSnapshot = await getDoc(callDoc);
-        enterBtn.disabled = !callDocSnapshot.exists();
-        localUserDoc = doc(participants, localUserId);
-        localClients = collection(localUserDoc, 'clients');
+document.onreadystatechange = async () => {
+    const user = await getUser();
+    let callDocSnapshot;
+
+    console.log('check login state');
+    if (!user) {
+        console.log('did not login');
+        return;
     }
-});
+
+    console.log('checking permission');
+    try {
+        callDocSnapshot = await getDoc(callDoc);
+    }
+    catch (err) {
+        console.log('no permission');
+        return;
+    }
+
+    localUserId = user.uid;
+    localCam.name.innerHTML = user.displayName;
+    localCam.profile.src = user.photoURL;
+    localScreenShare.name.innerHTML = user.displayName;
+    localScreenShare.profile.hidden = true;
+    webcamBtn.disabled = false;
+    screenShareBtn.disabled = false;
+    enterBtn.disabled = false;
+    localUserDoc = doc(participants, localUserId);
+    localClients = collection(localUserDoc, 'clients');
+}
 
 webcamBtn.addEventListener('click', async () => {
     setupLocalStream();
@@ -95,8 +114,8 @@ enterBtn.addEventListener('click', async () => {
 
         offerToUser(remoteDoc.id);
         console.log('userDocs offer setupUserListener');
-        setupUserListener(remoteDoc.id);
-        setupCandidateListener(remoteDoc.id);
+        await setupUserListener(remoteDoc.id);
+        await setupCandidateListener(remoteDoc.id);
     });
 
     let chatInit = true;
@@ -125,7 +144,11 @@ enterBtn.addEventListener('click', async () => {
         chatRoom.scrollTop = chatRoom.scrollHeight;
     });
 
-    chat.hidden = false;
+    confirmPanel.remove();
+    videoTray.appendChild(localCam.cam);
+    videoTray.appendChild(localScreenShare.cam);
+    toolbar.insertBefore(webcamBtn, hangUpBtn);
+    toolbar.insertBefore(screenShareBtn, hangUpBtn);
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
 });
@@ -227,44 +250,91 @@ async function answerToUser(remoteId) {
 
 function setupNewUserListener() {
     console.log('setup new user listener');
+    let firstRun = false;
     onSnapshot(collection(localUserDoc, 'clients'), (snapshot) => {
-        snapshot.docChanges().forEach( async (change) => {
-            if (change.type === 'added') {
-                console.log('saw new user: ', change.doc.id);
-                if (!peerDict[change.doc.id]) {
-                    addPeer(change.doc.id);
-                    console.log('setupNewUserListener setupUserListener');
-                    setupUserListener(change.doc.id);
-                    setupCandidateListener(change.doc.id);
+        if (!firstRun) {
+            firstRun = true;
+        }
+        else {
+            snapshot.docChanges().forEach( async (change) => {
+                if (change.type === 'added') {
+                    console.log('saw new user: ', change.doc.id);
+                    if (!peerDict[change.doc.id]) {
+                        addPeer(change.doc.id);
+                        console.log('setupNewUserListener setupUserListener');
+                        await setupUserListener(change.doc.id);
+                        await setupCandidateListener(change.doc.id);
+                    }
                 }
-            }
-            else if (change.type === 'removed') {
-                if (peerDict[change.doc.id]) {
-                    closePeer(change.doc.id);
+                else if (change.type === 'removed') {
+                    if (peerDict[change.doc.id]) {
+                        closePeer(change.doc.id);
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 }
 
-function setupUserListener(remoteId) {
+async function setupUserListener(remoteId) {
     console.log('setup user listener for: ' + remoteId);
     const remoteDoc = doc(localClients, remoteId);
 
+    let firstRun = false;
     peerDict[remoteId].usersListener = onSnapshot(remoteDoc, async (doc) => {
-        listenerLogic(doc);
+        if (!firstRun) {
+            firstRun = true;
+            return;
+        }
+        let { desc, streams } = doc.data() || {};
+        if ( desc ) {
+            desc = JSON.parse(desc);
+            streams = JSON.parse(streams);
+            if (desc.type === 'answer') {
+                console.log('saw answer');
+                peerDict[doc.id].pc.setRemoteDescription(desc);
+                peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
+                peerDict[doc.id].streams = streams;
+                console.log('set remote answer');
+            }
+            else if (desc.type === 'offer') {
+                console.log('saw offer');
+                addPeer(doc.id);
+                peerDict[doc.id].pc.setRemoteDescription(desc);
+                peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
+                peerDict[doc.id].streams = streams;
+                console.log('set remote offer');
+                answerToUser(doc.id);
+            }
+            else {
+                console.error('unknown sdp type');
+                return;
+            }
+            await createRemoteCam(doc.id, 'webcam');
+        }
     });
 }
 
-function setupCandidateListener(remoteId) {
+async function setupCandidateListener(remoteId) {
     console.log('setup candidate listener');
     const remoteDoc = doc(localClients, remoteId);
 
     if (peerDict[remoteId].candidatesListener) {
         peerDict[remoteId].candidatesListener();
     }
+    let candidates = collection(remoteDoc, 'candidates');
 
-    peerDict[remoteId].candidatesListener = onSnapshot(collection(remoteDoc, 'candidates'), (snapshot) => {
+    let candidateDocs = await getDocs(candidates);
+    candidateDocs.forEach( async (doc) => {
+        await deleteDoc(doc.ref);
+    });
+
+    let firstRun = false;
+    peerDict[remoteId].candidatesListener = onSnapshot(candidates, (snapshot) => {
+        if (!firstRun) {
+            firstRun = true;
+            return;
+        }
         snapshot.docChanges().forEach( async (change) => {
             if (change.type === 'added') {
                 console.log('saw new candidate');
@@ -273,35 +343,6 @@ function setupCandidateListener(remoteId) {
             }
         });
     });
-}
-
-async function listenerLogic(doc) {
-    let { desc, streams } = doc.data() || {};
-    if ( desc ) {
-        desc = JSON.parse(desc);
-        streams = JSON.parse(streams);
-        if (desc.type === 'answer') {
-            console.log('saw answer');
-            peerDict[doc.id].pc.setRemoteDescription(desc);
-            peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
-            peerDict[doc.id].streams = streams;
-            console.log('set remote answer');
-        }
-        else if (desc.type === 'offer') {
-            console.log('saw offer');
-            addPeer(doc.id);
-            peerDict[doc.id].pc.setRemoteDescription(desc);
-            peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
-            peerDict[doc.id].streams = streams;
-            console.log('set remote offer');
-            answerToUser(doc.id);
-        }
-        else {
-            console.error('unknown sdp type');
-            return;
-        }
-        await createRemoteCam(doc.id, 'webcam');
-    }
 }
 
 async function closePeer(id) {
@@ -341,9 +382,9 @@ async function deleteUserDoc(userDoc) {
 }
 
 function addPeer(id) {
+    console.log('add peer');
+    let [pc, senders] = createPC(id);
     if (!peerDict[id]) {
-        console.log('add peer');
-        let [pc, senders] = createPC(id);
         peerDict[id] = {
             pc,
             senders,
@@ -352,6 +393,10 @@ function addPeer(id) {
             streams: null,
             oldStreams: null,
         };
+    }
+    else {
+        peerDict[id].pc = pc;
+        peerDict[id].senders = senders;
     }
 }
 
@@ -386,7 +431,7 @@ function createPC(userId) {
     pc.onconnectionstatechange = (event) => {
         switch (pc.connectionState) {
             case "disconnected":
-                console.log('disconnected');
+                console.log(`${userId} disconnected`);
                 closePeer(userId);
                 break;
         }
@@ -397,7 +442,7 @@ function createPC(userId) {
 
 async function createRemoteCam(userId, streamType) {
     console.log(`add remote cam for ${userId}`);
-    const remoteCam = videoTray.querySelector(`#user-${userId}-${streamType}`);
+    let remoteCam = videoTray.querySelector(`#user-${userId}-${streamType}`);
 
     if (!remoteCam) {
 

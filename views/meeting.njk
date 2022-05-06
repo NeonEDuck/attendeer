@@ -23,29 +23,36 @@
 {% endblock prefab %}
 
 {% block content %}
-    <div id="video-tray"></div>
+    <div id="meeting-panel">
+        <div id="video-tray"></div>
 
-    <div id="chat" hidden>
-        <ul id="chat__room"></ul>
+        <div id="toolbar">
+            <span id="call-id">{{ callId }}</span>
+            <button id="hang-up-btn" disabled>hang up</button>
+            <input id="call-input" type="text">
+        </div>
 
-        <div id="chat__bar">
-            <input
-                id="msg-input"
-                name="msg-input"
-                type="text"
-                placeholder="Enter Message"
-                autocomplete="off"
-                required
-            />
-            <button id="send-msg-btn">send</button>
+        <div id="chat">
+            <ul id="chat__room"></ul>
+
+            <div id="chat__bar">
+                <input
+                    id="msg-input"
+                    name="msg-input"
+                    type="text"
+                    placeholder="Enter Message"
+                    autocomplete="off"
+                    required
+                />
+                <button id="send-msg-btn">send</button>
+            </div>
         </div>
     </div>
 
-
-    <span id="call-id">{{ callId }}</span>
-    <button id="webcam-btn" disabled>open webcam</button>
-    <button id="screen-share-btn" disabled>screen share</button>
-    <button id="enter-btn" disabled>enter</button>
-    <button id="hang-up-btn" disabled>hang up</button>
-    <input id="call-input" type="text">
+    <div id="confirm-panel">
+        <div id="confirm-panel__video-tray"></div>
+        <button id="enter-btn" disabled>enter</button>
+        <button id="webcam-btn" disabled>open webcam</button>
+        <button id="screen-share-btn" disabled>screen share</button>
+    </div>
 {% endblock content %}
