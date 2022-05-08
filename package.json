@@ -6,6 +6,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "build": "webpack build && sass ./src/scss/main.scss ./public/css/main.css",
+    "build-and-start": "npm run build && npm run start",
     "watch:webpack": "webpack --watch",
     "watch:nodemon": "nodemon --ext js,mjs,json,njk app.js --ignore src/",
     "watch:sass": "sass ./src/scss/main.scss ./public/css/main.css --watch",
