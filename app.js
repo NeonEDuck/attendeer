@@ -35,38 +35,12 @@ app.set('views', './views');
 app.set('view engine', 'njk');
 app.engine('njk', nunjucks.render);
 
-// session
-import session from 'express-session';
-
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
-    cookie: { maxAge: Number(process.env.SESSION_MAX_AGE), httpOnly: true },
-}));
-
 // csrf middleware
 import csrf from 'csurf';
 const csrfMiddleware = csrf({ cookie: { secure: true, httpOnly: true, sameSite: 'strict' } });
 app.use(csrfMiddleware);
 app.all('*', (req, res, next) => {
     res.cookie("XSRF-TOKEN", req.csrfToken());
-    next();
-});
-
-// auth check
-import { adminAuth } from './firebase-admin.js';
-
-app.all('*', async (req, res, next) => {
-    const sessionCookie = req.session.idToken || '';
-
-    req.local = {};
-    await adminAuth.verifySessionCookie(sessionCookie, true)
-        .then((decodedToken) => {
-            req.local.decodedToken = decodedToken;
-        }, (error) => {
-            req.local.decodedToken = {};
-        });
     next();
 });
 
