@@ -1,0 +1,43 @@
+button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    text-decoration: none;
+    border: none;
+    font-size: 1em;
+    line-height: 1em;
+    margin: 0;
+    padding: 0.5em;
+    border-radius: 1em;
+    background-color: hsl(0 0% 75% / 1);
+    color: black;
+    cursor: pointer;
+    svg {
+        width: 1.5em;
+        height: 1.5em;
+        margin: 0;
+        padding: 0;
+    }
+
+    &:has(svg) {
+        aspect-ratio: 1 / 1;
+        border-radius: 50%;
+    }
+}
+
+.btn-red {
+    background-color: red !important;
+    fill: white;
+}
+
+.btn-primary {
+    background-color: var(--clr-primary-700) !important;
+    color: white;
+    fill: white;
+}
+
+.btn-round {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+}

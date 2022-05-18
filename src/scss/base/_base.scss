@@ -1,0 +1,50 @@
+html, body {
+    height: 100%;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    border: 1px solid black;
+    border-radius: 1em;
+    padding: 0.5em;
+}
+
+legend {
+    vertical-align: super;
+    margin-inline-start: 0.5em;
+}
+
+.field {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+main {
+    padding: 1rem;
+}
+
+table {
+    background-color: rgb(193, 193, 193);
+    th {
+        background-color: darkgray;
+    }
+
+    tr:nth-child(2n) {
+        background-color: darkgray;
+    }
+}

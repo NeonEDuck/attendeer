@@ -19,6 +19,7 @@ const camPrefab  = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
+const meetingPanel = document.querySelector('#meeting-panel');
 const webcamBtn  = document.querySelector('#webcam-btn');
 const enterBtn   = document.querySelector('#enter-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
@@ -27,9 +28,10 @@ const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
 const toolbar    = document.querySelector('#toolbar');
-const msgInput   = document.querySelector('#msg-input')
-const sendMsgBtn = document.querySelector('#send-msg-btn')
-const callId     = document.querySelector('#call-id').innerHTML.trim();
+const msgInput   = document.querySelector('#msg-input');
+const sendMsgBtn = document.querySelector('#send-msg-btn');
+const messageBtn = document.querySelector('#message-btn');
+const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
 // Default state
 webcamBtn.disabled = true;
@@ -165,6 +167,17 @@ hangUpBtn.addEventListener('click', async () => {
 screenShareBtn.addEventListener('click', async () => {
     setupScreenShare();
 })
+
+messageBtn.addEventListener('click', async () => {
+    if (meetingPanel.classList.contains('open-message')) {
+        meetingPanel.classList.remove('open-message');
+        chat.hidden = false;
+    }
+    else {
+        meetingPanel.classList.add('open-message');
+        chat.hidden = true;
+    }
+});
 
 sendMsgBtn.addEventListener('click', async () => {
     let text = msgInput?.value?.trim();

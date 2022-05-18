@@ -9,8 +9,11 @@
         <img class="class-card__background" src="/imgs/dummy_profile.png">
         <p class="class-card__name"></p>
         <p class="class-card__id"></p>
-        <button class="class-card__setting">setting</button>
-        <button class="class-card__remove">remove</button>
+        <div class="class-card__btn-group">
+            <button class="class-card__remove btn-round btn-red">{% include './svg/remove.svg' %}</button>
+            <button class="class-card__setting btn-round">{% include './svg/setting.svg' %}</button>
+            <button class="class-card__link btn-round">{% include './svg/right-arrow.svg' %}</button>
+        </div>
     </div>
 
     <table>
@@ -22,59 +25,70 @@
 {% endblock prefab %}
 
 {% block content %}
-    <button id="add-class-btn">Add class</button>
-
-    <div class="class-list">
-    </div>
-
-    <dialog id="class-modal">
-        <h1 id="class-modal__title"></h1>
-
-        <button id="close-modal-btn">X</button>
-        <form id="close-modal__form">
-            <input id="class-id" name="class-id" type="text" hidden>
-
-            <fieldset>
-                <legend>Info</legend>
-                <label for="class-name">Class name:</label>
-                <input id="class-name" name="class-name" type="text" autocomplete="off" required>
-            </fieldset>
-            <fieldset>
-                <legend>Alert</legend>
-                <label for="alert-interval">Alert interval:</label>
-                <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
-                <label for="alert-interval">minite(s)</label>
-                <br/>
-                <label for="alert-time">Alert time:</label>
-                <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
-                <label for="alert-time">minite(s)</label>
-            </fieldset>
-            <fieldset>
-                <legend>Attendees</legend>
-
-                <label for="attendee-input">Email:</label>
-                <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
-                <button type="button" id="add-attendee-btn">Add User</button>
-                <table id="attendee-table">
-                    <thead>
-                        <th>email</th>
-                        <th>name</th>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </fieldset>
-            <input type="submit" id="submit-form" hidden disabled/>
-        </form>
-        <button type="button" id="submit-class">Add Class</button>
-        <button type="button" id="submit-setting">Confirm</button>
-    </dialog>
-
-    <dialog id="confirm-modal">
-        <h1 id="confirm-modal__title"></h1>
-
-        <div class="btn-group">
-            <button id="modal-cancel-btn">cancel</button>
-            <button id="modal-confirm-btn">confirm</button>
+    <main>
+        <div class="class-list">
+            <div id="add-class-template" class="class-card-template flex-center flex-row">
+                <button id="add-class-btn" class="btn-round btn-primary">新增課程</button>
+            </div>
         </div>
-    </dialog>
+
+        <dialog id="class-modal">
+            <div class="flex flex-column gap-4">
+                <h1 id="class-modal__title"></h1>
+
+                <button id="close-modal-btn" class="btn-round btn-red">{% include './svg/remove.svg' %}</button>
+                <form id="close-modal__form" class="flex flex-column gap-4">
+                    <input id="class-id" name="class-id" type="text" hidden>
+
+                    <fieldset>
+                        <legend>Info</legend>
+                        <div class="field">
+                            <label for="class-name">Class name:</label>
+                            <input id="class-name" name="class-name" type="text" autocomplete="off" required>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Alert</legend>
+                        <div class="field">
+                            <label for="alert-interval">Alert interval:</label>
+                            <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                            <label for="alert-interval">minite(s)</label>
+                        </div>
+                        <div class="field">
+                            <label for="alert-time">Alert time:</label>
+                            <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
+                            <label for="alert-time">minite(s)</label>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Attendees</legend>
+                        <div class="field">
+                            <label for="attendee-input">Email:</label>
+                            <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
+                            <button type="button" id="add-attendee-btn" class="btn-primary">Add User</button>
+                        </div>
+                        <table id="attendee-table">
+                            <thead>
+                                <th>email</th>
+                                <th>name</th>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </fieldset>
+                    <input type="submit" id="submit-form" hidden disabled/>
+                </form>
+                <button type="button" id="submit-class" class="margin-inline-start-auto btn-primary">Add Class</button>
+                <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">Confirm</button>
+            </div>
+        </dialog>
+
+        <dialog id="confirm-modal">
+            <h1 id="confirm-modal__title"></h1>
+
+            <div class="btn-group">
+                <button id="modal-cancel-btn">cancel</button>
+                <button id="modal-confirm-btn">confirm</button>
+            </div>
+        </dialog>
+    </main>
 {% endblock content %}

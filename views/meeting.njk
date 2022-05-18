@@ -24,35 +24,41 @@
 
 {% block content %}
     <div id="meeting-panel">
-        <div id="video-tray"></div>
+        <div id="meeting-panel__left">
+            <div id="video-tray"></div>
 
-        <div id="toolbar">
-            <span id="call-id">{{ callId }}</span>
-            <button id="hang-up-btn" disabled>hang up</button>
-            <input id="call-input" type="text">
+            <div id="toolbar">
+                {# <span id="call-id">{{ callId }}</span> #}
+                <input id="call-id" type="text" value="{{ callId }}" hidden>
+                {# <input id="call-input" type="text"> #}
+                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang-up.svg' %}</button>
+                <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
+            </div>
         </div>
 
-        <div id="chat">
-            <ul id="chat__room"></ul>
+        <div id="meeting-panel__right">
+            <div id="chat">
+                <ul id="chat__room"></ul>
 
-            <div id="chat__bar">
-                <input
-                    id="msg-input"
-                    name="msg-input"
-                    type="text"
-                    placeholder="Enter Message"
-                    autocomplete="off"
-                    required
-                />
-                <button id="send-msg-btn">send</button>
+                <div id="chat__bar">
+                    <input
+                        id="msg-input"
+                        name="msg-input"
+                        type="text"
+                        placeholder="Enter Message"
+                        autocomplete="off"
+                        required
+                    />
+                    <button id="send-msg-btn">send</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="confirm-panel">
+    <div id="confirm-panel" class="flex flex-row flex-center gap-2">
         <div id="confirm-panel__video-tray"></div>
-        <button id="enter-btn" disabled>enter</button>
-        <button id="webcam-btn" disabled>open webcam</button>
-        <button id="screen-share-btn" disabled>screen share</button>
+        <button id="webcam-btn" class="btn-primary btn-round" disabled>{% include './svg/webcam.svg' %}</button>
+        <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen-share.svg' %}</button>
+        <button id="enter-btn" class="btn-round" disabled>{% include './svg/right-arrow.svg' %}</button>
     </div>
 {% endblock content %}

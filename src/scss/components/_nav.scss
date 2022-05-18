@@ -1,11 +1,38 @@
 @use '../abstracts' as *;
 
 #navbar {
-    width: 100%;
+    position: sticky;
+    // top: 0;
+    // right: 0;
+    // width: 100%;
 
     ul {
         display: flex;
         flex-direction: row;
         gap: 1em;
+        padding: 1em;
+        li {
+            display: flex;
+
+            &:first-child {
+                margin-inline-start: auto;
+            }
+            * {
+                text-decoration: none;
+                color: black;
+                border: none;
+                font-size: 1em;
+                line-height: 1em;
+                margin: 0;
+                padding: 0.5em 1em;
+                border-radius: 1em;
+
+                &:not(#login-text) {
+                    background: var(--clr-primary-700);
+                    color: white;
+                    cursor: pointer;
+                }
+            }
+        }
     }
 }

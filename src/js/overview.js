@@ -3,6 +3,7 @@ import { firestore } from "./firebase-config.js";
 import { getUser } from "./login.js";
 import { generateCallId } from './util.js';
 
+const addClassTemplate   = document.querySelector('#add-class-template');
 const addClassBtn        = document.querySelector('#add-class-btn');
 const classList          = document.querySelector('.class-list');
 const classCardPrefab    = document.querySelector('.class-card');
@@ -52,7 +53,8 @@ document.onreadystatechange = async () => {
                 const classCardName    = classCard.querySelector('.class-card__name');
                 const classCardId      = classCard.querySelector('.class-card__id');
                 const classCardSetting = classCard.querySelector('.class-card__setting');
-                const classCardRemove = classCard.querySelector('.class-card__remove');
+                const classCardRemove  = classCard.querySelector('.class-card__remove');
+                const classCardLink    = classCard.querySelector('.class-card__link');
                 classCardName.innerHTML = data.name || 'Unnamed';
                 classCardId.innerHTML = change.doc.id;
 
@@ -136,7 +138,7 @@ document.onreadystatechange = async () => {
                     confirmModel.showModal();
                 });
 
-                classList.append(classCard);
+                classList.insertBefore(classCard, addClassTemplate);
             }
             else if (change.type === 'modified') {
                 const data = change.doc.data();
