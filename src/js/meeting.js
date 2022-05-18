@@ -7,7 +7,7 @@ import { delay } from './util.js';
 const servers = {
     iceServers: [
         {
-            urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+            urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
         },
     ],
     iceCandidatePoolSize: 10,
@@ -279,6 +279,7 @@ function setupNewUserListener() {
                     }
                 }
                 else if (change.type === 'removed') {
+                    console.log('saw user exit: ', change.doc.id);
                     if (peerDict[change.doc.id]) {
                         closePeer(change.doc.id);
                     }
@@ -336,10 +337,10 @@ async function setupCandidateListener(remoteId) {
     }
     let candidates = collection(remoteDoc, 'candidates');
 
-    let candidateDocs = await getDocs(candidates);
-    candidateDocs.forEach( async (doc) => {
-        await deleteDoc(doc.ref);
-    });
+    // let candidateDocs = await getDocs(candidates);
+    // candidateDocs.forEach( async (doc) => {
+    //     await deleteDoc(doc.ref);
+    // });
 
     let firstRun = false;
     peerDict[remoteId].candidatesListener = onSnapshot(candidates, (snapshot) => {
