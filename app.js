@@ -79,6 +79,15 @@ app.use('/', index);
 app.use('/meeting', meeting);
 app.use('/overview', overview);
 
+// error handler
+app.use(function (err, req, res, next) {
+    if (err.code !== 'EBADCSRFTOKEN') return next(err);
+
+    // handle CSRF token errors here
+    res.status(403);
+    res.send('form tampered with');
+});
+
 // listen
 import http from 'http';
 
