@@ -128,13 +128,12 @@ enterBtn.addEventListener('click', async () => {
 
             const q = query(messages, orderBy('timestamp', 'asc'));
             const messageDocs = await getDocs(q);
-
-            messageDocs.forEach(async (msgDoc) => {
+            for (const msgDoc of messageDocs.docs) {
                 await addMessageToChat(msgDoc.data());
-            })
+            }
         }
         else {
-            snapshot.docChanges().forEach(async (change) => {
+            snapshot.docChanges().forEach( async (change) => {
                 if (change.type === 'added') {
                     await addMessageToChat(change.doc.data());
                 }
@@ -186,7 +185,7 @@ sendMsgBtn.addEventListener('click', async () => {
         const data = {
             user: localUserId,
             text,
-            timestamp: (new Date()).toJSON(),
+            timestamp: new Date(),
         };
 
         await setDoc(msgDoc, data);
@@ -605,7 +604,7 @@ async function getUserData(userId) {
 
 async function addMessageToChat(msgData) {
     const { user, text, timestamp } = msgData;
-    const timeString = new Date(timestamp).toLocaleString();
+    const timeString = timestamp.toDate().toLocaleString();
     const { name } = await getUserData(user) || { name: "???" };
 
     const msg = msgPrefab.cloneNode(true);
