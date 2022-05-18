@@ -5,6 +5,14 @@
 {% endblock script %}
 
 {% block content %}
-    <input id="call-input" type="text">
-    <button id="call-btn">call</button>
+<main class="flex flex-center flex-column gap-8">
+    {# <img id="logo-title" src="/imgs/logo_title.png" alt="AttenDeer logo"> #}
+    <div id="logo-title">
+        {% include "./svg/logo_title.svg" %}
+    </div>
+    <div class="flex flex-row gap-4">
+        <input id="call-input" type="text" placeholder="會議代碼">
+        <button id="call-btn">加入</button>
+    </div>
+</main>
 {% endblock content %}

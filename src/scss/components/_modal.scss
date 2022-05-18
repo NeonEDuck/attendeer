@@ -1,7 +1,10 @@
 dialog {
+    --padding: 1rem;
+    border: none;
+    padding: var(--padding);
     #close-modal-btn{
         position: absolute;
-        top: 0;
-        right: 0;
+        top: calc(var(--padding) / 2);
+        right: calc(var(--padding) / 2);
     }
 }

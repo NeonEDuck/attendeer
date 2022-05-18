@@ -1,11 +1,13 @@
 <nav id="navbar">
     <ul>
-        {# <li><a href="/login">Login</a></li> #}
-        {# <li><a href="/logout">Logout</a></li> #}
-        <li>{% include "util/login.njk" %}</li>
-        <li><a href="/">Index</a></li>
-        <li><a href="/overview">Overview</a></li>
-
-        <li id='login-text'></li>
+        <li><a href="/">主頁</a></li>
+        <li><a href="/overview">課程</a></li>
+        <li>
+            <button id="sign-in" hidden>登入</button>
+            <button id="sign-out" hidden>登出</button>
+        </li>
+        <li>
+            <p id='login-text'></p>
+        </li>
     </ul>
 </nav>

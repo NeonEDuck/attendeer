@@ -1,16 +1,42 @@
-.class-card {
-    border: 1px solid gray;
+@use '../utilities/shadow';
+
+.class-card-template {
+    display: flex;
+    flex-direction: column;
     aspect-ratio: 5 / 6;
     // flex-basis: 10em;
     // flex-grow: 1;
-    cursor: pointer;
+
+    @extend .light-shadow;
+
+    position: relative;
+    border-radius: 1em;
+    overflow: hidden;
+}
+
+.class-card {
+    @extend .class-card-template;
+    padding: 0.5em;
+    padding-block-start: calc(50% + 0.5em);
 
     &__background {
+        position: absolute;
+        top: 0;
+        left: 0;
+
         width: 100%;
         aspect-ratio: 2 / 1;
     }
 
     &__name {
+        font-size: 2rem;
+    }
 
+    &__btn-group {
+        margin-block-start: auto;
+        margin-inline-start: auto;
+        display: flex;
+        flex-direction: row;
+        gap: 0.5em;
     }
 }
