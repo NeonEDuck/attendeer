@@ -64,11 +64,11 @@ document.onreadystatechange = async () => {
                 classCard.dataset.alertTime = data.alert?.time;
                 classCard.dataset.attendees = data.attendees;
 
-                classCard.addEventListener('click', () => {
-                    window.location.href = `/meeting/${change.id}`;
+                classCardLink.addEventListener('click', () => {
+                    window.location.href = `/meeting/${classCard.dataset.id}`;
                 });
 
-                classCardSetting.addEventListener('click', (e) => {
+                classCardSetting.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     classId.value       = classCard.dataset.id;
                     className.value     = classCard.dataset.name;
@@ -76,7 +76,7 @@ document.onreadystatechange = async () => {
                     alertTime.value     = classCard.dataset.alertTime;
 
                     attendeeTableTBody.innerHTML = '';
-                    classCard.dataset.attendees.split(',').forEach(async (userId) => {
+                    for (const userId of classCard.dataset.attendees.split(',')) {
                         const user = doc(users, userId);
                         const data = (await getDoc(user)).data();
                         attendeeDict[data.email] = user.id;
@@ -89,7 +89,7 @@ document.onreadystatechange = async () => {
                         rowEmail.innerHTML = data.email;
 
                         attendeeTableTBody.append(row);
-                    });
+                    }
 
                     classModelTitle.innerHTML = 'Setting';
                     submitClassBtn.hidden = true;
@@ -238,9 +238,9 @@ addAttendeeBtn.addEventListener('click', async () => {
     let email;
     if ((email = attendeeInput.value?.trim()) && !attendeeDict[email]) {
         const q = query(users, where('email', '==', email), limit(1))
-        const user = await getDocs(q);
+        const userDocs = await getDocs(q);
 
-        user.forEach((user) => {
+        userDocs.forEach((user) => {
             const data = user.data();
             attendeeDict[email] = user.id;
             const row = attendeeRowPrefab.cloneNode(true);
