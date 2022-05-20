@@ -2,6 +2,7 @@
 
 {% block script %}
     <script src="/js/meeting.js" type="module" defer></script>
+    <script src="/js/test.js" type="module" defer></script>
 {% endblock script %}
 
 {% block navbar %}
@@ -25,7 +26,11 @@
 {% block content %}
     <div id="meeting-panel">
         <div id="meeting-panel__left">
-            <div id="video-tray"></div>
+            <div id="video-tray">
+
+                <div id="alert-btn">Click</div>
+
+            </div>
 
             <div id="toolbar">
                 {# <span id="call-id">{{ callId }}</span> #}
