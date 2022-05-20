@@ -7,7 +7,7 @@ import { delay } from './util.js';
 const servers = {
     iceServers: [
         {
-            urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+            urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
         },
     ],
     iceCandidatePoolSize: 10,
@@ -128,13 +128,12 @@ enterBtn.addEventListener('click', async () => {
 
             const q = query(messages, orderBy('timestamp', 'asc'));
             const messageDocs = await getDocs(q);
-
-            messageDocs.forEach(async (msgDoc) => {
+            for (const msgDoc of messageDocs.docs) {
                 await addMessageToChat(msgDoc.data());
-            })
+            }
         }
         else {
-            snapshot.docChanges().forEach(async (change) => {
+            snapshot.docChanges().forEach( async (change) => {
                 if (change.type === 'added') {
                     await addMessageToChat(change.doc.data());
                 }
@@ -186,7 +185,7 @@ sendMsgBtn.addEventListener('click', async () => {
         const data = {
             user: localUserId,
             text,
-            timestamp: (new Date()).toJSON(),
+            timestamp: new Date(),
         };
 
         await setDoc(msgDoc, data);
@@ -280,6 +279,7 @@ function setupNewUserListener() {
                     }
                 }
                 else if (change.type === 'removed') {
+                    console.log('saw user exit: ', change.doc.id);
                     if (peerDict[change.doc.id]) {
                         closePeer(change.doc.id);
                     }
@@ -337,10 +337,10 @@ async function setupCandidateListener(remoteId) {
     }
     let candidates = collection(remoteDoc, 'candidates');
 
-    let candidateDocs = await getDocs(candidates);
-    candidateDocs.forEach( async (doc) => {
-        await deleteDoc(doc.ref);
-    });
+    // let candidateDocs = await getDocs(candidates);
+    // candidateDocs.forEach( async (doc) => {
+    //     await deleteDoc(doc.ref);
+    // });
 
     let firstRun = false;
     peerDict[remoteId].candidatesListener = onSnapshot(candidates, (snapshot) => {
@@ -408,6 +408,7 @@ function addPeer(id) {
         };
     }
     else {
+        peerDict[id].pc.close();
         peerDict[id].pc = pc;
         peerDict[id].senders = senders;
     }
@@ -605,7 +606,7 @@ async function getUserData(userId) {
 
 async function addMessageToChat(msgData) {
     const { user, text, timestamp } = msgData;
-    const timeString = new Date(timestamp).toLocaleString();
+    const timeString = timestamp.toDate().toLocaleString();
     const { name } = await getUserData(user) || { name: "???" };
 
     const msg = msgPrefab.cloneNode(true);

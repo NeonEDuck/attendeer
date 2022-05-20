@@ -1,0 +1,16 @@
+{
+    "short_name": "AttenDeer",
+    "name": "AttenDeer Conference App",
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff",
+    "permissions": {
+      "audio-capture": {
+        "description": "Required to capture audio using getUserMedia()"
+      },
+      "video-capture": {
+        "description": "Required to capture video using getUserMedia()"
+      }
+    }
+  }
