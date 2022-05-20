@@ -27,7 +27,7 @@
                 padding: 0.5em 1em;
                 border-radius: 1em;
 
-                &:not(#login-text) {
+                &:where(a) {
                     background: var(--clr-primary-700);
                     color: white;
                     cursor: pointer;

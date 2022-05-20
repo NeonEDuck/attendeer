@@ -1,5 +1,6 @@
 import { onSnapshot, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { firestore } from "./firebase-config.js";
+import './base.js'
 import { getUser } from "./login.js";
 import { generateCallId } from './util.js';
 
@@ -43,6 +44,9 @@ let attendeeDict = {}
 
 document.onreadystatechange = async () => {
     const user = await getUser();
+    if (user) {
+        addClassTemplate.hidden = false;
+    }
 
     const q = query(calls, where('attendees', 'array-contains', user.uid));
     onSnapshot(q, async (snapshot) => {
@@ -99,7 +103,7 @@ document.onreadystatechange = async () => {
 
                 classCardRemove.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    confirmModelTitle.innerHTML = `Are you sure you want to remove ${classCard.dataset.name}?`;
+                    confirmModelTitle.querySelector('span').innerHTML = classCard.dataset.name;
                     const confirmBtn = confirmModel.querySelector('#modal-confirm-btn');
                     const cancelBtn  = confirmModel.querySelector('#modal-cancel-btn');
                     confirmBtn.addEventListener('click', async () => {

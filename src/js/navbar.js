@@ -26,4 +26,5 @@ signInBtn.addEventListener('click', async () => {
 
 signOutBtn.addEventListener('click', async () => {
     await signOut(auth);
+    window.location.href = "/";
 });

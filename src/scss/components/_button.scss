@@ -9,8 +9,8 @@ button {
     line-height: 1em;
     margin: 0;
     padding: 0.5em;
-    border-radius: 1em;
-    background-color: hsl(0 0% 75% / 1);
+    border-radius: 1000000px;
+    background-color: var(--clr-gray-600);
     color: black;
     cursor: pointer;
     svg {
@@ -27,12 +27,13 @@ button {
 }
 
 .btn-red {
-    background-color: red !important;
+    background-color: red;
+    color: white;
     fill: white;
 }
 
 .btn-primary {
-    background-color: var(--clr-primary-700) !important;
+    background-color: var(--clr-primary-700);
     color: white;
     fill: white;
 }
