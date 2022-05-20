@@ -408,6 +408,7 @@ function addPeer(id) {
         };
     }
     else {
+        peerDict[id].pc.close();
         peerDict[id].pc = pc;
         peerDict[id].senders = senders;
     }
