@@ -55,10 +55,14 @@
         </div>
     </div>
 
-    <div id="confirm-panel" class="flex flex-row flex-center gap-2">
-        <div id="confirm-panel__video-tray"></div>
-        <button id="webcam-btn" class="btn-primary btn-round" disabled>{% include './svg/webcam.svg' %}</button>
-        <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen-share.svg' %}</button>
-        <button id="enter-btn" class="btn-round" disabled>{% include './svg/right-arrow.svg' %}</button>
+    <div id="confirm-panel" class="flex flex-column flex-center gap-2">
+        <div id="confirm-panel__video-tray" class="flex flex-row gap-2"></div>
+
+        <div class="flex flex-row gap-2">
+            <button id="mic-btn" class="btn-primary btn-round" disabled>{% include './svg/mic.svg' %}</button>
+            <button id="webcam-btn" class="btn-primary btn-round" disabled>{% include './svg/webcam.svg' %}</button>
+            <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen-share.svg' %}</button>
+            <button id="enter-btn" class="btn-round" disabled>{% include './svg/right-arrow.svg' %}</button>
+        </div>
     </div>
 {% endblock content %}

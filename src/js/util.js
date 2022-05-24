@@ -4,15 +4,18 @@ export function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
 }
 
-export function generateCallId() {
-    let randomId = '';
-
-    for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 3; j++) {
-            randomId += lowerCase.charAt(Math.floor(Math.random() * lowerCase.length));
-        }
-        randomId += '-';
+export function randomLowerCaseString(length) {
+    let randomString = '';
+    for (let i = 0; i < length; i++) {
+        randomString += lowerCase.charAt(Math.floor(Math.random() * lowerCase.length));
     }
+    return randomString;
+}
 
-    return randomId.substring(0, 7);
+export function generateCallId() {
+    return randomLowerCaseString(3) + '-' + randomLowerCaseString(3);
+}
+
+export function replaceAll(str, find, replace) {
+    return str.replace(find, replace);
 }

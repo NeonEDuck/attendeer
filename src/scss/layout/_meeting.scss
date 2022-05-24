@@ -92,6 +92,10 @@
         border-radius: 1000em;
         transform: translate(-50%, -50%);
     }
+
+    &[id*="-audio"] {
+        display: none;
+    }
 }
 
 #toolbar {
