@@ -1,6 +1,7 @@
 import { firestore, auth } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import 'webrtc-adapter';
 import { getUser } from './login.js';
 import { delay, randomLowerCaseString, replaceAll } from './util.js';
 
@@ -131,7 +132,7 @@ enterBtn.addEventListener('click', async () => {
         const localClientsRemoteDoc = doc(localClients, remoteDoc.id)
         await deleteDoc(localClientsRemoteDoc);
 
-        offerToUser(remoteDoc.id);
+        addPeer(remoteDoc.id);
         console.log('userDocs offer setupUserListener');
         await setupUserListener(remoteDoc.id);
         await setupCandidateListener(remoteDoc.id);
@@ -232,12 +233,7 @@ async function offerToUser(remoteId) {
         event.candidate && addDoc(offerCandidates, event.candidate.toJSON());
     };
 
-    let iceRestart = false;
-    if ((await getDoc(remoteClientsLocalDoc)).exists()) {
-        iceRestart = true;
-    }
-
-    const offerDesc = await peerDict[remoteId].pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true, iceRestart: true });
+    const offerDesc = await peerDict[remoteId].pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true});
     console.log(offerDesc)
     await peerDict[remoteId].pc.setLocalDescription(offerDesc);
     console.log('set local offer');
@@ -441,8 +437,8 @@ async function deleteUserDoc(userDoc) {
 function addPeer(id) {
     console.log('add peer');
 
-    let [pc, senders] = createPC(id);
     if (!peerDict[id]) {
+        let [pc, senders] = createPC(id);
         peerDict[id] = {
             pc,
             senders,
@@ -478,6 +474,8 @@ function createPC(userId) {
     pc.ontrack = async (event) => {
         console.log('ontrack');
         for (const stream of event.streams) {
+            // const stream = event.streams[0]
+
             stream.onremovetrack = ({track}) => {
                 console.log(`${track.kind} track was removed.`);
                 removeStreamFromRemoteVideo(stream, userId);
@@ -517,6 +515,11 @@ function createPC(userId) {
 
         }
     };
+    console.log('set onnegotiationneeded');
+    pc.onnegotiationneeded  = async (event) => {
+        console.log('onnegotiationneeded');
+        offerToUser(userId);
+    };
 
     return [pc, senders];
 }
@@ -524,20 +527,22 @@ function createPC(userId) {
 async function createRemoteCam(userId, streamType) {
     console.log(`add remote cam for ${userId}`);
     let remoteCam = videoTrayDict[`#user-${userId}-${streamType}`];
-    console.log(videoTrayDict[`#user-${userId}-${streamType}`]);
+    console.log(`streamType ${streamType}: videoTrayDict ${videoTrayDict[`#user-${userId}-${streamType}`]}`);
 
     if (!remoteCam) {
 
         const { cam, name, profile } = createCam();
+        remoteCam = cam;
+        videoTrayDict[`#user-${userId}-${streamType}`] = remoteCam;
+
         cam.id = `user-${userId}-${streamType}`;
         cam.setAttribute('data-user', userId);
+
         const remoteUserData = await getUserData(userId);
         name.innerHTML = remoteUserData.name;
         profile.src = remoteUserData.photo;
 
-        remoteCam = cam;
         videoTray.appendChild(remoteCam);
-        videoTrayDict[`#user-${userId}-${streamType}`] = remoteCam;
         console.log(videoTrayDict[`#user-${userId}-${streamType}`]);
     }
     return remoteCam;
@@ -635,7 +640,6 @@ async function setupLocalStream() {
                 peer.senders.audio.push(peer.pc.addTrack(track, localStreams.audio));
             });
         }
-        offerToUser(id);
     }
 }
 
@@ -651,7 +655,6 @@ async function setupScreenShare() {
                 peer.pc.removeTrack(sender);
             }
             peer.senders.screenShare = [];
-            offerToUser(id);
         }
     }
     else {
@@ -671,7 +674,6 @@ async function setupScreenShare() {
                 console.log(`add to ${id}`)
                 peer.senders.screenShare.push(peer.pc.addTrack(track, localStreams.screenShare));
             });
-            offerToUser(id);
         }
     }
 }
