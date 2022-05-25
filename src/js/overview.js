@@ -95,7 +95,7 @@ document.onreadystatechange = async () => {
                         attendeeTableTBody.append(row);
                     }
 
-                    classModelTitle.innerHTML = 'Setting';
+                    classModelTitle.innerHTML = '設定';
                     submitClassBtn.hidden = true;
                     submitSettingBtn.hidden = false;
                     classModel.showModal();
