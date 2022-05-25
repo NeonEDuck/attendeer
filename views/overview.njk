@@ -10,9 +10,9 @@
         <p class="class-card__name"></p>
         <p class="class-card__id"></p>
         <div class="class-card__btn-group">
-            <button class="class-card__remove btn-round btn-red">{% include './svg/remove.svg' %}</button>
-            <button class="class-card__setting btn-round">{% include './svg/setting.svg' %}</button>
-            <button class="class-card__link btn-round">{% include './svg/right-arrow.svg' %}</button>
+            <button class="class-card__remove btn-round btn-red">{% include './svg/cross.svg' %}</button>
+            <button class="class-card__setting btn-round btn-primary">{% include './svg/setting.svg' %}</button>
+            <button class="class-card__link btn-round btn-primary">{% include './svg/right_arrow.svg' %}</button>
         </div>
     </div>
 
@@ -27,7 +27,7 @@
 {% block content %}
     <main>
         <div class="class-list">
-            <div id="add-class-template" class="class-card-template flex-center flex-row">
+            <div id="add-class-template" class="class-card-template flex-center flex-row" hidden>
                 <button id="add-class-btn" class="btn-round btn-primary">新增課程</button>
             </div>
         </div>
@@ -36,58 +36,58 @@
             <div class="flex flex-column gap-4">
                 <h1 id="class-modal__title"></h1>
 
-                <button id="close-modal-btn" class="btn-round btn-red">{% include './svg/remove.svg' %}</button>
+                <button id="close-modal-btn" class="btn-round btn-red">{% include './svg/cross.svg' %}</button>
                 <form id="close-modal__form" class="flex flex-column gap-4">
                     <input id="class-id" name="class-id" type="text" hidden>
 
                     <fieldset>
-                        <legend>Info</legend>
+                        <legend>資訊</legend>
                         <div class="field">
-                            <label for="class-name">Class name:</label>
+                            <label for="class-name">課程名稱:</label>
                             <input id="class-name" name="class-name" type="text" autocomplete="off" required>
                         </div>
                     </fieldset>
                     <fieldset>
-                        <legend>Alert</legend>
+                        <legend>警醒</legend>
                         <div class="field">
-                            <label for="alert-interval">Alert interval:</label>
+                            <label for="alert-interval">警醒間隔:</label>
                             <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
-                            <label for="alert-interval">minite(s)</label>
+                            <label for="alert-interval">分鐘</label>
                         </div>
                         <div class="field">
-                            <label for="alert-time">Alert time:</label>
+                            <label for="alert-time">警醒持續時間:</label>
                             <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
-                            <label for="alert-time">minite(s)</label>
+                            <label for="alert-time">分鐘</label>
                         </div>
                     </fieldset>
                     <fieldset>
-                        <legend>Attendees</legend>
+                        <legend>參與者</legend>
                         <div class="field">
                             <label for="attendee-input">Email:</label>
                             <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
-                            <button type="button" id="add-attendee-btn" class="btn-primary">Add User</button>
+                            <button type="button" id="add-attendee-btn" class="btn-primary">新增參與者</button>
                         </div>
                         <table id="attendee-table">
                             <thead>
                                 <th>email</th>
-                                <th>name</th>
+                                <th>名字</th>
                             </thead>
                             <tbody></tbody>
                         </table>
                     </fieldset>
                     <input type="submit" id="submit-form" hidden disabled/>
                 </form>
-                <button type="button" id="submit-class" class="margin-inline-start-auto btn-primary">Add Class</button>
-                <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">Confirm</button>
+                <button type="button" id="submit-class" class="margin-inline-start-auto btn-primary">建立課程</button>
+                <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
             </div>
         </dialog>
 
         <dialog id="confirm-modal">
-            <h1 id="confirm-modal__title"></h1>
+            <h1 id="confirm-modal__title">你確定要刪除<span></span>?</h1>
 
-            <div class="btn-group">
-                <button id="modal-cancel-btn">cancel</button>
-                <button id="modal-confirm-btn">confirm</button>
+            <div class="flex flex-row gap-8 margin-block-start-4">
+                <button id="modal-cancel-btn" class="margin-inline-start-auto">取消</button>
+                <button id="modal-confirm-btn" class="btn-red">刪除</button>
             </div>
         </dialog>
     </main>

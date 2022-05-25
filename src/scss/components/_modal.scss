@@ -1,7 +1,9 @@
 dialog {
     --padding: 1rem;
     border: none;
+    border-radius: 1em;
     padding: var(--padding);
+    background-color: white;
     #close-modal-btn{
         position: absolute;
         top: calc(var(--padding) / 2);

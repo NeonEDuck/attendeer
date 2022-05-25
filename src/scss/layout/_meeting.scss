@@ -2,6 +2,13 @@
     position: absolute;
     inset: 0;
     background-color: white;
+    z-index: 20;
+}
+
+#end-panel {
+    position: absolute;
+    inset: 0;
+    background-color: white;
 }
 
 #meeting-panel {
@@ -12,9 +19,13 @@
     max-width: 100vw;
     grid-template-areas: "left right";
     grid-template-columns: auto 20em;
-    background-color: #222;
+    background-color: var(--clr-gray-1000);
+    z-index: 10;
     &.open-message {
         grid-template-columns: auto 0;
+        #meeting-panel__right {
+            display: none;
+        }
     }
 
     &__left {
@@ -64,7 +75,7 @@
     min-height: auto;
     justify-content: center;
     align-items: flex-start;
-    background-color: #333;
+    background-color: var(--clr-gray-900);
     border-radius: 0.5em;
     aspect-ratio: 16 / 9;
 
@@ -76,7 +87,7 @@
         position: absolute;
         right: 1em;
         bottom: 1em;
-        background-color: #444;
+        background-color: var(--clr-gray-800);
         border-radius: 3em;
         padding: 0.5em;
         color: white;
@@ -88,6 +99,10 @@
         max-height: 100%;
         border-radius: 1000em;
         transform: translate(-50%, -50%);
+    }
+
+    &[id*="-audio"] {
+        display: none;
     }
 }
 
@@ -131,8 +146,14 @@
         gap: 0.5em;
         padding: 0.5em;
 
-        .msg:last-child {
-            margin-bottom: auto;
+        .msg {
+            &:not(:last-child) {
+                margin-block-end: 1em;
+            }
+
+            &:last-child {
+                margin-block-end: auto;
+            }
         }
     }
 
