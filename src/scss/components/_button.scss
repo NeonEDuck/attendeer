@@ -29,16 +29,35 @@ button {
 .btn-red {
     background-color: red;
     color: white;
-    fill: white;
+    path {
+        fill: white;
+    }
 }
 
 .btn-primary {
     background-color: var(--clr-primary-700);
     color: white;
-    fill: white;
+    path, circle {
+        fill: white;
+    }
 }
 
 .btn-round {
     aspect-ratio: 1 / 1;
     border-radius: 50%;
+}
+
+.btn-switch {
+    &.btn-on {
+        @extend .btn-red;
+        > :not(:last-child) {
+            display: none;
+        }
+    }
+    &:not(.btn-on) {
+        @extend .btn-primary;
+        > :not(:first-child) {
+            display: none;
+        }
+    }
 }

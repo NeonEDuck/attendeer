@@ -110,6 +110,12 @@ micBtn.addEventListener('click', async () => {
     unmute = !unmute;
     console.log(unmute)
     localStreams.audio.getAudioTracks()[0].enabled = unmute;
+    if (unmute) {
+        micBtn.classList.add('btn-on');
+    }
+    else {
+        micBtn.classList.remove('btn-on');
+    }
 });
 
 webcamBtn.addEventListener('click', async () => {
@@ -609,6 +615,7 @@ async function setupLocalStream() {
 
     if (webcamOn) {
         console.log('turn on webcam');
+        webcamBtn.classList.add('btn-on');
         localStreams.webcam = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
         localCam.profile.hidden = true;
         localCam.video.srcObject = localStreams.webcam;
@@ -621,6 +628,7 @@ async function setupLocalStream() {
     }
     else {
         console.log('turn off webcam');
+        webcamBtn.classList.remove('btn-on');
         localStreams.webcam = null;
         localCam.profile.hidden = false;
         localCam.video.srcObject = null;
