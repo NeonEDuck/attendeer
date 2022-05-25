@@ -6,11 +6,17 @@ const signInBtn = document.querySelector('#sign-in');
 const signOutBtn = document.querySelector('#sign-out');
 
 // 鎖住所有按鈕與連結
+document.querySelectorAll('button').forEach((btn) => {
+    btn.disabled = true;
+});
 document.querySelectorAll('a').forEach((a) => {
     a.setAttribute('disabled', '');
 });
-document.querySelectorAll('button').forEach((btn) => {
-    btn.disabled = true;
+document.querySelectorAll('.prefab button').forEach((btn) => {
+    btn.disabled = false;
+});
+document.querySelectorAll('.prefab a').forEach((a) => {
+    a.removeAttribute('disabled');
 });
 
 onAuthStateChanged(auth, (user) => {

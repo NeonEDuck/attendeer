@@ -2,6 +2,13 @@
     position: absolute;
     inset: 0;
     background-color: white;
+    z-index: 20;
+}
+
+#end-panel {
+    position: absolute;
+    inset: 0;
+    background-color: white;
 }
 
 #meeting-panel {
@@ -13,6 +20,7 @@
     grid-template-areas: "left right";
     grid-template-columns: auto 20em;
     background-color: var(--clr-gray-1000);
+    z-index: 10;
     &.open-message {
         grid-template-columns: auto 0;
         #meeting-panel__right {

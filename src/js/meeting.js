@@ -52,6 +52,7 @@ let localStreams = {
     'screenShare': null,
     'audio': null,
 };
+let webcamStream;
 let webcamOn = false;
 let unmute = true;
 let localCam = createCam();
@@ -183,9 +184,18 @@ hangUpBtn.addEventListener('click', async () => {
     for (let userId in peerDict) {
         await closePeer(userId);
     }
+    for (let streamType in localStreams) {
+        if (localStreams[streamType] && localStreams[streamType].length != 0) {
+            localStreams[streamType].getTracks().forEach(function(track) {
+                track.stop()
+            });
+            localStreams[streamType] = null;
+        }
+    }
 
-    hangUpBtn.disabled = true;
-    enterBtn.disabled = false;
+    meetingPanel.hidden = true;
+
+    // hangUpBtn.disabled = true;
 });
 
 screenShareBtn.addEventListener('click', async () => {
@@ -612,11 +622,12 @@ async function removeStreamFromRemoteVideo(stream, userId) {
 
 async function setupLocalStream() {
     localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: unmute });
+    webcamStream = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
 
     if (webcamOn) {
         console.log('turn on webcam');
         webcamBtn.classList.add('btn-on');
-        localStreams.webcam = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        localStreams.webcam = webcamStream;
         localCam.profile.hidden = true;
         localCam.video.srcObject = localStreams.webcam;
         for (const [id, peer] of Object.entries(peerDict)) {
@@ -654,6 +665,9 @@ async function setupLocalStream() {
 async function setupScreenShare() {
     if (localStreams.screenShare) {
         console.log('turn off screen share');
+        localStreams.screenShare.getTracks().forEach(function(track) {
+            track.stop()
+        });
         localStreams.screenShare = null;
         localScreenShare.cam.hidden = true;
         localScreenShare.video.srcObject = null;
