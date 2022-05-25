@@ -11,8 +11,8 @@
         <p class="class-card__id"></p>
         <div class="class-card__btn-group">
             <button class="class-card__remove btn-round btn-red">{% include './svg/cross.svg' %}</button>
-            <button class="class-card__setting btn-round">{% include './svg/setting.svg' %}</button>
-            <button class="class-card__link btn-round">{% include './svg/right_arrow.svg' %}</button>
+            <button class="class-card__setting btn-round btn-primary">{% include './svg/setting.svg' %}</button>
+            <button class="class-card__link btn-round btn-primary">{% include './svg/right_arrow.svg' %}</button>
         </div>
     </div>
 
@@ -52,12 +52,12 @@
                         <div class="field">
                             <label for="alert-interval">警醒間隔:</label>
                             <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
-                            <label for="alert-interval">minite(s)</label>
+                            <label for="alert-interval">分鐘</label>
                         </div>
                         <div class="field">
                             <label for="alert-time">警醒持續時間:</label>
                             <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
-                            <label for="alert-time">minite(s)</label>
+                            <label for="alert-time">分鐘</label>
                         </div>
                     </fieldset>
                     <fieldset>

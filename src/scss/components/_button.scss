@@ -26,6 +26,14 @@ button {
     }
 }
 
+.btn-transparent {
+    background-color: transparent;
+    color: black;
+    path {
+        fill: black;
+    }
+}
+
 .btn-red {
     background-color: red;
     color: white;

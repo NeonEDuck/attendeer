@@ -19,7 +19,6 @@
             }
             * {
                 text-decoration: none;
-                color: black;
                 border: none;
                 font-size: 1em;
                 line-height: 1em;
@@ -28,11 +27,15 @@
                 border-radius: 1em;
 
                 &:where(a) {
-                    background: var(--clr-primary-700);
-                    color: white;
+                    // background: var(--clr-primary-700);
+                    color: black;
                     cursor: pointer;
                 }
             }
         }
     }
+}
+
+#login-text {
+    min-width: 10em;
 }

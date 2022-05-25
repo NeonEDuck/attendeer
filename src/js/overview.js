@@ -174,7 +174,7 @@ addClassBtn.addEventListener('click', async () => {
     attendeeDict = [];
     submitClassBtn.hidden = false;
     submitSettingBtn.hidden = true;
-    classModelTitle.innerHTML = 'Add a class';
+    classModelTitle.innerHTML = '新增課程';
 
     classModel.showModal();
 });
