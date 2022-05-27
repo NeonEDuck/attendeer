@@ -530,11 +530,22 @@ function createPC(userId) {
                 break;
 
             case "connected":
+                for (const streamType in peerDict[userId]?.streams) {
+                    const remoteCam = await createRemoteCam(userId, streamType);
+                    remoteCam.querySelector('.cam__warning').hidden = true;
+                }
                 console.log(`connectionState: ${userId} connected`);
                 break;
 
             case "failed":
+                for (const streamType in peerDict[userId]?.streams) {
+                    const remoteCam = await createRemoteCam(userId, streamType);
+                    remoteCam.querySelector('.cam__warning').hidden = false;
+                }
                 console.log(`connectionState: ${userId} failed`);
+
+                //? 嘗試重新連線，不確定是否能成功，需要測試
+                peerDict[remoteId].pc.restartIce();
                 break;
 
         }
