@@ -545,7 +545,7 @@ function createPC(userId) {
                 console.log(`connectionState: ${userId} failed`);
 
                 //? 嘗試重新連線，不確定是否能成功，需要測試
-                peerDict[remoteId].pc.restartIce();
+                peerDict[userId].pc.restartIce();
                 break;
 
         }
