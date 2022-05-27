@@ -1,13 +1,9 @@
-@use '../utilities/shadow';
-
 .class-card-template {
     display: flex;
     flex-direction: column;
     aspect-ratio: 5 / 6;
-    // flex-basis: 10em;
-    // flex-grow: 1;
 
-    @extend .light-shadow;
+    background-color: white;
 
     position: relative;
     border-radius: 1em;

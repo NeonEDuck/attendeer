@@ -14,7 +14,7 @@ service cloud.firestore {
       match /participants/{userId} {
         allow read: if exists(/databases/$(database)/documents/calls/$(callId)/participants/$(request.auth.uid)) || checkHost(request.auth.uid);
         allow create, update: if request.auth.uid == userId;
-        allow delete: if checkHost(request.auth.uid);
+        allow delete: if checkHost(request.auth.uid) || request.auth.uid == userId;
 
         match /clients/{otherId} {
           allow read, delete: if request.auth.uid == otherId || request.auth.uid == userId || checkHost(request.auth.uid);

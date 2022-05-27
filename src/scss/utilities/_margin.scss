@@ -13,3 +13,23 @@
 .margin-inline-end-auto {
     margin-inline-end: auto;
 }
+
+$types: (
+    block,
+    inline
+);
+
+$directions: (
+    start,
+    end
+);
+
+@each $type in $types {
+    @each $direction in $directions {
+        @for $i from 1 through 8 {
+            .margin-#{$type}-#{$direction}-#{$i} {
+                margin-#{$type}-#{$direction}: $i * 0.25em;
+            }
+        }
+    }
+}

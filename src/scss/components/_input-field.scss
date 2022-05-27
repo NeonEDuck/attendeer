@@ -1,23 +1,23 @@
 input[type=text] {
     text-decoration: none;
-    border: 1px solid black;
+    border: none;
     font-size: 1em;
     line-height: 1em;
     margin: 0;
     padding: 0.5em 1em;
     border-radius: 1em;
-    background: white;
+    background: var(--clr-gray-400);
     color: black;
 }
 
 input[type=number] {
     text-decoration: none;
-    border: 1px solid black;
+    border: none;
     font-size: 1em;
     line-height: 1em;
     margin: 0;
     padding: 0.5em 1em;
     border-radius: 1em;
-    background: white;
+    background: var(--clr-gray-400);
     color: black;
 }

@@ -90,9 +90,6 @@ app.use(function (err, req, res, next) {
 
 // listen
 import http from 'http';
-
-http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
-
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
@@ -105,6 +102,10 @@ if (process.env.RELEASE?.toLowerCase() === 'true') {
             ca:   fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'ca_bundle.crt') , 'utf-8'),
         };
         https.createServer(options, app).listen(HTTPS_PORT, () => {console.log(`> Listening on port ${HTTPS_PORT}`)});
+        http.createServer((req, res) => {
+            res.writeHead(302, { "Location": "https://" + req.headers.host + req.url });
+            res.end();
+        }).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
     } catch (err) {
         if (err.code === 'ENOENT') {
             console.error(
@@ -117,4 +118,7 @@ if (process.env.RELEASE?.toLowerCase() === 'true') {
             console.error(err);
         }
     }
+}
+else {
+    http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
 }

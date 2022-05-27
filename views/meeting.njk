@@ -13,6 +13,7 @@
         <video class="cam__video" autoplay playsinline control=false></video>
         <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
         <span class="cam__name"></span>
+        <span class="cam__warning" hidden>!</span>
     </div>
     <li class="msg">
         <p>
@@ -36,34 +37,43 @@
                 {# <span id="call-id">{{ callId }}</span> #}
                 <input id="call-id" type="text" value="{{ callId }}" hidden>
                 {# <input id="call-input" type="text"> #}
-                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang-up.svg' %}</button>
+                <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button>
+                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang_up.svg' %}</button>
                 <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
             </div>
         </div>
 
         <div id="meeting-panel__right">
             <div id="chat">
-                <ul id="chat__room"></ul>
+                <ul id="chat__room" class="margin-block-end-2"></ul>
 
                 <div id="chat__bar">
                     <input
                         id="msg-input"
                         name="msg-input"
                         type="text"
-                        placeholder="Enter Message"
+                        placeholder="輸入訊息"
                         autocomplete="off"
                         required
                     />
-                    <button id="send-msg-btn">send</button>
+                    <button id="send-msg-btn" class="btn-primary">送出</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="confirm-panel" class="flex flex-row flex-center gap-2">
-        <div id="confirm-panel__video-tray"></div>
-        <button id="webcam-btn" class="btn-primary btn-round" disabled>{% include './svg/webcam.svg' %}</button>
-        <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen-share.svg' %}</button>
-        <button id="enter-btn" class="btn-round" disabled>{% include './svg/right-arrow.svg' %}</button>
+    <div id="end-panel" class="flex flex-column flex-center gap-2">
+        <h1>通話結束</h1>
+        <a href="/overview">返回課程</a>
+    </div>
+
+    <div id="confirm-panel" class="flex flex-column flex-center gap-2">
+        <div id="confirm-panel__video-tray" class="flex flex-row gap-2"></div>
+
+        <div class="flex flex-row gap-2">
+            <button id="mic-btn" class="btn-switch btn-round btn-on" disabled>{% include './svg/mic.svg' %}{% include './svg/mic_off.svg' %}</button>
+            <button id="webcam-btn" class="btn-switch btn-round" disabled>{% include './svg/webcam.svg' %}{% include './svg/webcam_off.svg' %}</button>
+            <button id="enter-btn" class="btn-round" disabled>{% include './svg/right_arrow.svg' %}</button>
+        </div>
     </div>
 {% endblock content %}

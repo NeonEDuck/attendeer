@@ -1,7 +1,7 @@
 #login-form {
     display: flex;
     flex-direction: column;
-    background-color: #999;
+    background-color: var(--clr-gray-700);
     width: fit-content;
     padding: 1em;
     button {

@@ -1,5 +1,10 @@
 html, body {
     height: 100%;
+    background-color: var(--clr-gray-300);
+}
+
+html, body, input, button {
+    font-family: 'Noto Sans TC', sans-serif;
 }
 
 [hidden] {
@@ -39,12 +44,16 @@ main {
 }
 
 table {
-    background-color: rgb(193, 193, 193);
+    background-color: var(--clr-gray-300);
     th {
-        background-color: darkgray;
+        background-color: var(--clr-gray-400);
     }
 
     tr:nth-child(2n) {
-        background-color: darkgray;
+        background-color: var(--clr-gray-400);
     }
+}
+
+h1 {
+    font-size: 1.5rem;
 }

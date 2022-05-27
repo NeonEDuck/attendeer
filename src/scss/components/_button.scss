@@ -9,8 +9,8 @@ button {
     line-height: 1em;
     margin: 0;
     padding: 0.5em;
-    border-radius: 1em;
-    background-color: hsl(0 0% 75% / 1);
+    border-radius: 1000000px;
+    background-color: var(--clr-gray-600);
     color: black;
     cursor: pointer;
     svg {
@@ -26,18 +26,46 @@ button {
     }
 }
 
+.btn-transparent {
+    background-color: transparent;
+    color: black;
+    path {
+        fill: black;
+    }
+}
+
 .btn-red {
-    background-color: red !important;
-    fill: white;
+    background-color: red;
+    color: white;
+    path {
+        fill: white;
+    }
 }
 
 .btn-primary {
-    background-color: var(--clr-primary-700) !important;
+    background-color: var(--clr-primary-700);
     color: white;
-    fill: white;
+    path, circle {
+        fill: white;
+    }
 }
 
 .btn-round {
     aspect-ratio: 1 / 1;
     border-radius: 50%;
+}
+
+.btn-switch {
+    &.btn-on {
+        @extend .btn-red;
+        > :not(:last-child) {
+            display: none;
+        }
+    }
+    &:not(.btn-on) {
+        @extend .btn-primary;
+        > :not(:first-child) {
+            display: none;
+        }
+    }
 }

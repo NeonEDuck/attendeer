@@ -1,3 +1,15 @@
 .msg {
     text-align: left;
+
+    &__user {
+        font-weight: 500;
+    }
+
+    &__timestamp {
+        color: var(--clr-gray-700);
+    }
+
+    &__text {
+        font-weight: 300;
+    }
 }
