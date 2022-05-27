@@ -128,8 +128,6 @@ enterBtn.addEventListener('click', async () => {
     console.log('create user doc');
     await setDoc(localUserDoc, {});
 
-    setupNewUserListener();
-
     const userDocs = await getDocs(participants);
     userDocs.forEach(async (remoteDoc) => {
         if (remoteDoc.id === localUserId) {
@@ -139,11 +137,14 @@ enterBtn.addEventListener('click', async () => {
         const localClientsRemoteDoc = doc(localClients, remoteDoc.id)
         await deleteDoc(localClientsRemoteDoc);
 
-        addPeer(remoteDoc.id);
-        console.log('userDocs offer setupUserListener');
-        await setupUserListener(remoteDoc.id);
-        await setupCandidateListener(remoteDoc.id);
+        const remoteClients = collection(remoteDoc.ref, 'clients')
+        const remoteClientsLocalDoc = doc(remoteClients, localUserId);
+        if (!(await getDoc(remoteClientsLocalDoc)).exists()) {
+            await setDoc(remoteClientsLocalDoc, {});
+        }
     });
+
+    setupNewUserListener();
 
     let chatInit = true;
 
@@ -510,7 +511,6 @@ function createPC(userId) {
             case "disconnected":
                 console.log(`connectionState: ${userId} disconnected`);
                 await closePeer(userId);
-                offerToUser(userId);
                 break;
 
             case "new":
