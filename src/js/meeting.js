@@ -108,8 +108,16 @@ document.onreadystatechange = async () => {
 }
 
 micBtn.addEventListener('click', async () => {
+    try {
+        localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    }
+    catch {
+        micBtn.classList.remove('btn-on');
+        unmute = false;
+        return;
+    }
     unmute = !unmute;
-    console.log(unmute)
+    console.log(`microphone is ${unmute?'on':'off'}`);
     localStreams.audio.getAudioTracks()[0].enabled = unmute;
     if (unmute) {
         micBtn.classList.add('btn-on');
@@ -621,8 +629,21 @@ async function removeStreamFromRemoteVideo(stream, userId) {
 }
 
 async function setupLocalStream() {
-    localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: unmute });
-    webcamStream = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+    try {
+        localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    }
+    catch {
+        console.log('microphone request failed');
+        micBtn.classList.remove('btn-on');
+        unmute = false;
+    }
+    try {
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+    }
+    catch {
+        console.log('webcam request failed');
+        webcamOn = false;
+    }
 
     if (webcamOn) {
         console.log('turn on webcam');
