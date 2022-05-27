@@ -2,6 +2,7 @@
     position: absolute;
     inset: 0;
     background-color: white;
+    z-index: 200;
 }
 
 #meeting-panel {
@@ -41,6 +42,7 @@
     padding: 1em;
     gap: 1em;
     min-height: 0;
+    position: relative;
 
     :last-child {
         margin-block-end: auto;
