@@ -182,6 +182,7 @@ enterBtn.addEventListener('click', async () => {
     confirmPanel.remove();
     videoTray.appendChild(localCam.cam);
     videoTray.appendChild(localScreenShare.cam);
+    resizeCam();
     toolbar.insertBefore(micBtn, hangUpBtn);
     toolbar.insertBefore(webcamBtn, hangUpBtn);
     toolbar.insertBefore(screenShareBtn, hangUpBtn);
@@ -220,6 +221,7 @@ messageBtn.addEventListener('click', async () => {
         meetingPanel.classList.add('open-message');
         chat.hidden = true;
     }
+    resizeCam();
 });
 
 sendMsgBtn.addEventListener('click', async () => {
@@ -592,6 +594,7 @@ async function createRemoteCam(userId, streamType) {
         profile.src = remoteUserData.photo;
 
         videoTray.appendChild(remoteCam);
+        resizeCam();
         console.log(videoTrayDict[`#user-${userId}-${streamType}`]);
     }
     return remoteCam;
@@ -650,6 +653,7 @@ async function removeStreamFromRemoteVideo(stream, userId) {
     }
     else {
         remoteCam.remove();
+        resizeCam();
     }
 }
 
@@ -779,6 +783,31 @@ async function addMessageToChat(msgData) {
     msgText.innerHTML = text;
     chatRoom.appendChild(msg);
 }
+
+function resizeCam() {
+    const firstCam = videoTray.querySelector(':first-child');
+    const x = 1 + Math.floor((videoTray.clientWidth - (16*2) - (16*15)) / (16*16));
+    const y = 1 + Math.floor((videoTray.clientHeight - (16*2) - (16*15/16*9)) / (16*9));
+    const count = videoTray.children.length;
+    [...videoTray.children].slice(0, x*y).forEach((cam) => {
+        cam.removeAttribute('overflowed');
+    });
+    [...videoTray.children].slice(Math.max(x*y, 1)).forEach((cam) => {
+        cam.setAttribute('overflowed', '');
+    });
+
+    for (let i = y-1; i >= 0; i--) {
+        if (count > i * x) {
+            [...videoTray.children].forEach((cam, idx) => {
+                cam.style.maxHeight = `calc(calc(100% - ${i}em) / ${(i+1)})`;
+                cam.style.maxWidth = (count > x && idx >= i*x)?`${firstCam.clientWidth}px`: 'initial';
+            });
+            break;
+        }
+    }
+}
+
+window.onresize = () => {resizeCam()};
 
 // async function clearDoc() {
 //     console.log('remove all the doc')
