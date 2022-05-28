@@ -19,3 +19,14 @@ export function generateCallId() {
 export function replaceAll(str, find, replace) {
     return str.replace(find, replace);
 }
+
+export function debounce(cb, delay=1000) {
+    let timeout;
+
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            cb(...args);
+        }, delay);
+    }
+}

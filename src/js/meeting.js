@@ -3,7 +3,7 @@ import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot
 import { onAuthStateChanged } from 'firebase/auth';
 import 'webrtc-adapter';
 import { getUser } from './login.js';
-import { delay, randomLowerCaseString, replaceAll } from './util.js';
+import { delay, debounce } from './util.js';
 
 const servers = {
     iceServers: [
@@ -251,6 +251,9 @@ async function offerToUser(remoteId) {
     const remoteClientsLocalDoc = doc(remoteClients, localUserId);
     const offerCandidates = collection(remoteClientsLocalDoc, 'candidates');
 
+    if (peerDict[remoteId]?.pc && peerDict[remoteId].pc.signalingState !== 'stable') {
+        return;
+    }
     addPeer(remoteId);
     peerDict[remoteId].offerCreated = true;
     peerDict[remoteId].pc.onicecandidate = (event) => {
@@ -353,21 +356,31 @@ async function setupUserListener(remoteId) {
             streams = JSON.parse(streams);
             if (desc.type === 'answer') {
                 console.log('saw answer');
-                peerDict[doc.id].pc.setRemoteDescription(desc);
-                peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
-                peerDict[doc.id].streams = streams;
-                console.log('set remote answer');
+
+                const isStateGood = peerDict[doc.id].pc.signalingState === 'have-local-offer';
+                console.log(`answer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
+
+                if (isStateGood) {
+                    peerDict[doc.id].pc.setRemoteDescription(desc);
+                    peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
+                    peerDict[doc.id].streams = streams;
+                    console.log('set remote answer');
+                }
+                else {
+                    console.log('reject to set answer');
+                }
             }
             else if (desc.type === 'offer') {
                 console.log('saw offer');
-                console.log(`offer condition: ${!peerDict[doc.id]?.offerCreated}`);
-                console.log(`offer condition: ${timestamp > peerDict[doc.id]?.timestamp}`);
-                if (!peerDict[doc.id]?.offerCreated || timestamp > peerDict[doc.id]?.timestamp) {
+
+                const isStateGood = peerDict[doc.id].pc.signalingState === 'stable' ||
+                                    peerDict[doc.id].pc.signalingState === 'have-local-offer';
+                console.log(`offer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
+                console.log(`offer condition [!offerCreated]: ${!peerDict[doc.id]?.offerCreated}`);
+                console.log(`offer condition [new timestamp]: ${timestamp > peerDict[doc.id]?.timestamp}`);
+
+                if (isStateGood && (!peerDict[doc.id]?.offerCreated || timestamp > peerDict[doc.id]?.timestamp)) {
                     console.log('confirm to throw answer');
-                    // if (peerDict[doc.id]) {
-                    //     console.log('close old pc');
-                    //     addPeer(doc.id);
-                    // }
                     peerDict[doc.id].pc.setRemoteDescription(desc);
                     peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
                     peerDict[doc.id].streams = streams;
@@ -551,9 +564,10 @@ function createPC(userId) {
         }
     };
     console.log('set onnegotiationneeded');
+    let offerToUserDebounce = debounce((userId) => {offerToUser(userId);});
     pc.onnegotiationneeded  = async (event) => {
         console.log('onnegotiationneeded');
-        offerToUser(userId);
+        offerToUserDebounce(userId);
     };
 
     return [pc, senders];
