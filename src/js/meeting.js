@@ -3,7 +3,7 @@ import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot
 import { onAuthStateChanged } from 'firebase/auth';
 import 'webrtc-adapter';
 import { getUser } from './login.js';
-import { delay, randomLowerCaseString, replaceAll } from './util.js';
+import { delay, debounce } from './util.js';
 
 const servers = {
     iceServers: [
@@ -108,8 +108,16 @@ document.onreadystatechange = async () => {
 }
 
 micBtn.addEventListener('click', async () => {
+    try {
+        localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    }
+    catch {
+        micBtn.classList.remove('btn-on');
+        unmute = false;
+        return;
+    }
     unmute = !unmute;
-    console.log(unmute)
+    console.log(`microphone is ${unmute?'on':'off'}`);
     localStreams.audio.getAudioTracks()[0].enabled = unmute;
     if (unmute) {
         micBtn.classList.add('btn-on');
@@ -128,8 +136,6 @@ enterBtn.addEventListener('click', async () => {
     console.log('create user doc');
     await setDoc(localUserDoc, {});
 
-    setupNewUserListener();
-
     const userDocs = await getDocs(participants);
     userDocs.forEach(async (remoteDoc) => {
         if (remoteDoc.id === localUserId) {
@@ -139,11 +145,14 @@ enterBtn.addEventListener('click', async () => {
         const localClientsRemoteDoc = doc(localClients, remoteDoc.id)
         await deleteDoc(localClientsRemoteDoc);
 
-        addPeer(remoteDoc.id);
-        console.log('userDocs offer setupUserListener');
-        await setupUserListener(remoteDoc.id);
-        await setupCandidateListener(remoteDoc.id);
+        const remoteClients = collection(remoteDoc.ref, 'clients')
+        const remoteClientsLocalDoc = doc(remoteClients, localUserId);
+        if (!(await getDoc(remoteClientsLocalDoc)).exists()) {
+            await setDoc(remoteClientsLocalDoc, {});
+        }
     });
+
+    setupNewUserListener();
 
     let chatInit = true;
 
@@ -242,6 +251,9 @@ async function offerToUser(remoteId) {
     const remoteClientsLocalDoc = doc(remoteClients, localUserId);
     const offerCandidates = collection(remoteClientsLocalDoc, 'candidates');
 
+    if (peerDict[remoteId]?.pc && peerDict[remoteId].pc.signalingState !== 'stable') {
+        return;
+    }
     addPeer(remoteId);
     peerDict[remoteId].offerCreated = true;
     peerDict[remoteId].pc.onicecandidate = (event) => {
@@ -344,21 +356,31 @@ async function setupUserListener(remoteId) {
             streams = JSON.parse(streams);
             if (desc.type === 'answer') {
                 console.log('saw answer');
-                peerDict[doc.id].pc.setRemoteDescription(desc);
-                peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
-                peerDict[doc.id].streams = streams;
-                console.log('set remote answer');
+
+                const isStateGood = peerDict[doc.id].pc.signalingState === 'have-local-offer';
+                console.log(`answer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
+
+                if (isStateGood) {
+                    peerDict[doc.id].pc.setRemoteDescription(desc);
+                    peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
+                    peerDict[doc.id].streams = streams;
+                    console.log('set remote answer');
+                }
+                else {
+                    console.log('reject to set answer');
+                }
             }
             else if (desc.type === 'offer') {
                 console.log('saw offer');
-                console.log(`offer condition: ${!peerDict[doc.id]?.offerCreated}`);
-                console.log(`offer condition: ${timestamp > peerDict[doc.id]?.timestamp}`);
-                if (!peerDict[doc.id]?.offerCreated || timestamp > peerDict[doc.id]?.timestamp) {
+
+                const isStateGood = peerDict[doc.id].pc.signalingState === 'stable' ||
+                                    peerDict[doc.id].pc.signalingState === 'have-local-offer';
+                console.log(`offer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
+                console.log(`offer condition [!offerCreated]: ${!peerDict[doc.id]?.offerCreated}`);
+                console.log(`offer condition [new timestamp]: ${timestamp > peerDict[doc.id]?.timestamp}`);
+
+                if (isStateGood && (!peerDict[doc.id]?.offerCreated || timestamp > peerDict[doc.id]?.timestamp)) {
                     console.log('confirm to throw answer');
-                    // if (peerDict[doc.id]) {
-                    //     console.log('close old pc');
-                    //     addPeer(doc.id);
-                    // }
                     peerDict[doc.id].pc.setRemoteDescription(desc);
                     peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
                     peerDict[doc.id].streams = streams;
@@ -510,7 +532,6 @@ function createPC(userId) {
             case "disconnected":
                 console.log(`connectionState: ${userId} disconnected`);
                 await closePeer(userId);
-                offerToUser(userId);
                 break;
 
             case "new":
@@ -522,19 +543,31 @@ function createPC(userId) {
                 break;
 
             case "connected":
+                for (const streamType in peerDict[userId]?.streams) {
+                    const remoteCam = await createRemoteCam(userId, streamType);
+                    remoteCam.querySelector('.cam__warning').hidden = true;
+                }
                 console.log(`connectionState: ${userId} connected`);
                 break;
 
             case "failed":
+                for (const streamType in peerDict[userId]?.streams) {
+                    const remoteCam = await createRemoteCam(userId, streamType);
+                    remoteCam.querySelector('.cam__warning').hidden = false;
+                }
                 console.log(`connectionState: ${userId} failed`);
+
+                //? 嘗試重新連線，不確定是否能成功，需要測試
+                peerDict[userId].pc.restartIce();
                 break;
 
         }
     };
     console.log('set onnegotiationneeded');
+    let offerToUserDebounce = debounce((userId) => {offerToUser(userId);});
     pc.onnegotiationneeded  = async (event) => {
         console.log('onnegotiationneeded');
-        offerToUser(userId);
+        offerToUserDebounce(userId);
     };
 
     return [pc, senders];
@@ -621,8 +654,21 @@ async function removeStreamFromRemoteVideo(stream, userId) {
 }
 
 async function setupLocalStream() {
-    localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: unmute });
-    webcamStream = await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+    try {
+        localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    }
+    catch {
+        console.log('microphone request failed');
+        micBtn.classList.remove('btn-on');
+        unmute = false;
+    }
+    try {
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+    }
+    catch {
+        console.log('webcam request failed');
+        webcamOn = false;
+    }
 
     if (webcamOn) {
         console.log('turn on webcam');

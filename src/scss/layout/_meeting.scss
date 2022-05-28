@@ -101,6 +101,20 @@
         transform: translate(-50%, -50%);
     }
 
+    &__warning {
+        display: block;
+        position: absolute;
+        top: 0.5em;
+        right: 0.5em;
+        height: 1.5em;
+        text-align: center;
+        line-height: 1.5em;
+        aspect-ratio: 1/1;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+    }
+
     &[id*="-audio"] {
         display: none;
     }
