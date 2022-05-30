@@ -1,3 +1,11 @@
+@mixin content-color($color) {
+    color: $color;
+
+    path, circle {
+        fill: $color;
+    }
+}
+
 button {
     display: flex;
     justify-content: center;
@@ -10,8 +18,8 @@ button {
     margin: 0;
     padding: 0.5em;
     border-radius: 1000000px;
-    background-color: var(--clr-gray-600);
-    color: black;
+    background-color: var(--clr-active-700);
+    @include content-color(white);
     cursor: pointer;
     svg {
         width: 1.5em;
@@ -28,26 +36,17 @@ button {
 
 .btn-transparent {
     background-color: transparent;
-    color: black;
-    path {
-        fill: black;
-    }
+    @include content-color(black);
 }
 
 .btn-red {
     background-color: red;
-    color: white;
-    path {
-        fill: white;
-    }
+    @include content-color(white);
 }
 
 .btn-primary {
     background-color: var(--clr-primary-700);
-    color: white;
-    path, circle {
-        fill: white;
-    }
+    @include content-color(white);
 }
 
 .btn-round {
