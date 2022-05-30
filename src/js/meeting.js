@@ -135,9 +135,9 @@ enterBtn.addEventListener('click', async () => {
     await setDoc(localUserDoc, {});
 
     const userDocs = await getDocs(participants);
-    userDocs.forEach(async (remoteDoc) => {
+    for (const remoteDoc of userDocs.docs) {
         if (remoteDoc.id === localUserId) {
-            return;
+            continue;
         }
 
         const localClientsRemoteDoc = doc(localClients, remoteDoc.id)
@@ -148,7 +148,7 @@ enterBtn.addEventListener('click', async () => {
         if (!(await getDoc(remoteClientsLocalDoc)).exists()) {
             await setDoc(remoteClientsLocalDoc, {});
         }
-    });
+    }
 
     setupNewUserListener();
 
@@ -561,7 +561,7 @@ function createPC(userId) {
                 console.log(`connectionState: ${userId} failed`);
 
                 //? 嘗試重新連線，不確定是否能成功，需要測試
-                peerDict[userId].pc.restartIce();
+                pc.onnegotiationneeded({ iceRestart: true });
                 break;
 
         }
