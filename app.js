@@ -8,6 +8,14 @@ const app = express();
 // globle variable
 process.env.SESSION_MAX_AGE = 60 * 60 * 24 * 5 * 1000;
 
+// convert to compressed gzip
+app.get('/js/*.js', (req, res, next) => {
+    req.url = req.url + '.gz';
+    res.set('content-encoding', 'gzip');
+    res.set('content-type', 'text/javascript');
+    next();
+});
+
 // static folder
 app.use('/', express.static('public'));
 app.use('/js/firebase', express.static('node_modules/firebase'));
@@ -54,6 +62,10 @@ app.all('*', (req, res, next) => {
     next();
 });
 
+// gzip compression
+// import compression from 'compression';
+// app.use(compression());
+
 // auth check
 import { adminAuth } from './firebase-admin.js';
 
@@ -96,7 +108,10 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 
-if (process.env.RELEASE?.toLowerCase() === 'true') {
+if (process.env.DEBUG?.toLowerCase() === 'true') {
+    http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
+}
+else {
     try {
         const options = {
             key:  fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'private.key') , 'utf-8'),
@@ -113,14 +128,13 @@ if (process.env.RELEASE?.toLowerCase() === 'true') {
             console.error(
                 `Error: certification file missing, finding '${err.path}'.\n` +
                 `    Maybe you forgot to put certification files in the correct folder.\n` +
-                `    Configure "CERT_DIR_PATH" in .env file if needed.`
+                `    Configure "CERT_DIR_PATH" in .env file if needed.\n`
             );
         }
         else {
             console.error(err);
         }
+        console.log('Fallback to http server.')
+        http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
     }
-}
-else {
-    http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
 }
