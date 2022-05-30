@@ -364,6 +364,7 @@ async function setupUserListener(remoteId) {
                     peerDict[doc.id].pc.setRemoteDescription(desc);
                     peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
                     peerDict[doc.id].streams = streams;
+                    peerDict[doc.id].polite = true;
                     console.log('set remote answer');
                 }
                 else {
@@ -374,7 +375,7 @@ async function setupUserListener(remoteId) {
                 console.log('saw offer');
 
                 const isStateGood = peerDict[doc.id].pc.signalingState === 'stable' ||
-                                    peerDict[doc.id].pc.signalingState === 'have-local-offer';
+                                    (peerDict[doc.id].polite === false && peerDict[doc.id].pc.signalingState === 'have-local-offer');
                 console.log(`offer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
                 console.log(`offer condition [!offerCreated]: ${!peerDict[doc.id]?.offerCreated}`);
                 console.log(`offer condition [new timestamp]: ${timestamp > peerDict[doc.id]?.timestamp}`);
@@ -384,6 +385,7 @@ async function setupUserListener(remoteId) {
                     peerDict[doc.id].pc.setRemoteDescription(desc);
                     peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
                     peerDict[doc.id].streams = streams;
+                    peerDict[doc.id].polite = false;
                     console.log('set remote offer');
                     answerToUser(doc.id);
                 }
@@ -486,6 +488,7 @@ function addPeer(id) {
             candidatesListener: null,
             streams: null,
             oldStreams: null,
+            polite: null,
         };
     }
     else {
