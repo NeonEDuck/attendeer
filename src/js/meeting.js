@@ -1,9 +1,7 @@
-import { firestore, auth } from './firebase-config.js';
+import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
 import 'webrtc-adapter';
-import { getUser } from './login.js';
-import { delay, debounce } from './util.js';
+import { delay, debounce, getUser } from './util.js';
 
 const servers = {
     iceServers: [

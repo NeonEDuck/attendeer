@@ -1,8 +1,7 @@
 import { onSnapshot, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { firestore } from "./firebase-config.js";
 import './base.js'
-import { getUser } from "./login.js";
-import { generateCallId } from './util.js';
+import { generateCallId, getUser } from './util.js';
 
 const addClassTemplate   = document.querySelector('#add-class-template');
 const addClassBtn        = document.querySelector('#add-class-btn');
@@ -78,6 +77,7 @@ document.onreadystatechange = async () => {
                     className.value     = classCard.dataset.name;
                     alertInterval.value = classCard.dataset.alertInterval;
                     alertTime.value     = classCard.dataset.alertTime;
+                    attendeeInput.value = '';
 
                     attendeeTableTBody.innerHTML = '';
                     for (const userId of classCard.dataset.attendees.split(',')) {
@@ -137,7 +137,7 @@ document.onreadystatechange = async () => {
                         confirmModel.close();
                     });
                     cancelBtn.addEventListener('click', () => {
-                        confirmModel.close()
+                        confirmModel.close();
                     });
                     confirmModel.showModal();
                 });
@@ -170,6 +170,7 @@ addClassBtn.addEventListener('click', async () => {
     className.value     = '';
     alertInterval.value = '';
     alertTime.value     = '';
+    attendeeInput.value = '';
     attendeeTableTBody.innerHTML = '';
     attendeeDict = [];
     submitClassBtn.hidden = false;

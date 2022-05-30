@@ -9,6 +9,7 @@ export default {
         index: './src/js/index.js',
         meeting: './src/js/meeting.js',
         overview: './src/js/overview.js',
+        login: './src/js/login.js',
     },
     output: {
         path: path.join(__dirname, 'public/js'),

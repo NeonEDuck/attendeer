@@ -74,10 +74,12 @@ app.all('*', async (req, res, next) => {
 import index from './routes/index.js';
 import meeting from './routes/meeting.js';
 import overview from './routes/overview.js';
+import login from './routes/login.js';
 
 app.use('/', index);
 app.use('/meeting', meeting);
 app.use('/overview', overview);
+app.use('/login', login);
 
 // error handler
 app.use(function (err, req, res, next) {
