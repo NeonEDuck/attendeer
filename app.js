@@ -58,7 +58,7 @@ import csrf from 'csurf';
 const csrfMiddleware = csrf({ cookie: { secure: true, httpOnly: true, sameSite: 'strict' } });
 app.use(csrfMiddleware);
 app.all('*', (req, res, next) => {
-    res.cookie("XSRF-TOKEN", req.csrfToken());
+    res.locals.csrfToken = req.csrfToken();
     next();
 });
 
