@@ -8,13 +8,9 @@ const app = express();
 // globle variable
 process.env.SESSION_MAX_AGE = 60 * 60 * 24 * 5 * 1000;
 
-// convert to compressed gzip
-app.get('/js/*.js', (req, res, next) => {
-    req.url = req.url + '.gz';
-    res.set('content-encoding', 'gzip');
-    res.set('content-type', 'text/javascript');
-    next();
-});
+// gzip compression
+import compression from 'compression';
+app.use(compression());
 
 // static folder
 app.use('/', express.static('public'));
@@ -28,7 +24,6 @@ app.use(bodyParser.json())
 
 // cookie parser
 import cookieParser from 'cookie-parser';
-
 app.use(cookieParser());
 
 // view engine
@@ -45,7 +40,6 @@ app.engine('njk', nunjucks.render);
 
 // session
 import session from 'express-session';
-
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,
@@ -62,13 +56,8 @@ app.all('*', (req, res, next) => {
     next();
 });
 
-// gzip compression
-// import compression from 'compression';
-// app.use(compression());
-
 // auth check
 import { adminAuth } from './firebase-admin.js';
-
 app.all('*', async (req, res, next) => {
     const sessionCookie = req.session.idToken || '';
 

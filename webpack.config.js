@@ -2,7 +2,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
 import TerserPlugin from 'terser-webpack-plugin';
-import CompressionPlugin from 'compression-webpack-plugin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEBUG = process.env.DEBUG?.toLowerCase() === 'true';
@@ -23,10 +22,7 @@ export default {
     optimization: {
         nodeEnv: DEBUG ? 'development' : 'production',
         minimize: MINJS,
-        minimizer: [new TerserPlugin({
-            // include: /\.min\.js$/
-        })],
+        minimizer: [new TerserPlugin()],
     },
-    plugins: [new CompressionPlugin()],
     mode: DEBUG ? 'development' : 'production',
 }
