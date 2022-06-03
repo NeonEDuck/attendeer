@@ -210,6 +210,7 @@ classModelForm.addEventListener('submit', async (e) => {
     const name     = className.value.trim();
     const interval = Number(alertInterval.value);
     const time     = Number(alertTime.value);
+    const notifies = false;
 
     const { uid } = await getUser();
     const attendees = Object.values(attendeeDict);
@@ -221,6 +222,7 @@ classModelForm.addEventListener('submit', async (e) => {
         alert: {
             interval,
             time,
+            notifies,
         },
         attendees,
         host: uid,
