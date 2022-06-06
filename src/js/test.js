@@ -15,6 +15,7 @@ let hostId = null;
 // Firestore
 const calls = collection(firestore, 'calls');
 const callDoc = doc(calls, callId);
+let alertRecords = collection(callDoc, 'alertRecords');
 
 enterBtn.addEventListener('click', async () => {
     //取得當前登入使用者ID
@@ -27,63 +28,69 @@ enterBtn.addEventListener('click', async () => {
         getDoc(callDoc).then(docSnap => {
             const { alert, attendees, host } = docSnap.data();
             hostId = host;
+            const { interval, time} = alert;
+            console.log(interval,time);
             console.log(host);
             if(localUserId === hostId){
                 console.log('您是會議主辦人');
-                const { interval, time, notifies} = alert;
-                console.log(interval,time,notifies);
-                setInterval(intervalFunc, interval*1000, interval, time, notifies);
+                setInterval(intervalFunc, interval*1000, interval, time, attendees, host); //interval*60000
             }else{
                 console.log('您不是會議主辦人');
+
+                onSnapshot(alertRecords, async (snapshot) => {
+                    snapshot.docChanges().forEach( async (change) => {
+                        if (change.type === 'added') {
+                            console.log(change.doc.data());
+
+                            alertBtn.hidden = false;
+
+                            function getRandom(x){
+                                return Math.floor(Math.random()*x);
+                            };
+
+                            alertBtn.style.left = getRandom(90)+'%';
+                            alertBtn.style.top = getRandom(70)+'%';
+
+                            setTimeout(closeAlert, time*1000, interval, time); //time*60000
+                        }
+                    });
+                });
             }
         })
     }
     });
 });
 
-function intervalFunc(interval, time, notifies) {
-    console.log(interval,time,notifies);
+async function intervalFunc(interval, time, attendees, host) {
+    console.log(interval,time);
 
-    setTimeout(closeAlert, time*1000, interval, time, notifies);
-
-    alertBtn.hidden = false;
-
-    function getRandom(x){
-        return Math.floor(Math.random()*x);
+    const alertDoc = doc(alertRecords);
+    const data = {
+        timestamp: new Date(),
+        time: time, //時長
+        alertType: 'Click', 
     };
 
-    alertBtn.style.left = getRandom(90)+'%';
-    alertBtn.style.top = getRandom(70)+'%';
+    await setDoc(alertDoc, data);
+    
+    let participants = collection(alertDoc, 'participants');
 
-    notifies = true;
+    attendees.forEach( async (user) => {
+        if (user != host) {
+            const userId = doc(participants,user);
 
-    const data = {
-        alert: {
-            interval,
-            time,
-            notifies,
-        },
-    }
-
-    const callDoc = doc(calls, callId);
-    updateDoc(callDoc, data);
+            const data2 = {
+                text: '未點擊',
+                clickTime: new Date(),
+            }
+        
+            await setDoc(userId, data2);
+        } 
+    });
 }
 
-function closeAlert(interval, time, notifies) {
+function closeAlert(interval, time) {
     alertBtn.hidden = true;
-
-    notifies = false;
-
-    const data = {
-        alert: {
-            interval,
-            time,
-            notifies,
-        },
-    }
-
-    const callDoc = doc(calls, callId);
-    updateDoc(callDoc, data);
 }
 
 alertBtn.addEventListener('click', async () => {
