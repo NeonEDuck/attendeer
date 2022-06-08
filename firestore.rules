@@ -14,7 +14,7 @@ service cloud.firestore {
       match /participants/{userId} {
         allow read: if exists(/databases/$(database)/documents/calls/$(callId)/participants/$(request.auth.uid)) || checkHost(request.auth.uid);
         allow create, update: if request.auth.uid == userId;
-        allow delete: if checkHost(request.auth.uid) || request.auth.uid == userId;
+        allow delete: if checkHost(request.auth.uid);
 
         match /clients/{otherId} {
           allow read, delete: if request.auth.uid == otherId || request.auth.uid == userId || checkHost(request.auth.uid);
@@ -32,18 +32,16 @@ service cloud.firestore {
         allow create: if request.auth != null && !exists(request.path);
         allow delete: if checkHost(request.auth.uid);
       }
-
+      
       match /alertRecords/{alertRecordId} {
         allow read: if request.auth != null;
         allow create: if request.auth != null && !exists(request.path);
-        allow update: if request.auth.uid == alertRecordId;
-        allow delete: if checkHost(request.auth.uid);
+        allow update: if request.auth != null && checkHost(request.auth.uid);
 
         match /participants/{userId} {
           allow read: if request.auth != null;
           allow create: if request.auth != null && !exists(request.path);
-          allow update: if request.auth.uid == alertRecordId || request.auth.uid == userId;
-          allow delete: if checkHost(request.auth.uid);
+          allow update: if request.auth.uid == userId;
         }
       }
     }

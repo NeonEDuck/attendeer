@@ -6,7 +6,6 @@ import { delay } from './util.js';
 
 // HTML elements
 const enterBtn   = document.querySelector('#enter-btn');
-
 const alertBtn = document.querySelector('#alert-btn');
 const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 let localUserId = null;
@@ -35,7 +34,7 @@ enterBtn.addEventListener('click', async () => {
             console.log(host);
             if(localUserId === hostId){
                 console.log('您是會議主辦人');
-                setInterval(intervalFunc, interval*1000, interval, time, attendees, host); //interval*60000
+                setInterval(intervalFunc, interval*60000, interval, time, attendees, host);
             }else{
                 console.log('您不是會議主辦人');
 
@@ -59,7 +58,7 @@ enterBtn.addEventListener('click', async () => {
                                 alertBtn.style.left = getRandom(90)+'%';
                                 alertBtn.style.top = getRandom(70)+'%';
 
-                                setTimeout(closeAlert, alertTime*1000, interval, alertTime, ); //time*60000
+                                setTimeout(closeAlert, alertTime*60000);
 
                             }  
                         }
@@ -100,7 +99,7 @@ async function intervalFunc(interval, time, attendees, host) {
     });
 }
 
-function closeAlert(interval, time) {
+function closeAlert() {
     alertBtn.hidden = true;
 }
 
