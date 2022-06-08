@@ -11,6 +11,7 @@ const alertBtn = document.querySelector('#alert-btn');
 const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 let localUserId = null;
 let hostId = null;
+let currentAlert;
 
 // Firestore
 const calls = collection(firestore, 'calls');
@@ -29,6 +30,7 @@ enterBtn.addEventListener('click', async () => {
             const { alert, attendees, host } = docSnap.data();
             hostId = host;
             const { interval, time} = alert;
+            const alertTime = time;
             console.log(interval,time);
             console.log(host);
             if(localUserId === hostId){
@@ -41,17 +43,25 @@ enterBtn.addEventListener('click', async () => {
                     snapshot.docChanges().forEach( async (change) => {
                         if (change.type === 'added') {
                             console.log(change.doc.data());
+                            currentAlert = change.doc.id;
+                            console.log(currentAlert);
+                            const { alertType, time, timestamp } = change.doc.data();
+                            console.log(timestamp.toMillis());
+                            let now = new Date().getTime();
+                            console.log(now);
+                            if(timestamp.toMillis() <= now && timestamp.toMillis()+time*60000 > now) {
+                                alertBtn.hidden = false;
 
-                            alertBtn.hidden = false;
+                                function getRandom(x){
+                                    return Math.floor(Math.random()*x);
+                                };
+    
+                                alertBtn.style.left = getRandom(90)+'%';
+                                alertBtn.style.top = getRandom(70)+'%';
 
-                            function getRandom(x){
-                                return Math.floor(Math.random()*x);
-                            };
+                                setTimeout(closeAlert, alertTime*1000, interval, alertTime, ); //time*60000
 
-                            alertBtn.style.left = getRandom(90)+'%';
-                            alertBtn.style.top = getRandom(70)+'%';
-
-                            setTimeout(closeAlert, time*1000, interval, time); //time*60000
+                            }  
                         }
                     });
                 });
@@ -65,6 +75,7 @@ async function intervalFunc(interval, time, attendees, host) {
     console.log(interval,time);
 
     const alertDoc = doc(alertRecords);
+
     const data = {
         timestamp: new Date(),
         time: time, //時長
@@ -94,5 +105,16 @@ function closeAlert(interval, time) {
 }
 
 alertBtn.addEventListener('click', async () => {
+
+    const alertDoc = doc(alertRecords,currentAlert);
+    let participants = collection(alertDoc, 'participants');
+    const userId = doc(participants,localUserId);
+
+    const data = {
+        clickTime: new Date(),
+        text: '已點擊',
+    }
+    await updateDoc(userId, data);
+
     alertBtn.hidden = true;
 });
