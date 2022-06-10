@@ -54,7 +54,7 @@
     min-height: 0;
     position: relative;
 
-    :last-child {
+    > :last-child {
         margin-block-end: auto;
     }
 }

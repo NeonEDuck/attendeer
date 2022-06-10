@@ -2,7 +2,6 @@
 
 {% block script %}
     <script src="/js/meeting.js" type="module" defer></script>
-    <script src="/js/test.js" type="module" defer></script>
 {% endblock script %}
 
 {% block navbar %}
@@ -29,7 +28,10 @@
         <div id="meeting-panel__left">
             <div id="video-tray">
 
-                <button id="alert-btn" hidden>Click</button>
+                <button id="alert-btn" class="btn-red" hidden>
+                    <span id="alert-btn__title">點擊簽到</span>
+                    <span id="alert-btn__time">00:00</span>
+                </button>
 
             </div>
 
