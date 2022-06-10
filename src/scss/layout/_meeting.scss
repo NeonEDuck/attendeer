@@ -52,8 +52,9 @@
     padding: 1em;
     gap: 1em;
     min-height: 0;
+    position: relative;
 
-    :last-child {
+    > :last-child {
         margin-block-end: auto;
     }
 }

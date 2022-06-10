@@ -2,16 +2,21 @@ import { firestore, auth } from './firebase-config.js';
 import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const lowerCase = 'abcdefghjiklnmopqrstuvwxyz';
+export const LOWER_CASE = 'abcdefghjiklnmopqrstuvwxyz';
+export const MINUTE = 60 * 1000;
 
 export function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
 }
 
+export function getRandom(x){
+    return Math.floor(Math.random() * x);
+};
+
 export function randomLowerCaseString(length) {
     let randomString = '';
     for (let i = 0; i < length; i++) {
-        randomString += lowerCase.charAt(Math.floor(Math.random() * lowerCase.length));
+        randomString += LOWER_CASE.charAt(getRandom(LOWER_CASE.length));
     }
     return randomString;
 }
@@ -22,6 +27,11 @@ export function generateCallId() {
 
 export function replaceAll(str, find, replace) {
     return str.replace(find, replace);
+}
+
+export function setIntervalImmediately(callback, ms) {
+    callback();
+    return setInterval(callback, ms);
 }
 
 export function debounce(cb, delay=1000) {

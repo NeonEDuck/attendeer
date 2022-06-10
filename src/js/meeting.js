@@ -1,7 +1,7 @@
 import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
-import { delay, debounce, getUser } from './util.js';
+import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
 
 const servers = {
     iceServers: [
@@ -16,14 +16,17 @@ const servers = {
 // HTML elements
 const camPrefab  = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
+
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
 const meetingPanel = document.querySelector('#meeting-panel');
-const micBtn  = document.querySelector('#mic-btn');
-const webcamBtn  = document.querySelector('#webcam-btn');
-const enterBtn   = document.querySelector('#enter-btn');
+const micBtn       = document.querySelector('#mic-btn');
+const webcamBtn    = document.querySelector('#webcam-btn');
+const enterBtn     = document.querySelector('#enter-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
-const hangUpBtn  = document.querySelector('#hang-up-btn');
+const hangUpBtn    = document.querySelector('#hang-up-btn');
+const alertBtn     = document.querySelector('#alert-btn');
+const alertBtnTime = document.querySelector('#alert-btn__time');
 const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
@@ -67,6 +70,7 @@ const calls = collection(firestore, 'calls');
 const users = collection(firestore, 'users');
 const callDoc = doc(calls, callId);
 const participants = collection(callDoc, 'participants');
+const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
 let localUserDoc;
 let localClients;
@@ -177,6 +181,17 @@ enterBtn.addEventListener('click', async () => {
         chatRoom.scrollTop = chatRoom.scrollHeight;
     });
 
+    const { alert, host } = (await getDoc(callDoc)).data();
+    const { interval, time: duration } = alert;
+    if (localUserId === host){
+        console.log('您是會議主辦人');
+        setupAlertScheduler(interval, duration);
+    }
+    else {
+        console.log('您不是會議主辦人');
+        setupAlertListener();
+    }
+
     confirmPanel.remove();
     videoTray.appendChild(localCam.cam);
     videoTray.appendChild(localScreenShare.cam);
@@ -241,6 +256,21 @@ msgInput.addEventListener("keyup", function(event) {
     if (event.keyCode === 13) { // press enter
         event.preventDefault();
         sendMsgBtn.click();
+    }
+});
+
+alertBtn.addEventListener('click', async () => {
+    if (alertBtn.dataset.id) {
+        const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
+        const participants = collection(alertDoc, 'participants');
+        const userDoc      = doc(participants, localUserId);
+
+        const data = {
+            timestamp: new Date()
+        }
+        await setDoc(userDoc, data);
+
+        alertBtn.hidden = true;
     }
 });
 
@@ -432,6 +462,73 @@ async function setupCandidateListener(remoteId) {
                 let candidate = new RTCIceCandidate(data);
                 if (candidate && data) {
                     peerDict[remoteId].pc.addIceCandidate(candidate);
+                }
+            }
+        });
+    });
+}
+
+function setupAlertScheduler(interval, duration) {
+    console.log('setupAlertScheduler');
+    setInterval(async () => {
+        const alertDoc = doc(alertRecords);
+        const data = {
+            timestamp: new Date(),
+            duration: duration, //時長
+            alertType: 'click',
+        };
+        console.log('add alert');
+
+        await setDoc(alertDoc, data);
+    }, interval * MINUTE);
+}
+
+function setupAlertListener() {
+    console.log('setupAlertListener');
+    onSnapshot(alertRecords, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+                const { alertType, duration, timestamp: timestampStart } = change.doc.data();
+                const timestampEnd = new Date(timestampStart.toMillis() + duration * MINUTE);
+                const now = new Date();
+                if (timestampStart <= now && now < timestampEnd) {
+                    console.log('see alert');
+                    alertBtn.hidden = false;
+                    alertBtn.dataset.id = change.doc.id;
+
+                    if (Math.random() < 0.5) {
+                        alertBtn.style.left  = `${getRandom(50)}%`;
+                        alertBtn.style.right = `initial`;
+                    }
+                    else {
+                        alertBtn.style.right = `${getRandom(50)}%`;
+                        alertBtn.style.left  = `initial`;
+                    }
+
+                    if (Math.random() < 0.5) {
+                        alertBtn.style.top     = `${getRandom(50)}%`;
+                        alertBtn.style.bottom  = `initial`;
+                    }
+                    else {
+                        alertBtn.style.bottom  = `${getRandom(50)}%`;
+                        alertBtn.style.top     = `initial`;
+                    }
+
+                    const countDownInterval = setIntervalImmediately(() => {
+                        const now = new Date();
+
+                        const distance = timestampEnd.getTime() - now.getTime();
+
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
+                    }, 1000);
+
+                    setTimeout(() => {
+                        clearInterval(countDownInterval);
+                        alertBtn.hidden = true;
+                    }, timestampEnd.getTime() - now.getTime());
                 }
             }
         });
