@@ -1,10 +1,61 @@
 #alert-btn {
+    width: 270px;
+    height: 80px;
+    border: 0;
+    outline: none;
+    background: #2f2f2f;
+    color: #fff;
+    font-size: 22px;
+    border-radius: 40px;
+    text-align: center;
+    box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.4);
     position: absolute;
-    flex-direction: column;
-    height: 5em;
-    width: 5em;
-    font-size: 0.75em;
     left: 0%;
-    top: 0%;
+    top: 0%;    
+    cursor: pointer;
     z-index: 100;
+    overflow: hidden;
+
+    .check-box {
+        width: 80px;
+        height: 80px;
+        border-radius: 40px;
+        box-shadow: 0 0 12px -2px rgba(0, 0, 0, 0.5);
+        position: absolute;
+        top: 0;
+        right: 0;
+        opacity: 0;
+    }
+}
+.check-box svg{
+    width: 40px;
+    margin: 20px;
+}
+.check-box svg path{
+    stroke-width: 3;
+    stroke: #fff;
+    stroke-dashoffset: 34;
+    stroke-dasharray: 34;
+    stroke-linecap: round;
+}
+#alert-btn.active {
+    background: #ff2b75;
+    transition: 1s;
+}
+
+#alert-btn.active {
+    .check-box {
+        right: 0;
+        opacity: 1;
+        transition: 1s;
+    }
+} 
+#alert-btn.active p {
+    margin-right: 125px;
+    transition: 1s;
+}
+#alert-btn.active .check-box svg path {
+        stroke-dashoffset: 0;
+        transition: 1s;
+        transition-delay: 1s;
 }

@@ -29,6 +29,7 @@ const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn    = document.querySelector('#hang-up-btn');
 const alertBtn     = document.querySelector('#alert-btn');
 const alertBtnTime = document.querySelector('#alert-btn__time');
+const alertBtnText = document.querySelector('#alert-btn__text');
 const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
@@ -270,7 +271,15 @@ alertBtn.addEventListener('click', async () => {
         }
         await setDoc(userDoc, data);
 
+        alertBtnTime.hidden = true;
+        alertBtnText.innerHTML = '簽到完成';
+        alertBtn.classList.add('active');
+
+        await delay(2000);
         alertBtn.hidden = true;
+        alertBtnTime.hidden = false;
+        alertBtnText.innerHTML = '警醒按鈕';
+        alertBtn.classList.remove('active');
     }
 });
 

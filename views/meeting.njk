@@ -27,12 +27,13 @@
     <div id="meeting-panel">
         <div id="meeting-panel__left">
             <div id="video-tray">
-
-                <button id="alert-btn" class="btn-red" hidden>
-                    <span id="alert-btn__title">點擊簽到</span>
+                <button id="alert-btn" hidden>
+                    <p id="alert-btn__text">警醒按鈕</p>
                     <span id="alert-btn__time">00:00</span>
+                    <div class="check-box">
+                        {% include './svg/alert_button.svg' %}
+                    </div>
                 </button>
-
             </div>
 
             <div id="toolbar">
