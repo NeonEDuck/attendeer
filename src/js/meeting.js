@@ -27,6 +27,7 @@ const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn    = document.querySelector('#hang-up-btn');
 const alertBtn     = document.querySelector('#alert-btn');
 const alertBtnTime = document.querySelector('#alert-btn__time');
+const camArea    = document.querySelector('#cam-area');
 const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
@@ -884,8 +885,8 @@ async function addMessageToChat(msgData) {
 
 function resizeCam() {
     const firstCam = videoTray.querySelector(':first-child');
-    const x = 1 + Math.floor((videoTray.clientWidth - (16*2) - (16*15)) / (16*16));
-    const y = 1 + Math.floor((videoTray.clientHeight - (16*2) - (16*15/16*9)) / (16*9));
+    const x = 1 + Math.floor((camArea.clientWidth - (16*2) - (16*15)) / (16*16));
+    const y = 1 + Math.floor((camArea.clientHeight - (16*2) - (16*15/16*9)) / (16*9));
     const count = videoTray.children.length;
     [...videoTray.children].slice(0, x*y).forEach((cam) => {
         cam.removeAttribute('overflowed');
