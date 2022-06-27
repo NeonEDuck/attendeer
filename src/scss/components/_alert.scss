@@ -25,37 +25,34 @@
         top: 0;
         right: 0;
         opacity: 0;
+        svg{
+            width: 40px;
+            margin: 20px;
+            path{
+                stroke-width: 3;
+                stroke: #fff;
+                stroke-dashoffset: 34;
+                stroke-dasharray: 34;
+                stroke-linecap: round;
+            }
+        }
     }
-}
-.check-box svg{
-    width: 40px;
-    margin: 20px;
-}
-.check-box svg path{
-    stroke-width: 3;
-    stroke: #fff;
-    stroke-dashoffset: 34;
-    stroke-dasharray: 34;
-    stroke-linecap: round;
-}
-#alert-btn.active {
-    background: #ff2b75;
-    transition: 1s;
-}
-
-#alert-btn.active {
-    .check-box {
-        right: 0;
-        opacity: 1;
+    &.active {
+        background: #ff2b75;
         transition: 1s;
+        .check-box {
+            right: 0;
+            opacity: 1;
+            transition: 1s;
+            svg path {
+                stroke-dashoffset: 0;
+                transition: 1s;
+                transition-delay: 1s;
+            }
+        }
+        p {
+            margin-right: 125px;
+            transition: 1s;
+        } 
     }
-} 
-#alert-btn.active p {
-    margin-right: 125px;
-    transition: 1s;
-}
-#alert-btn.active .check-box svg path {
-        stroke-dashoffset: 0;
-        transition: 1s;
-        transition-delay: 1s;
 }
