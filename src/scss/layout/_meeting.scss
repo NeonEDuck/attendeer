@@ -53,18 +53,17 @@
     transition: var(--tran-05);
     &.close {
         width: 0px;
-        padding: 0px;
+        padding-inline: 0;
         .text,
         .icon,
         .image {
             opacity: 0;
             visibility: hidden;
         }
-        header .toggle {
-            transform: translateY(-50%);
+        .toggle i{
+            transform: rotate(0deg);
         }
         .toggle {
-            top: 200%;
             right: -25px;
             border-radius: 0 10px 10px 0;
         }
@@ -89,20 +88,22 @@
                 }
             }
         }
-        .toggle {
-            position: absolute;
-            top: 150%;
-            right: -40px;
-            transform: translateY(-50%) rotate(180deg);
-            height: 100px;
-            width: 25px;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px 0 0 10px;
-            color: var(--sidebar-color);
-            font-size: 22px;
+    }
+    .toggle {
+        position: absolute;
+        top: 5%;
+        right: -25px;
+        height: 100px;
+        width: 25px;
+        background: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0 10px 10px 0;
+        color: var(--sidebar-color);
+        font-size: 22px;
+        i {
+            transform: rotate(180deg);
         }
     }
     .text {
@@ -216,7 +217,7 @@
 body.dark{
     --body-color: #18191a;
     --sidebar-color: #242526;
-    --primary-color: #3a3b3c;
+    --primary-color: #1e70c2;
     --primary-color-light: #3a3b3c;
     --toggle-color: #fff;
     --text-color: #ccc;
