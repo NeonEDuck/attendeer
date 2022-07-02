@@ -157,7 +157,7 @@ screenShareBtn.addEventListener('click', async () => {
         }
         localCams.screenShare.node.hidden = false;
         localCams.screenShare.video.srcObject = localStreams.screenShare;
-        for (const [id, peer] of Object.entries(peerDict)) {
+        for (const [id, peer] of Object.entries(Peer.peers)) {
             localStreams.screenShare.getTracks().forEach((track) => {
                 console.log(`add to ${id}`)
                 peer.senders.screenShare.push(peer.pc.addTrack(track, localStreams.screenShare));
