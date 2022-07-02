@@ -1,9 +1,7 @@
-import { firestore, auth } from './firebase-config.js';
+import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
 import 'webrtc-adapter';
-import { getUser } from './login.js';
-import { MINUTE, delay, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
+import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
 
 const servers = {
     iceServers: [
@@ -31,6 +29,7 @@ const hangUpBtn    = document.querySelector('#hang-up-btn');
 const alertBtn     = document.querySelector('#alert-btn');
 const alertBtnTime = document.querySelector('#alert-btn__time');
 const alertBtnText = document.querySelector('#alert-btn__text');
+const camArea    = document.querySelector('#cam-area');
 const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
@@ -144,9 +143,9 @@ enterBtn.addEventListener('click', async () => {
     await setDoc(localUserDoc, {});
 
     const userDocs = await getDocs(participants);
-    userDocs.forEach(async (remoteDoc) => {
+    for (const remoteDoc of userDocs.docs) {
         if (remoteDoc.id === localUserId) {
-            return;
+            continue;
         }
 
         const localClientsRemoteDoc = doc(localClients, remoteDoc.id)
@@ -157,7 +156,7 @@ enterBtn.addEventListener('click', async () => {
         if (!(await getDoc(remoteClientsLocalDoc)).exists()) {
             await setDoc(remoteClientsLocalDoc, {});
         }
-    });
+    }
 
     setupNewUserListener();
 
@@ -200,6 +199,7 @@ enterBtn.addEventListener('click', async () => {
     confirmPanel.remove();
     videoTray.appendChild(localCam.cam);
     videoTray.appendChild(localScreenShare.cam);
+    resizeCam();
     toolbar.insertBefore(micBtn, hangUpBtn);
     toolbar.insertBefore(webcamBtn, hangUpBtn);
     toolbar.insertBefore(screenShareBtn, hangUpBtn);
@@ -238,6 +238,7 @@ messageBtn.addEventListener('click', async () => {
         meetingPanel.classList.add('open-message');
         chat.hidden = true;
     }
+    resizeCam();
 });
 
 sendMsgBtn.addEventListener('click', async () => {
@@ -292,6 +293,9 @@ async function offerToUser(remoteId) {
     const remoteClientsLocalDoc = doc(remoteClients, localUserId);
     const offerCandidates = collection(remoteClientsLocalDoc, 'candidates');
 
+    if (peerDict[remoteId]?.pc && peerDict[remoteId].pc.signalingState !== 'stable') {
+        return;
+    }
     addPeer(remoteId);
     peerDict[remoteId].offerCreated = true;
     peerDict[remoteId].pc.onicecandidate = (event) => {
@@ -394,24 +398,36 @@ async function setupUserListener(remoteId) {
             streams = JSON.parse(streams);
             if (desc.type === 'answer') {
                 console.log('saw answer');
-                peerDict[doc.id].pc.setRemoteDescription(desc);
-                peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
-                peerDict[doc.id].streams = streams;
-                console.log('set remote answer');
-            }
-            else if (desc.type === 'offer') {
-                console.log('saw offer');
-                console.log(`offer condition: ${!peerDict[doc.id]?.offerCreated}`);
-                console.log(`offer condition: ${timestamp > peerDict[doc.id]?.timestamp}`);
-                if (!peerDict[doc.id]?.offerCreated || timestamp > peerDict[doc.id]?.timestamp) {
-                    console.log('confirm to throw answer');
-                    // if (peerDict[doc.id]) {
-                    //     console.log('close old pc');
-                    //     addPeer(doc.id);
-                    // }
+
+                const isStateGood = peerDict[doc.id].pc.signalingState === 'have-local-offer';
+                console.log(`answer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
+
+                if (isStateGood) {
                     peerDict[doc.id].pc.setRemoteDescription(desc);
                     peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
                     peerDict[doc.id].streams = streams;
+                    peerDict[doc.id].polite = true;
+                    console.log('set remote answer');
+                }
+                else {
+                    console.log('reject to set answer');
+                }
+            }
+            else if (desc.type === 'offer') {
+                console.log('saw offer');
+
+                const isStateGood = peerDict[doc.id].pc.signalingState === 'stable' ||
+                                    (peerDict[doc.id].polite === false && peerDict[doc.id].pc.signalingState === 'have-local-offer');
+                console.log(`offer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
+                console.log(`offer condition [!offerCreated]: ${!peerDict[doc.id]?.offerCreated}`);
+                console.log(`offer condition [new timestamp]: ${timestamp > peerDict[doc.id]?.timestamp}`);
+
+                if (isStateGood && (!peerDict[doc.id]?.offerCreated || timestamp > peerDict[doc.id]?.timestamp)) {
+                    console.log('confirm to throw answer');
+                    peerDict[doc.id].pc.setRemoteDescription(desc);
+                    peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
+                    peerDict[doc.id].streams = streams;
+                    peerDict[doc.id].polite = false;
                     console.log('set remote offer');
                     answerToUser(doc.id);
                 }
@@ -581,6 +597,7 @@ function addPeer(id) {
             candidatesListener: null,
             streams: null,
             oldStreams: null,
+            polite: null,
         };
     }
     else {
@@ -653,15 +670,16 @@ function createPC(userId) {
                 console.log(`connectionState: ${userId} failed`);
 
                 //? 嘗試重新連線，不確定是否能成功，需要測試
-                peerDict[remoteId].pc.restartIce();
+                pc.onnegotiationneeded({ iceRestart: true });
                 break;
 
         }
     };
     console.log('set onnegotiationneeded');
+    let offerToUserDebounce = debounce((userId) => {offerToUser(userId);});
     pc.onnegotiationneeded  = async (event) => {
         console.log('onnegotiationneeded');
-        offerToUser(userId);
+        offerToUserDebounce(userId);
     };
 
     return [pc, senders];
@@ -686,6 +704,7 @@ async function createRemoteCam(userId, streamType) {
         profile.src = remoteUserData.photo;
 
         videoTray.appendChild(remoteCam);
+        resizeCam();
         console.log(videoTrayDict[`#user-${userId}-${streamType}`]);
     }
     return remoteCam;
@@ -744,6 +763,7 @@ async function removeStreamFromRemoteVideo(stream, userId) {
     }
     else {
         remoteCam.remove();
+        resizeCam();
     }
 }
 
@@ -901,6 +921,31 @@ async function addMessageToChat(msgData) {
 
     userAbove = user;
 }
+
+function resizeCam() {
+    const firstCam = videoTray.querySelector(':first-child');
+    const x = 1 + Math.floor((camArea.clientWidth - (16*2) - (16*15)) / (16*16));
+    const y = 1 + Math.floor((camArea.clientHeight - (16*2) - (16*15/16*9)) / (16*9));
+    const count = videoTray.children.length;
+    [...videoTray.children].slice(0, x*y).forEach((cam) => {
+        cam.removeAttribute('overflowed');
+    });
+    [...videoTray.children].slice(Math.max(x*y, 1)).forEach((cam) => {
+        cam.setAttribute('overflowed', '');
+    });
+
+    for (let i = y-1; i >= 0; i--) {
+        if (count > i * x) {
+            [...videoTray.children].forEach((cam, idx) => {
+                cam.style.maxHeight = `calc(calc(100% - ${i}em) / ${(i+1)})`;
+                cam.style.maxWidth = (count > x && idx >= i*x)?`${firstCam.clientWidth}px`: 'initial';
+            });
+            break;
+        }
+    }
+}
+
+window.onresize = () => {resizeCam()};
 
 // async function clearDoc() {
 //     console.log('remove all the doc')

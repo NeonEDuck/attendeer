@@ -8,6 +8,10 @@ const app = express();
 // globle variable
 process.env.SESSION_MAX_AGE = 60 * 60 * 24 * 5 * 1000;
 
+// gzip compression
+import compression from 'compression';
+app.use(compression());
+
 // static folder
 app.use('/', express.static('public'));
 app.use('/js/firebase', express.static('node_modules/firebase'));
@@ -20,7 +24,6 @@ app.use(bodyParser.json())
 
 // cookie parser
 import cookieParser from 'cookie-parser';
-
 app.use(cookieParser());
 
 // view engine
@@ -37,7 +40,6 @@ app.engine('njk', nunjucks.render);
 
 // session
 import session from 'express-session';
-
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,
@@ -50,13 +52,12 @@ import csrf from 'csurf';
 const csrfMiddleware = csrf({ cookie: { secure: true, httpOnly: true, sameSite: 'strict' } });
 app.use(csrfMiddleware);
 app.all('*', (req, res, next) => {
-    res.cookie("XSRF-TOKEN", req.csrfToken());
+    res.locals.csrfToken = req.csrfToken();
     next();
 });
 
 // auth check
 import { adminAuth } from './firebase-admin.js';
-
 app.all('*', async (req, res, next) => {
     const sessionCookie = req.session.idToken || '';
 
@@ -74,10 +75,12 @@ app.all('*', async (req, res, next) => {
 import index from './routes/index.js';
 import meeting from './routes/meeting.js';
 import overview from './routes/overview.js';
+import login from './routes/login.js';
 
 app.use('/', index);
 app.use('/meeting', meeting);
 app.use('/overview', overview);
+app.use('/login', login);
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -94,7 +97,10 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 
-if (process.env.RELEASE?.toLowerCase() === 'true') {
+if (process.env.DEBUG?.toLowerCase() === 'true') {
+    http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
+}
+else {
     try {
         const options = {
             key:  fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'private.key') , 'utf-8'),
@@ -111,14 +117,13 @@ if (process.env.RELEASE?.toLowerCase() === 'true') {
             console.error(
                 `Error: certification file missing, finding '${err.path}'.\n` +
                 `    Maybe you forgot to put certification files in the correct folder.\n` +
-                `    Configure "CERT_DIR_PATH" in .env file if needed.`
+                `    Configure "CERT_DIR_PATH" in .env file if needed.\n`
             );
         }
         else {
             console.error(err);
         }
+        console.log('Fallback to http server.')
+        http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
     }
-}
-else {
-    http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
 }
