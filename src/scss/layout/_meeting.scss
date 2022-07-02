@@ -222,6 +222,7 @@ body.dark{
     --text-color: #ccc;
     --time--text-color: rgba(204, 204, 204, 0.665);
     --border--color: #fff;
+    --input--color:#fff;
     .sidebar header .toggle {
         color: var(--text-color);
     }
@@ -349,13 +350,15 @@ body.dark .switch::before{
     flex-direction: column;
     border: 1px solid var(--border--color);;
     text-align: center;
-    padding: 0.5em;
     grid-area: chat;
     background-color: var(--sidebar-color);
     border-radius: 1em;
     // margin: 1em;
     height: 100%;
+    width: 100%;
     min-height: 0;
+    position: relative;
+    font-size: 0.9em;
 
     &__room {
         flex-grow: 1;
@@ -365,34 +368,37 @@ body.dark .switch::before{
         display: flex;
         flex-direction: column;
         gap: 0.5em;
-        padding: 0.5em;
-
-        .msg {
-            &:not(:last-child) {
-                margin-block-end: 1em;
-            }
-
-            &:last-child {
-                margin-block-end: auto;
-            }
-        }
+        padding: 0.5em ;
     }
 
     &__bar {
         display: flex;
         flex-direction: row;
-        height: 2em;
+        height: 3em;
         gap: 0.5em;
+        margin: 10px;
 
         input {
-            flex-grow: 1;
+            width: calc(100% - 40px);
             height: 100%;
-            width: 100%;
+            background-color: #4f5d7321;
+            border-radius: 50px;
+            color: var(--input--color);
+            font-size: 1.2em;
+            padding: 0 15px;
         }
 
         #send-msg-btn {
-            height: 100%;
-            width: 5em;
+            width: 40px;
+            height: 40px;
+            overflow: hidden;
+            position: relative;
+            margin-left: 5px;
+            cursor: pointer;
+            transition: 0.4s ease-in-out;
+            &:active {
+                transform: scale(0.85);
+            }
         }
     }
 }

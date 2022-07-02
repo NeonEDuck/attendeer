@@ -18,6 +18,7 @@ const servers = {
 // HTML elements
 const camPrefab  = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
+const myMsgPrefab  = document.querySelector('.my-msg');
 
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
@@ -67,6 +68,7 @@ localScreenShare.cam.id = `user-local-screen-share`;
 localScreenShare.cam.hidden = true;
 cpVideoTray.appendChild(localScreenShare.cam);
 const videoTrayDict = {};
+let userAbove = '';
 
 // Firestore
 const calls = collection(firestore, 'calls');
@@ -860,16 +862,44 @@ async function getUserData(userId) {
 async function addMessageToChat(msgData) {
     const { user, text, timestamp } = msgData;
     const timeString = timestamp.toDate().toLocaleString();
-    const { name } = await getUserData(user) || { name: "???" };
 
-    const msg = msgPrefab.cloneNode(true);
-    const msgUser = msg.querySelector('.msg__user');
-    const msgTime = msg.querySelector('.msg__timestamp');
-    const msgText = msg.querySelector('.msg__text');
-    msgUser.innerHTML = name;
-    msgTime.innerHTML = timeString;
-    msgText.innerHTML = text;
-    chatRoom.appendChild(msg);
+    if (localUserId === user){
+        if(user === userAbove) {
+            const msg = myMsgPrefab.cloneNode(true);
+            const msgText = msg.querySelector('.my-msg__text');
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }else {
+            const msg = myMsgPrefab.cloneNode(true);
+            const msgUser = msg.querySelector('.my-msg__user');
+            const msgTime = msg.querySelector('.my-msg__timestamp');
+            const msgText = msg.querySelector('.my-msg__text');
+            msgUser.innerHTML = '你';
+            msgTime.innerHTML = timeString.substr(9, 7);
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }
+    }
+    else {
+        if(user === userAbove) {
+            const msg = msgPrefab.cloneNode(true);
+            const msgText = msg.querySelector('.msg__text');
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }else {
+            const { name } = await getUserData(user) || { name: "???" };
+            const msg = msgPrefab.cloneNode(true);
+            const msgUser = msg.querySelector('.msg__user');
+            const msgTime = msg.querySelector('.msg__timestamp');
+            const msgText = msg.querySelector('.msg__text');
+            msgUser.innerHTML = name;
+            msgTime.innerHTML = timeString.substr(9, 7);
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }
+    }
+
+    userAbove = user;
 }
 
 // async function clearDoc() {

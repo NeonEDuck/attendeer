@@ -21,13 +21,20 @@
         </p>
         <p class="msg__text"></p>
     </li>
+    <li class="my-msg">
+        <p>
+            <span class="my-msg__timestamp"></span>
+            <span class="my-msg__user"></span>
+        </p>
+        <p class="my-msg__text"></p>
+    </li>
 {% endblock prefab %}
 
 {% block content %}
 
-    <div id="meeting-panel">
+    <div id="meeting-panel" class="open-message">
 
-        <nav class="sidebar">
+        <nav class="sidebar close">
             <header>
                 <div class="image-text">
                     <span class="image">
@@ -129,7 +136,7 @@
                         autocomplete="off"
                         required
                     />
-                    <button id="send-msg-btn" class="btn-primary">送出</button>
+                    <button id="send-msg-btn" class="btn-primary"><i class='bx bx-send'></i></button>
                 </div>
             </div>
         </div>

@@ -8,10 +8,41 @@
 
     &__timestamp {
         color: var(--time--text-color);
+        font-size: 10px;
     }
 
     &__text {
+        width: 60%;
+        word-wrap: break-word;
+        background-color: #4f5d73c7;
+        padding: 7px 10px;
+        border-radius: 0 10px 10px 10px;
+        margin: 3px auto 3px 0;
         font-weight: 300;
+        color: #fff;
+    }
+}
+.my-msg {
+    text-align: right;
+
+    &__user {
+        font-weight: 500;
         color: var(--text-color);
+    }
+
+    &__timestamp {
+        color: var(--time--text-color);
+        font-size: 10px;
+    }
+
+    &__text {
+        width: 60%;
+        word-wrap: break-word;
+        background-color: #77b3d4c7;
+        padding: 7px 10px;
+        border-radius: 10px 10px 0 10px;
+        margin: 5px 0 0 auto;
+        font-weight: 300;
+        color: #fff;
     }
 }
