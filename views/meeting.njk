@@ -24,7 +24,77 @@
 {% endblock prefab %}
 
 {% block content %}
+
     <div id="meeting-panel">
+
+        <nav class="sidebar">
+            <header>
+                <div class="image-text">
+                    <span class="image">
+                         <img src="/imgs/logo.png" alt="logo">
+                    </span>
+
+                    <div class="text header-text">
+                        <span class="name">應用統計學</span>
+                        <span class="profession">xxx-xxx</span>
+                    </div>
+                </div>
+
+                <i class='bx bx-chevron-right toggle'></i>
+            </header>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <a href="#">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">裝置設定</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="#">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">會議選項</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="#">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">會議資訊</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="#">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">警醒資訊</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="#">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">背景效果</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">黑暗模式</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+
         <div id="meeting-panel__left">
             <div id="video-tray">
                 <button id="alert-btn" hidden>

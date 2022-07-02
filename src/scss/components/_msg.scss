@@ -3,13 +3,15 @@
 
     &__user {
         font-weight: 500;
+        color: var(--text-color);
     }
 
     &__timestamp {
-        color: var(--clr-gray-700);
+        color: var(--time--text-color);
     }
 
     &__text {
         font-weight: 300;
+        color: var(--text-color);
     }
 }
