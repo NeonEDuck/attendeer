@@ -45,12 +45,12 @@ export function debounce(cb, delay=1000) {
     }
 }
 
+const users = collection(firestore, 'users');
 let _user = null;
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         _user = user
-        const users = collection(firestore, 'users');
         const userDoc = doc(users, user.uid);
         const userSnapshot = await getDoc(userDoc);
 
@@ -74,11 +74,29 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-export function getUser() {
+export function getLocalUser() {
     return new Promise(async (resolve) => {
         while (_user === null) {
             await delay(100);
         }
         resolve(_user);
     });
+}
+
+const userDict = {};
+
+export function subscribeUserData(userId) {
+    return new Promise(async (resolve) => {
+        resolve(await getUserData(userId));
+    });
+}
+
+export async function getUserData(userId) {
+    if (!userDict[userId]) {
+        const userDoc = doc(users, userId);
+
+        const userSnapshot = await getDoc(userDoc);
+        userDict[userId] = userSnapshot?.data();
+    }
+    return userDict[userId];
 }

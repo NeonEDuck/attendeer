@@ -1,7 +1,7 @@
 import { onSnapshot, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { firestore } from "./firebase-config.js";
 import './base.js'
-import { generateCallId, getUser } from './util.js';
+import { generateCallId, getLocalUser } from './util.js';
 
 const addClassTemplate   = document.querySelector('#add-class-template');
 const addClassBtn        = document.querySelector('#add-class-btn');
@@ -42,7 +42,7 @@ let action;
 let attendeeDict = {}
 
 document.onreadystatechange = async () => {
-    const user = await getUser();
+    const user = await getLocalUser();
     if (user) {
         addClassTemplate.hidden = false;
     }
@@ -213,7 +213,7 @@ classModelForm.addEventListener('submit', async (e) => {
     const time     = Number(alertTime.value);
     const notifies = false;
 
-    const { uid } = await getUser();
+    const { uid } = await getLocalUser();
     const attendees = Object.values(attendeeDict);
     if (!attendees.includes(uid)) {
         attendees.push(uid);
