@@ -412,7 +412,7 @@ body.dark .switch::before{
 }
 
 #toolbar {
-    --pad: 1em;
+    --pad: 2.5em;
     position: relative;
     display: flex;
     flex-direction: row;
@@ -422,6 +422,103 @@ body.dark .switch::before{
     gap: 0.5em;
     padding: var(--pad);
 }
+
+.dock {
+    width: auto;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+  
+    .dock-container {
+        padding: 3px;
+        width: auto;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: rgba(83, 83, 83, 0.25);
+        backdrop-filter: blur(13px);
+        -webkit-backdrop-filter: blur(13px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+  
+        .li-bin {
+            margin-left: 20px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.4);
+            padding: 0px 10px;
+        }
+  
+      li {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        vertical-align: bottom;
+        transition: 0.2s;
+        transform-origin: 50% 100%;
+        &:hover {
+            margin: 0px 13px 0px 13px;
+        }
+  
+        .name {
+            position: absolute;
+            top: -35px;
+            color: var(--text-color);
+            height: 10px;
+            width: 150px;
+            padding: 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            visibility: hidden;
+            
+            &::after {
+                content: "";
+                position: absolute;
+                bottom: -10px;
+                width: 150px;
+                height: 0;
+                backdrop-filter: blur(13px);
+                -webkit-backdrop-filter: blur(13px);
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 1px solid rgba(0, 0, 0, 0.5);
+            }
+        }
+        .ico {
+            transition: var(--tran-02);
+        }
+
+        .btn-red .btn-round {
+            width: 94% !important;
+            height: 94% !important;
+            object-fit: cover;
+            transition: 0.2s;
+  
+            &:hover {
+                margin-left: 10px;
+            }
+        }
+      }
+    }
+}
+  
+@for $i from 1 through 4 {
+  .li-#{$i}:hover {
+    .name {
+      visibility: visible !important;
+    }
+  }
+}
+  
 
 #message-btn {
     position: absolute;
@@ -502,3 +599,4 @@ body.dark .switch::before{
         }
     }
 }
+

@@ -24,6 +24,7 @@ const body = document.querySelector('body'),
     searchBtn = body.querySelector(".search-box"),
     modeSwitch = body.querySelector(".toggle-switch"),
     modeText = body.querySelector(".mode-text");
+const icons  = document.querySelectorAll('.ico');
 
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
@@ -208,9 +209,9 @@ enterBtn.addEventListener('click', async () => {
     videoTray.appendChild(localCam.cam);
     videoTray.appendChild(localScreenShare.cam);
     resizeCam();
-    toolbar.insertBefore(micBtn, hangUpBtn);
-    toolbar.insertBefore(webcamBtn, hangUpBtn);
-    toolbar.insertBefore(screenShareBtn, hangUpBtn);
+    icons[0].appendChild(micBtn);
+    icons[1].appendChild(webcamBtn);
+    dockListener();
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
 });
@@ -983,3 +984,36 @@ window.onresize = () => {resizeCam()};
         meetingPanel.classList.toggle("close-message");
         resizeCam();
     });
+function dockListener() {
+    Array.from(icons).forEach((item, index) => {
+        item.addEventListener("mouseover", (e) => {
+            focus(e.target, index);
+        });
+        item.addEventListener("mouseleave", (e) => {
+            Array.from(icons).forEach((item) => {
+                item.style.transform = "scale(1) translateY(0px)";
+            });
+        });
+    });
+    const focus = (elem, index) => {
+        let previous = index - 1;
+        let next = index + 1;
+      
+        if (previous == -1) {
+            console.log("first element");
+            // elem.style.transform = "scale(1.5) translateY(-10px)";
+            icons[index].style.transform  = "scale(1.5) translateY(-10px)";
+            icons[next].style.transform = "scale(1.2) translateY(-6px)";
+        } else if (next == icons.length) {
+            // elem.style.transform = "scale(1.5) translateY(-10px)";
+            icons[index].style.transform  = "scale(1.5) translateY(-10px)";
+            icons[previous].style.transform = "scale(1.2) translateY(-6px)";
+            console.log("last element");
+        } else {
+            // elem.style.transform = "scale(1.5) translateY(-10px)";
+            icons[index].style.transform  = "scale(1.5) translateY(-10px)";
+            icons[previous].style.transform = "scale(1.2) translateY(-6px)";
+            icons[next].style.transform = "scale(1.2) translateY(-6px)";
+        }
+    };
+}    

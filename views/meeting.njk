@@ -118,11 +118,34 @@
             </div>
 
             <div id="toolbar">
+
+                <div class="dock">
+                    <div class="dock-container">
+                        <li class="li-1">
+                            <div class="name">麥克風</div>
+                            <div class="ico" id="ico"></div>
+                        </li>
+                        <li class="li-2">
+                            <div class="name">視訊</div>
+                            <div class="ico" id="ico"></div>
+                        </li>
+                        <li class="li-3">
+                            <div class="name">螢幕分享</div>
+                            <div class="ico" id="ico"><button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button></div>
+                        </li>
+                        <li class="li-bin li-4">
+                            <div class="name">退出會議</div>
+                            <div class="ico" id="ico"><button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang_up.svg' %}</button></div>
+                        </li>
+
+                    </div>
+                </div>
+
                 {# <span id="call-id">{{ callId }}</span> #}
                 <input id="call-id" type="text" value="{{ callId }}" hidden>
                 {# <input id="call-input" type="text"> #}
-                <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button>
-                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang_up.svg' %}</button>
+                
+                
                 <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
             </div>
         </div>
