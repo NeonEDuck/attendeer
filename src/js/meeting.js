@@ -17,6 +17,13 @@ const servers = {
 const camPrefab  = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
 const myMsgPrefab  = document.querySelector('.my-msg');
+const body = document.querySelector('body'),
+    sidebar = body.querySelector(".sidebar"),
+    sidebarRight = body.querySelector(".sidebar-right"),
+    toggle = body.querySelector(".toggle"),
+    searchBtn = body.querySelector(".search-box"),
+    modeSwitch = body.querySelector(".toggle-switch"),
+    modeText = body.querySelector(".mode-text");
 
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
@@ -140,6 +147,7 @@ webcamBtn.addEventListener('click', async () => {
 
 enterBtn.addEventListener('click', async () => {
     console.log('create user doc');
+    body.classList.toggle("dark");
     await setDoc(localUserDoc, {});
 
     const userDocs = await getDocs(participants);
@@ -228,18 +236,6 @@ hangUpBtn.addEventListener('click', async () => {
 screenShareBtn.addEventListener('click', async () => {
     setupScreenShare();
 })
-
-messageBtn.addEventListener('click', async () => {
-    if (meetingPanel.classList.contains('open-message')) {
-        meetingPanel.classList.remove('open-message');
-        chat.hidden = false;
-    }
-    else {
-        meetingPanel.classList.add('open-message');
-        chat.hidden = true;
-    }
-    resizeCam();
-});
 
 sendMsgBtn.addEventListener('click', async () => {
     let text = msgInput?.value?.trim();
@@ -967,12 +963,6 @@ window.onresize = () => {resizeCam()};
 //     e.preventDefault();
 // };
 //meetingPanel
-const body = document.querySelector('body'),
-    sidebar = body.querySelector(".sidebar"),
-    toggle = body.querySelector(".toggle"),
-    searchBtn = body.querySelector(".search-box"),
-    modeSwitch = body.querySelector(".toggle-switch"),
-    modeText = body.querySelector(".mode-text");
     
     modeSwitch.addEventListener("click", () =>{
         body.classList.toggle("dark");
@@ -986,4 +976,10 @@ const body = document.querySelector('body'),
 
     toggle.addEventListener("click", () =>{
         sidebar.classList.toggle("close");
+    });
+
+    messageBtn.addEventListener('click', async () => {
+        sidebarRight.classList.toggle("close");
+        meetingPanel.classList.toggle("close-message");
+        resizeCam();
     });

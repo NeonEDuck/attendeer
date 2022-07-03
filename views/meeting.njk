@@ -32,7 +32,7 @@
 
 {% block content %}
 
-    <div id="meeting-panel" class="open-message">
+    <div id="meeting-panel" class="close-message">
 
         <nav class="sidebar close">
             <header>
@@ -127,10 +127,25 @@
             </div>
         </div>
 
-        <div id="meeting-panel__right">
+        <div id="meeting-panel__right" class="sidebar-right close">
+            <header>
+                <div class="segmented-control">
+      
+                    <input type="radio" name="radio2" value="3" id="tab-1" checked/>
+                    <label for="tab-1" class= "segmented-control__1">
+                        <p>聊天室</p></label>
+
+                    <input type="radio" name="radio2" value="4" id="tab-2" />
+                    <label for="tab-2" class= "segmented-control__2">
+                        <p>參與者</p></label>
+
+                    <div class="segmented-control__color"></div>
+                
+                </div>
+            </header>
             <div id="chat">
                 <ul id="chat__room" class="margin-block-end-2"></ul>
-
+                
                 <div id="chat__bar">
                     <input
                         id="msg-input"
