@@ -26,6 +26,7 @@ const body = document.querySelector('body'),
     modeText = body.querySelector(".mode-text");
 const icons  = document.querySelectorAll('.ico');
 
+const camMenu  = document.querySelector('#cam__menu');
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
 const meetingPanel = document.querySelector('#meeting-panel');
@@ -214,6 +215,8 @@ enterBtn.addEventListener('click', async () => {
     dockListener();
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
+    document.getElementById("cam__menu").style.display = "flex";
+
 });
 
 hangUpBtn.addEventListener('click', async () => {
