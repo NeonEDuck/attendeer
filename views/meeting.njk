@@ -30,14 +30,14 @@
             <span class="msg__user"></span>
             <span class="msg__timestamp"></span>
         </p>
-        <p class="msg__text"></p>
+        <p class="msg__text" data-content-after=":after"></p>
     </li>
     <li class="my-msg">
         <p>
             <span class="my-msg__timestamp"></span>
             <span class="my-msg__user"></span>
         </p>
-        <p class="my-msg__text"></p>
+        <p class="my-msg__text" data-content-before=":before"></p>
     </li>
 {% endblock prefab %}
 
@@ -66,34 +66,34 @@
                 <div class="menu">
                     <ul class="menu-links">
                         <li class="nav-link">
-                            <a href="#">
+                            <button class="nav-btn">
                                 <i class='bx bxs-cog icon'></i>
                                 <span class="text nav-text">裝置設定</span>
-                            </a>
+                            </button>
                         </li>
                         <li class="nav-link">
-                            <a href="#">
+                            <button class="nav-btn">
                                 <i class='bx bxs-cog icon'></i>
                                 <span class="text nav-text">會議選項</span>
-                            </a>
+                            </button>
                         </li>
                         <li class="nav-link">
-                            <a href="#">
+                            <button class="nav-btn">
                                 <i class='bx bxs-cog icon'></i>
                                 <span class="text nav-text">會議資訊</span>
-                            </a>
+                            </button>
                         </li>
                         <li class="nav-link">
-                            <a href="#">
+                            <button class="nav-btn">
                                 <i class='bx bxs-cog icon'></i>
                                 <span class="text nav-text">警醒資訊</span>
-                            </a>
+                            </button>
                         </li>
                         <li class="nav-link">
-                            <a href="#">
+                            <button class="nav-btn">
                                 <i class='bx bxs-cog icon'></i>
                                 <span class="text nav-text">背景效果</span>
-                            </a>
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -113,6 +113,14 @@
                 </div>
             </div>
         </nav>
+
+        <div class="floating-container">
+            <div class="floating">
+                <div class = "floating-alert">
+                    {% include './sidebar/alert-info.njk' %}
+                </div>
+            </div>
+        </div>
 
         <div id="meeting-panel__left">
             <div id="cam-area">

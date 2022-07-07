@@ -23,6 +23,7 @@ fieldset {
 legend {
     vertical-align: super;
     margin-inline-start: 0.5em;
+    color: var(--text-color);
 }
 
 .field {
@@ -30,6 +31,7 @@ legend {
     justify-content: flex-start;
     align-items: center;
     gap: 0.5em;
+    color: var(--text-color);
 }
 
 .content {
@@ -56,4 +58,9 @@ table {
 
 h1 {
     font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+label {
+    color: var(--text-color);
 }

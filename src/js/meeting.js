@@ -2,6 +2,7 @@ import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
+import { sidebarListener } from './sidebar.js';
 
 const servers = {
     iceServers: [
@@ -14,16 +15,12 @@ const servers = {
 
 
 // HTML elements
+const body = document.querySelector('body');
+
 const camPrefab  = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
 const myMsgPrefab  = document.querySelector('.my-msg');
-const body = document.querySelector('body'),
-    sidebar = body.querySelector(".sidebar"),
-    sidebarRight = body.querySelector(".sidebar-right"),
-    toggle = body.querySelector(".toggle"),
-    searchBtn = body.querySelector(".search-box"),
-    modeSwitch = body.querySelector(".toggle-switch"),
-    modeText = body.querySelector(".mode-text");
+const sidebarRight = document.querySelector(".sidebar-right");
 const icons  = document.querySelectorAll('.ico');
 
 const camMenu  = document.querySelector('#cam__menu');
@@ -90,6 +87,7 @@ let localClients;
 
 // Check login
 document.onreadystatechange = async () => {
+    document.getElementById("cam__menu").style.display = "none";
     const user = await getUser();
     let callDocSnapshot;
 
@@ -148,6 +146,7 @@ webcamBtn.addEventListener('click', async () => {
 });
 
 enterBtn.addEventListener('click', async () => {
+    document.getElementById("cam__menu").style.display = "flex";
     console.log('create user doc');
     body.classList.toggle("dark");
     await setDoc(localUserDoc, {});
@@ -215,7 +214,8 @@ enterBtn.addEventListener('click', async () => {
     dockListener();
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
-    document.getElementById("cam__menu").style.display = "flex";
+
+    sidebarListener();
 
 });
 
@@ -881,12 +881,19 @@ async function getUserData(userId) {
 
 async function addMessageToChat(msgData) {
     const { user, text, timestamp } = msgData;
-    const timeString = timestamp.toDate().toLocaleString();
+    const date = new Date(timestamp.seconds * 1000);
+    let YY = date.getFullYear();
+    let MM = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth();
+    let DD = date.getDate() < 10 ? "0" + date.getDate() :date.getDate();
+    let hh = date.getHours() < 10 ? "0" + date.getHours() :date.getHours();
+    let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() :date.getMinutes();
+    let YMDhm = YY + "/" + MM + "/" + DD +" " + hh + ":" + mm;
 
     if (localUserId === user){
         if(user === userAbove) {
             const msg = myMsgPrefab.cloneNode(true);
             const msgText = msg.querySelector('.my-msg__text');
+            msgText.attributes[1].value = YMDhm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }else {
@@ -894,8 +901,9 @@ async function addMessageToChat(msgData) {
             const msgUser = msg.querySelector('.my-msg__user');
             const msgTime = msg.querySelector('.my-msg__timestamp');
             const msgText = msg.querySelector('.my-msg__text');
+            msgText.attributes[1].value = YMDhm;
             msgUser.innerHTML = '你';
-            msgTime.innerHTML = timeString.substr(9, 7);
+            msgTime.innerHTML = hh + ":" + mm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }
@@ -904,6 +912,7 @@ async function addMessageToChat(msgData) {
         if(user === userAbove) {
             const msg = msgPrefab.cloneNode(true);
             const msgText = msg.querySelector('.msg__text');
+            msgText.attributes[1].value = YMDhm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }else {
@@ -912,8 +921,9 @@ async function addMessageToChat(msgData) {
             const msgUser = msg.querySelector('.msg__user');
             const msgTime = msg.querySelector('.msg__timestamp');
             const msgText = msg.querySelector('.msg__text');
+            msgText.attributes[1].value = YMDhm;
             msgUser.innerHTML = name;
-            msgTime.innerHTML = timeString.substr(9, 7);
+            msgTime.innerHTML = hh + ":" + mm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }
@@ -967,29 +977,16 @@ window.onresize = () => {resizeCam()};
 //     e.preventDefault();
 // };
 //meetingPanel
-    
-    modeSwitch.addEventListener("click", () =>{
-        body.classList.toggle("dark");
-        
-        if(body.classList.contains("dark")){
-            modeText.innerHTML = "燈光模式";
-        }else{
-            modeText.innerHTML = "黑暗模式";
-        }
-    });
-
-    toggle.addEventListener("click", () =>{
-        sidebar.classList.toggle("close");
-    });
 
     messageBtn.addEventListener('click', async () => {
         sidebarRight.classList.toggle("close");
         meetingPanel.classList.toggle("close-message");
         resizeCam();
     });
+
 function dockListener() {
     Array.from(icons).forEach((item, index) => {
-        item.addEventListener("mouseover", (e) => {
+        item.addEventListener("mouseenter", (e) => {
             focus(e.target, index);
         });
         item.addEventListener("mouseleave", (e) => {
@@ -1004,17 +1001,14 @@ function dockListener() {
       
         if (previous == -1) {
             console.log("first element");
-            // elem.style.transform = "scale(1.5) translateY(-10px)";
-            icons[index].style.transform  = "scale(1.5) translateY(-10px)";
+            elem.style.transform = "scale(1.5) translateY(-10px)";
             icons[next].style.transform = "scale(1.2) translateY(-6px)";
         } else if (next == icons.length) {
-            // elem.style.transform = "scale(1.5) translateY(-10px)";
-            icons[index].style.transform  = "scale(1.5) translateY(-10px)";
+            elem.style.transform = "scale(1.5) translateY(-10px)";
             icons[previous].style.transform = "scale(1.2) translateY(-6px)";
             console.log("last element");
         } else {
-            // elem.style.transform = "scale(1.5) translateY(-10px)";
-            icons[index].style.transform  = "scale(1.5) translateY(-10px)";
+            elem.style.transform = "scale(1.5) translateY(-10px)";
             icons[previous].style.transform = "scale(1.2) translateY(-6px)";
             icons[next].style.transform = "scale(1.2) translateY(-6px)";
         }
