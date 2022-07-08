@@ -669,19 +669,25 @@ body.dark .switch::before{
         display: flex;
         flex-direction: column;
         padding: 0.5em ;
-        .my-msg__text:hover::before {
+        .my-msg__date {
             position: relative;
-            top: 0;
-            left: -150px;
+        }
+        .msg__date {
+            position: relative;
+        }
+        .my-msg__date:hover::after {
+            position: absolute;
+            bottom: 0;
+            left: 10px;
             color: var(--text-color);
             font-size: 1px;
             padding: 5px;
             content: attr(data-content-before);
         }
-        .msg__text:hover::after {
-            position: relative;
-            top: 0;
-            right: -150px;
+        .msg__date:hover::after {
+            position: absolute;
+            bottom: 0;
+            right: 10px;
             color: var(--text-color);
             font-size: 1px;
             padding: 5px;

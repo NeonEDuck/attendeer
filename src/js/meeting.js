@@ -893,7 +893,8 @@ async function addMessageToChat(msgData) {
         if(user === userAbove) {
             const msg = myMsgPrefab.cloneNode(true);
             const msgText = msg.querySelector('.my-msg__text');
-            msgText.attributes[1].value = YMDhm;
+            const myMsgDate = msg.querySelector('.my-msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }else {
@@ -901,7 +902,8 @@ async function addMessageToChat(msgData) {
             const msgUser = msg.querySelector('.my-msg__user');
             const msgTime = msg.querySelector('.my-msg__timestamp');
             const msgText = msg.querySelector('.my-msg__text');
-            msgText.attributes[1].value = YMDhm;
+            const myMsgDate = msg.querySelector('.my-msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
             msgUser.innerHTML = '你';
             msgTime.innerHTML = hh + ":" + mm;
             msgText.innerHTML = text;
@@ -912,7 +914,8 @@ async function addMessageToChat(msgData) {
         if(user === userAbove) {
             const msg = msgPrefab.cloneNode(true);
             const msgText = msg.querySelector('.msg__text');
-            msgText.attributes[1].value = YMDhm;
+            const myMsgDate = msg.querySelector('.msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }else {
@@ -921,7 +924,8 @@ async function addMessageToChat(msgData) {
             const msgUser = msg.querySelector('.msg__user');
             const msgTime = msg.querySelector('.msg__timestamp');
             const msgText = msg.querySelector('.msg__text');
-            msgText.attributes[1].value = YMDhm;
+            const myMsgDate = msg.querySelector('.msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
             msgUser.innerHTML = name;
             msgTime.innerHTML = hh + ":" + mm;
             msgText.innerHTML = text;
