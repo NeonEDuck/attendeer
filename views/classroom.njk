@@ -1,0 +1,253 @@
+{% extends 'util/base.njk' %}
+
+{% block script %}
+    <script src="/js/classroom.js" type="module" defer></script>
+{% endblock script %}
+
+{% block prefab %}
+{% endblock prefab %}
+
+{% block content %}
+    <input id="call-id" type="text" value="{{ callId }}" hidden>
+    <main>
+        <div class="flex flex-row padding-8">
+            <div class="flex flex-column flex-item-2 gap-4">
+                <h1 id="class-name"></h1>
+                <div class="flex flex-row flex-align flex-wrap">
+                    <p style="text-wrap: no-wrap;">{{ callId }}</p>
+                    <div class="flex flex-row margin-inline-start-auto">
+                        <button class="btn-transparent">{% include './svg/setting.svg' %}</button>
+                        <button class="btn-primary">進入會議</button>
+                    </div>
+                </div>
+                <div class="flex flex-center">
+                    <table>
+                        <thead>
+                            <th>
+                                <td>星期一</td>
+                                <td>星期二</td>
+                                <td>星期三</td>
+                                <td>星期四</td>
+                                <td>星期五</td>
+                                <td>星期六</td>
+                                <td>星期日</td>
+                            </th>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>一</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>二</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>三</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>四</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>五</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>六</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>七</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>八</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>九</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>十</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>十一</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>十二</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>十三</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>十四</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex flex-row flex-item-5 gap-4 padding-4">
+                <div class="flex flex-column gap-4">
+                    <div class="post flex flex-column">
+                        <div class="flex flex-row flex-align gap-2">
+                            <img src="/imgs/dummy_profile.png" alt="">
+                            <div class="flex flex-column">
+                                <p>name</p>
+                                <div class="flex flex-row">
+                                    <p>date</p>
+                                    <p>作業</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
+
+                        <div class="flex flex-column">
+                            <div class="flex flex-row flex-align gap-2">
+                                <img src="/imgs/dummy_profile.png" alt="">
+                                <div class="flex flex-column">
+                                    <p>name</p>
+                                    <div class="flex flex-row">
+                                        <p>date</p>
+                                        <p>作業</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-row flex-align gap-2">
+                                <img src="/imgs/dummy_profile.png" alt="">
+                                <div class="flex flex-column">
+                                    <p>name</p>
+                                    <div class="flex flex-row">
+                                        <p>date</p>
+                                        <p>作業</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-row flex-align gap-2">
+                            <img src="/imgs/dummy_profile.png" alt="">
+                            <input type="text" class="flex-item-1">
+                            <button class="btn-primary">送出</button>
+                        </div>
+                    </div>
+                    <div class="post flex flex-column">
+                        <div class="flex flex-row flex-align gap-2">
+                            <img src="/imgs/dummy_profile.png" alt="">
+                            <div class="flex flex-column">
+                                <p>name</p>
+                                <div class="flex flex-row">
+                                    <p>date</p>
+                                    <p>作業</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
+
+                        <div class="flex flex-row flex-align gap-2">
+                            <img src="/imgs/dummy_profile.png" alt="">
+                            <input type="text" class="flex-item-1">
+                            <button class="btn-primary">送出</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-column">
+                    <button class="btn-transparent">公告</button>
+                    <button class="btn-transparent">作業</button>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock content %}

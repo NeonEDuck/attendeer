@@ -68,7 +68,7 @@ document.onreadystatechange = async () => {
                 classCard.dataset.attendees = data.attendees;
 
                 classCardLink.addEventListener('click', () => {
-                    window.location.href = `/meeting/${classCard.dataset.id}`;
+                    window.location.href = `/class/${classCard.dataset.id}`;
                 });
 
                 classCardSetting.addEventListener('click', async (e) => {
