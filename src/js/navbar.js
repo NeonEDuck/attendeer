@@ -10,6 +10,7 @@ const signOutBtn = document.querySelector('#sign-out');
 onAuthStateChanged(auth, (user) => {
     if (user) {
         loginText.innerHTML = user.displayName;
+        profilePic.src = user.photoURL
         signInBtn.hidden = true;
         signOutBtn.hidden = false;
     }
