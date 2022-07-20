@@ -1,18 +1,94 @@
-{% extends "util/base.njk" %}
+{% extends 'util/base.njk' %}
 
 {% block script %}
     <script src="/js/index.js" type="module" defer></script>
 {% endblock script %}
 
+{% block prefab %}
+    <div class="class-card">
+        <img class="class-card__background" src="/imgs/dummy_profile.png">
+        <p class="class-card__name"></p>
+        <p class="class-card__id"></p>
+        <div class="class-card__btn-group">
+            <button class="class-card__remove btn-round btn-red">{% include './svg/cross.svg' %}</button>
+            <button class="class-card__setting btn-round btn-primary">{% include './svg/setting.svg' %}</button>
+            <button class="class-card__link btn-round btn-primary">{% include './svg/right_arrow.svg' %}</button>
+        </div>
+    </div>
+
+    <table>
+        <tr class="attendee-row" data-id="">
+            <td class="attendee-row__name"></td>
+            <td class="attendee-row__email"></td>
+        </tr>
+    </table>
+{% endblock prefab %}
+
 {% block content %}
-<main class="flex flex-center flex-column gap-8">
-    {# <img id="logo-title" src="/imgs/logo_title.png" alt="AttenDeer logo"> #}
-    <div id="logo-title">
-        {% include "./svg/logo_title.svg" %}
-    </div>
-    <div class="flex flex-row gap-4">
-        <input id="call-input" type="text" placeholder="會議代碼">
-        <button id="call-btn" class="btn-primary">加入</button>
-    </div>
-</main>
+    <main>
+        <div class="class-list">
+            <div id="add-class-template" class="class-card-template flex-center flex-row" hidden>
+                <button id="add-class-btn" class="btn-round btn-primary">新增課程</button>
+            </div>
+        </div>
+
+        <dialog id="class-modal">
+            <div class="flex flex-column gap-4">
+                <h1 id="class-modal__title"></h1>
+
+                <button id="close-modal-btn" class="btn-round btn-red">{% include './svg/cross.svg' %}</button>
+                <form id="close-modal__form" class="flex flex-column gap-4">
+                    <input id="class-id" name="class-id" type="text" hidden>
+
+                    <fieldset>
+                        <legend>資訊</legend>
+                        <div class="field">
+                            <label for="class-name">課程名稱:</label>
+                            <input id="class-name" name="class-name" type="text" autocomplete="off" required>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>警醒</legend>
+                        <div class="field">
+                            <label for="alert-interval">警醒間隔:</label>
+                            <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                            <label for="alert-interval">分鐘</label>
+                        </div>
+                        <div class="field">
+                            <label for="alert-time">警醒持續時間:</label>
+                            <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
+                            <label for="alert-time">分鐘</label>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>參與者</legend>
+                        <div class="field">
+                            <label for="attendee-input">Email:</label>
+                            <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
+                            <button type="button" id="add-attendee-btn" class="btn-primary">新增參與者</button>
+                        </div>
+                        <table id="attendee-table">
+                            <thead>
+                                <th>email</th>
+                                <th>名字</th>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </fieldset>
+                    <input type="submit" id="submit-form" hidden disabled/>
+                </form>
+                <button type="button" id="submit-class" class="margin-inline-start-auto btn-primary">建立課程</button>
+                <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+            </div>
+        </dialog>
+
+        <dialog id="confirm-modal">
+            <h1 id="confirm-modal__title">你確定要刪除<span></span>?</h1>
+
+            <div class="flex flex-row gap-8 margin-block-start-4">
+                <button id="modal-cancel-btn" class="margin-inline-start-auto">取消</button>
+                <button id="modal-confirm-btn" class="btn-red">刪除</button>
+            </div>
+        </dialog>
+    </main>
 {% endblock content %}

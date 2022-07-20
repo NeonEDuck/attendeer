@@ -21,5 +21,5 @@ document.onreadystatechange = async () => {
 };
 
 callBtn.addEventListener('click', () => {
-    window.location.href = `/meeting/${callId}`
+    window.location.href = `/${callId}/meeting`
 });
