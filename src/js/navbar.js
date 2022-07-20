@@ -1,8 +1,10 @@
 import { auth } from "./firebase-config.js";
 import { onAuthStateChanged, signOut, GoogleAuthProvider } from "firebase/auth";
 
-const loginText = document.querySelector('#login-text');
-const signInBtn = document.querySelector('#sign-in');
+const profile    = document.querySelector('#navbar-profile');
+const profilePic = document.querySelector('#navbar-profile__picture');
+const loginText  = document.querySelector('#login-text');
+const signInBtn  = document.querySelector('#sign-in');
 const signOutBtn = document.querySelector('#sign-out');
 
 onAuthStateChanged(auth, (user) => {
@@ -27,4 +29,13 @@ signInBtn.addEventListener('click', async () => {
 signOutBtn.addEventListener('click', async () => {
     await signOut(auth);
     window.location.href = "/";
+});
+
+profilePic.addEventListener('click', () => {
+    if (profile.classList.contains('open')) {
+        profile.classList.remove('open');
+    }
+    else {
+        profile.classList.add('open');
+    }
 });
