@@ -6,10 +6,10 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "build": "webpack build && sass ./src/scss/main.scss ./public/css/main.css",
+    "build": "webpack build --mode=production && sass ./src/scss/main.scss ./public/css/main.css --style compressed",
     "build-and-start": "npm run build && npm run start",
     "watch:webpack": "webpack --watch",
-    "watch:nodemon": "nodemon --ext js,mjs,json,njk app.js --ignore src/",
+    "watch:nodemon": "nodemon --ext js,mjs,json,njk,svg app.js --ignore src/",
     "watch:sass": "sass ./src/scss/main.scss ./public/css/main.css --watch",
     "debug": "run-p watch:webpack watch:sass watch:nodemon"
   },
@@ -17,6 +17,7 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "body-parser": "^1.19.2",
+    "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "csurf": "^1.11.0",
     "dotenv": "^16.0.0",
@@ -35,6 +36,7 @@
     "webrtc-adapter": "^8.1.1"
   },
   "devDependencies": {
+    "compression-webpack-plugin": "^10.0.0",
     "webpack": "^5.72.0",
     "webpack-cli": "^4.9.2"
   }

@@ -1,9 +1,7 @@
-import { firestore, auth } from './firebase-config.js';
+import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
 import 'webrtc-adapter';
-import { getUser } from './login.js';
-import { delay, debounce } from './util.js';
+import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
 
 const servers = {
     iceServers: [
@@ -18,14 +16,18 @@ const servers = {
 // HTML elements
 const camPrefab  = document.querySelector('.cam');
 const msgPrefab  = document.querySelector('.msg');
+
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
 const meetingPanel = document.querySelector('#meeting-panel');
-const micBtn  = document.querySelector('#mic-btn');
-const webcamBtn  = document.querySelector('#webcam-btn');
-const enterBtn   = document.querySelector('#enter-btn');
+const micBtn       = document.querySelector('#mic-btn');
+const webcamBtn    = document.querySelector('#webcam-btn');
+const enterBtn     = document.querySelector('#enter-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
-const hangUpBtn  = document.querySelector('#hang-up-btn');
+const hangUpBtn    = document.querySelector('#hang-up-btn');
+const alertBtn     = document.querySelector('#alert-btn');
+const alertBtnTime = document.querySelector('#alert-btn__time');
+const camArea    = document.querySelector('#cam-area');
 const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
 const chatRoom   = document.querySelector('#chat__room')
@@ -69,6 +71,7 @@ const calls = collection(firestore, 'calls');
 const users = collection(firestore, 'users');
 const callDoc = doc(calls, callId);
 const participants = collection(callDoc, 'participants');
+const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
 let localUserDoc;
 let localClients;
@@ -137,9 +140,9 @@ enterBtn.addEventListener('click', async () => {
     await setDoc(localUserDoc, {});
 
     const userDocs = await getDocs(participants);
-    userDocs.forEach(async (remoteDoc) => {
+    for (const remoteDoc of userDocs.docs) {
         if (remoteDoc.id === localUserId) {
-            return;
+            continue;
         }
 
         const localClientsRemoteDoc = doc(localClients, remoteDoc.id)
@@ -150,7 +153,7 @@ enterBtn.addEventListener('click', async () => {
         if (!(await getDoc(remoteClientsLocalDoc)).exists()) {
             await setDoc(remoteClientsLocalDoc, {});
         }
-    });
+    }
 
     setupNewUserListener();
 
@@ -178,6 +181,17 @@ enterBtn.addEventListener('click', async () => {
 
         chatRoom.scrollTop = chatRoom.scrollHeight;
     });
+
+    const { alert, host } = (await getDoc(callDoc)).data();
+    const { interval, time: duration } = alert;
+    if (localUserId === host){
+        console.log('您是會議主辦人');
+        setupAlertScheduler(interval, duration);
+    }
+    else {
+        console.log('您不是會議主辦人');
+        setupAlertListener();
+    }
 
     confirmPanel.remove();
     videoTray.appendChild(localCam.cam);
@@ -243,6 +257,21 @@ msgInput.addEventListener("keyup", function(event) {
     if (event.keyCode === 13) { // press enter
         event.preventDefault();
         sendMsgBtn.click();
+    }
+});
+
+alertBtn.addEventListener('click', async () => {
+    if (alertBtn.dataset.id) {
+        const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
+        const participants = collection(alertDoc, 'participants');
+        const userDoc      = doc(participants, localUserId);
+
+        const data = {
+            timestamp: new Date()
+        }
+        await setDoc(userDoc, data);
+
+        alertBtn.hidden = true;
     }
 });
 
@@ -366,6 +395,7 @@ async function setupUserListener(remoteId) {
                     peerDict[doc.id].pc.setRemoteDescription(desc);
                     peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
                     peerDict[doc.id].streams = streams;
+                    peerDict[doc.id].polite = true;
                     console.log('set remote answer');
                 }
                 else {
@@ -376,7 +406,7 @@ async function setupUserListener(remoteId) {
                 console.log('saw offer');
 
                 const isStateGood = peerDict[doc.id].pc.signalingState === 'stable' ||
-                                    peerDict[doc.id].pc.signalingState === 'have-local-offer';
+                                    (peerDict[doc.id].polite === false && peerDict[doc.id].pc.signalingState === 'have-local-offer');
                 console.log(`offer condition [signalingState]: ${isStateGood}, state = ${peerDict[doc.id].pc.signalingState}`);
                 console.log(`offer condition [!offerCreated]: ${!peerDict[doc.id]?.offerCreated}`);
                 console.log(`offer condition [new timestamp]: ${timestamp > peerDict[doc.id]?.timestamp}`);
@@ -386,6 +416,7 @@ async function setupUserListener(remoteId) {
                     peerDict[doc.id].pc.setRemoteDescription(desc);
                     peerDict[doc.id].oldStreams = peerDict[doc.id].streams || streams;
                     peerDict[doc.id].streams = streams;
+                    peerDict[doc.id].polite = false;
                     console.log('set remote offer');
                     answerToUser(doc.id);
                 }
@@ -432,6 +463,73 @@ async function setupCandidateListener(remoteId) {
                 let candidate = new RTCIceCandidate(data);
                 if (candidate && data) {
                     peerDict[remoteId].pc.addIceCandidate(candidate);
+                }
+            }
+        });
+    });
+}
+
+function setupAlertScheduler(interval, duration) {
+    console.log('setupAlertScheduler');
+    setInterval(async () => {
+        const alertDoc = doc(alertRecords);
+        const data = {
+            timestamp: new Date(),
+            duration: duration, //時長
+            alertType: 'click',
+        };
+        console.log('add alert');
+
+        await setDoc(alertDoc, data);
+    }, interval * MINUTE);
+}
+
+function setupAlertListener() {
+    console.log('setupAlertListener');
+    onSnapshot(alertRecords, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+                const { alertType, duration, timestamp: timestampStart } = change.doc.data();
+                const timestampEnd = new Date(timestampStart.toMillis() + duration * MINUTE);
+                const now = new Date();
+                if (timestampStart <= now && now < timestampEnd) {
+                    console.log('see alert');
+                    alertBtn.hidden = false;
+                    alertBtn.dataset.id = change.doc.id;
+
+                    if (Math.random() < 0.5) {
+                        alertBtn.style.left  = `${getRandom(50)}%`;
+                        alertBtn.style.right = `initial`;
+                    }
+                    else {
+                        alertBtn.style.right = `${getRandom(50)}%`;
+                        alertBtn.style.left  = `initial`;
+                    }
+
+                    if (Math.random() < 0.5) {
+                        alertBtn.style.top     = `${getRandom(50)}%`;
+                        alertBtn.style.bottom  = `initial`;
+                    }
+                    else {
+                        alertBtn.style.bottom  = `${getRandom(50)}%`;
+                        alertBtn.style.top     = `initial`;
+                    }
+
+                    const countDownInterval = setIntervalImmediately(() => {
+                        const now = new Date();
+
+                        const distance = timestampEnd.getTime() - now.getTime();
+
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
+                    }, 1000);
+
+                    setTimeout(() => {
+                        clearInterval(countDownInterval);
+                        alertBtn.hidden = true;
+                    }, timestampEnd.getTime() - now.getTime());
                 }
             }
         });
@@ -488,6 +586,7 @@ function addPeer(id) {
             candidatesListener: null,
             streams: null,
             oldStreams: null,
+            polite: null,
         };
     }
     else {
@@ -560,7 +659,7 @@ function createPC(userId) {
                 console.log(`connectionState: ${userId} failed`);
 
                 //? 嘗試重新連線，不確定是否能成功，需要測試
-                peerDict[userId].pc.restartIce();
+                pc.onnegotiationneeded({ iceRestart: true });
                 break;
 
         }
@@ -786,8 +885,8 @@ async function addMessageToChat(msgData) {
 
 function resizeCam() {
     const firstCam = videoTray.querySelector(':first-child');
-    const x = 1 + Math.floor((videoTray.clientWidth - (16*2) - (16*15)) / (16*16));
-    const y = 1 + Math.floor((videoTray.clientHeight - (16*2) - (16*15/16*9)) / (16*9));
+    const x = 1 + Math.floor((camArea.clientWidth - (16*2) - (16*15)) / (16*16));
+    const y = 1 + Math.floor((camArea.clientHeight - (16*2) - (16*15/16*9)) / (16*9));
     const count = videoTray.children.length;
     [...videoTray.children].slice(0, x*y).forEach((cam) => {
         cam.removeAttribute('overflowed');
