@@ -2,6 +2,30 @@
     display: flex;
 }
 
+.flex-justify {
+    justify-content: center;
+}
+
+.flex-justify-start {
+    justify-content: start;
+}
+
+.flex-justify-end {
+    justify-content: end;
+}
+
+.flex-align {
+    align-items: center;
+}
+
+.flex-align-start {
+    align-items: flex-start;
+}
+
+.flex-align-end {
+    align-items: flex-end;
+}
+
 .flex-center {
     justify-content: center;
     align-items: center;
