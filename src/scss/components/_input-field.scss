@@ -8,16 +8,37 @@ input[type=text] {
     border-radius: 1em;
     background: var(--clr-gray-400);
     color: black;
+    height: 2em;
 }
 
 input[type=number] {
     text-decoration: none;
     border: none;
-    font-size: 1em;
+    font-size: 1rem;
     line-height: 1em;
     margin: 0;
     padding: 0.5em 1em;
     border-radius: 1em;
     background: var(--clr-gray-400);
     color: black;
+    height: 2em;
+}
+
+textarea {
+    text-decoration: none;
+    border: none;
+    font-size: 1rem;
+    line-height: 1em;
+    margin: 0;
+    padding: 0.5em 1em;
+    border-radius: 1em 1em 0 1em;
+    background: var(--clr-gray-400);
+    color: black;
+    height: 2em;
+}
+
+textarea.auto-resize {
+    border-radius: 1em;
+    resize: none;
+    height: 2em;
 }
