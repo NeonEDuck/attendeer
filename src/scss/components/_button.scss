@@ -1,3 +1,5 @@
+@import '../base/base';
+
 @mixin content-color($color) {
     color: $color;
 
@@ -34,21 +36,6 @@ button {
     }
 }
 
-.btn-transparent {
-    background-color: transparent;
-    @include content-color(black);
-}
-
-.btn-red {
-    background-color: red;
-    @include content-color(white);
-}
-
-.btn-primary {
-    background-color: var(--clr-primary-700);
-    @include content-color(white);
-}
-
 .btn-round {
     aspect-ratio: 1 / 1;
     border-radius: 50%;
@@ -67,4 +54,45 @@ button {
             display: none;
         }
     }
+}
+
+.btn-tab {
+    &-right {
+        border-radius: 0 1em 1em 0;
+    }
+
+    &-left {
+        border-radius: 1em 0 0 1em;
+    }
+    &-right,
+    &-left {
+        width: 2em;
+        min-height: 6em;
+        padding-block: 1em;
+        background-color: lightgrey;
+        @include content-color(black);
+        &.btn-on {
+            background-color: white;
+        }
+    }
+}
+
+.btn-transparent {
+    background-color: transparent;
+    @include content-color(black);
+}
+
+.btn-link {
+    background-color: transparent;
+    @include content-color(var(--clr-link));
+}
+
+.btn-red {
+    background-color: red;
+    @include content-color(white);
+}
+
+.btn-primary {
+    background-color: var(--clr-primary-700);
+    @include content-color(white);
 }
