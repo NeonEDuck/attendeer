@@ -265,14 +265,16 @@ msgInput.addEventListener("keyup", function(event) {
 
 alertBtn.addEventListener('click', async () => {
     if (alertBtn.dataset.id) {
+        
         const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
         const participants = collection(alertDoc, 'participants');
         const userDoc      = doc(participants, localUserId);
 
         const data = {
+            click : true,
             timestamp: new Date()
         }
-        await setDoc(userDoc, data);
+        await updateDoc(userDoc, data);
 
         alertBtnTime.hidden = true;
         alertBtnText.innerHTML = '簽到完成';
@@ -498,8 +500,18 @@ function setupAlertScheduler(interval, duration) {
 function setupAlertListener() {
     console.log('setupAlertListener');
     onSnapshot(alertRecords, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
+        snapshot.docChanges().forEach(async (change) => {
             if (change.type === 'added') {
+                const alertDoc     = doc(alertRecords, change.doc.id);
+                const participants = collection(alertDoc, 'participants');
+                const userDoc      = doc(participants, localUserId);
+        
+                const data = {
+                    click : false,
+                    timestamp: new Date()
+                }
+                await setDoc(userDoc, data);
+
                 const { alertType, duration, timestamp: timestampStart } = change.doc.data();
                 const timestampEnd = new Date(timestampStart.toMillis() + duration * MINUTE);
                 const now = new Date();

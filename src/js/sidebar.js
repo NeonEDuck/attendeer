@@ -10,8 +10,9 @@ const body       = document.querySelector('body'),
       modeSwitch = body.querySelector(".toggle-switch"),
       modeText   = body.querySelector(".mode-text");
 
-const fltCntr        = document.querySelector(".floating-container"),
-      floatingAlert  = fltCntr.querySelector('.floating-alert');
+const fltCntr             = document.querySelector(".floating-container"),
+      floatingAlert       = fltCntr.querySelector('.floating-alert'),
+      closeFloatingButton = fltCntr.querySelector('.close-floating_button');
 
 const navBtn  = document.querySelectorAll('.nav-btn');
 
@@ -23,8 +24,105 @@ const classModel         = document.querySelector('#class-modal'),
       alertTime          = classModel.querySelector("#alert-time"),
       submitSettingBtn   = classModel.querySelector('#submit-setting'),
       submitForm         = classModel.querySelector('#submit-form');
-      
+
+const switchCtn = document.querySelector('#switch-cnt'),
+      switchC1  = switchCtn.querySelector('#switch-c1'),
+      switchC2  = switchCtn.querySelector('#switch-c2'),
+      switchCircle  = switchCtn.querySelectorAll('.switch__circle'),
+      switchBtn  = switchCtn.querySelectorAll('.switch-btn');
+const floatingAlertA    = document.querySelector('#floating-alert-a'),
+      alertInfo         = document.querySelector('.alert-info'),
+      alertChoose       = document.querySelector('.alert-choose'),
+      alertExchange     = floatingAlertA.querySelector('#alert-exchange'),
+      alertReturn       = floatingAlertA.querySelector('#alert-return'),
+      alertStepProgress = document.querySelector('.alert-step-progress'),
+      choose1    = floatingAlertA.querySelector('#choose-1'),
+      choose2    = floatingAlertA.querySelector('#choose-2'),
+      choose3    = floatingAlertA.querySelector('#choose-3'),
+      choose4    = floatingAlertA.querySelector('#choose-4');
+
+const slidePage = document.querySelector(".slidepage");
+const prev1 = document.querySelector(".prev-1");
+const next1 = document.querySelector(".next-1");
+const prev2 = document.querySelector(".prev-2");
+const next2 = document.querySelector(".next-2");
+const prev3 = document.querySelector(".prev-3");
+const next3 = document.querySelector(".next-3");
+const progressText = document.querySelectorAll(".step p");
+const progressCheck = document.querySelectorAll(".step .check");
+const bullet = document.querySelectorAll(".step .bullet");
+let max = 3;
+let current = 1;
+
+const floatingAlertB  = document.querySelector('#floating-alert-b');
+
 const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+
+prev1.addEventListener('click', () => {
+    alertStepProgress.classList.toggle("close");
+    alertChoose.classList.remove("close");
+    bullet[current - 2 ].classList.remove("active");
+    progressText[current - 2 ].classList.remove("active");
+    progressCheck[current - 2 ].classList.remove("active");
+    current -= 1;
+});
+prev2.addEventListener('click', () => {
+    slidePage.style.marginLeft = "0%";
+    bullet[current - 2 ].classList.remove("active");
+    progressText[current - 2 ].classList.remove("active");
+    progressCheck[current - 2 ].classList.remove("active");
+    current -= 1;
+});
+prev3.addEventListener('click', () => {
+    slidePage.style.marginLeft = "-25%";
+    bullet[current - 2 ].classList.remove("active");
+    progressText[current - 2 ].classList.remove("active");
+    progressCheck[current - 2 ].classList.remove("active");
+    current -= 1;
+});
+next1.addEventListener('click', () => {
+    slidePage.style.marginLeft = "-25%";
+    bullet[current - 1 ].classList.add("active");
+    progressText[current - 1 ].classList.add("active");
+    progressCheck[current - 1 ].classList.add("active");
+    current += 1;
+});
+next2.addEventListener('click', () => {
+    slidePage.style.marginLeft = "-50%";
+    bullet[current - 1 ].classList.add("active");
+    progressText[current - 1 ].classList.add("active");
+    progressCheck[current - 1 ].classList.add("active");
+    current += 1;
+});
+
+next3.addEventListener('click', () => {
+    bullet[current - 1 ].classList.add("active");
+    progressText[current - 1 ].classList.add("active");
+    progressCheck[current - 1 ].classList.add("active");
+    current += 1;
+});
+
+choose2.addEventListener('click', () => {
+    alertStepProgress.classList.remove("close");
+    alertChoose.classList.toggle("close");
+});
+
+alertExchange.addEventListener('click', () => {
+    alertInfo.classList.toggle("close");
+    alertChoose.classList.remove("close");
+});
+
+alertReturn.addEventListener('click', () => {
+    alertInfo.classList.remove("close");
+    alertChoose.classList.toggle("close");
+});
+
+closeFloatingButton.addEventListener('click', () => {
+    fltCntr.classList.remove("show");
+    Array.from(navBtn).forEach((item) => {
+        item.className = "nav-btn";
+    });
+});
 
 // Global variable
 let action;
@@ -38,7 +136,9 @@ export function sidebarListener() {
         item.addEventListener("click",async (e) => {
             Array.from(navBtn).forEach((item) => {
                 item.className = "nav-btn";
-                floatingAlert.style.opacity = 0;
+                floatingAlertA.style.opacity = 0;
+                floatingAlertB.style.opacity = 0;
+                switchCtn.style.opacity = 0;
             });
             navBtn[index].classList.toggle("open");
 
@@ -58,7 +158,9 @@ export function sidebarListener() {
                 if (localUserId === host){
                     console.log('會議主辦人警醒資訊');
 
-                    floatingAlert.style.opacity = 1;
+                    floatingAlertA.style.opacity = 1;
+                    floatingAlertB.style.opacity = 1;
+                    switchCtn.style.opacity = 1;
                     classModelTitle.innerHTML = '警醒資訊';
                     
                     alertType.innerHTML = type;
@@ -124,3 +226,26 @@ modeSwitch.addEventListener("click", () =>{
 toggle.addEventListener("click", () =>{
     sidebar.classList.toggle("close");
 });
+
+let changeForm = (e) => {
+    switchCtn.classList.add('is-gx');
+    setTimeout(function () {
+      switchCtn.classList.remove('is-gx');
+    }, 1500);
+  
+    switchCtn.classList.toggle('is-txr');
+    switchCircle[0].classList.toggle('is-txr');
+    switchCircle[1].classList.toggle('is-txr');
+  
+    switchC1.classList.toggle('is-hidden');
+    switchC2.classList.toggle('is-hidden');
+    floatingAlertA.classList.toggle('is-txl');
+    floatingAlertB.classList.toggle('is-txl');
+    floatingAlertB.classList.toggle('is-z200');
+  };
+  
+  let mainF = (e) => {
+    for (var i = 0; i < switchBtn.length; i++) switchBtn[i].addEventListener('click', changeForm);
+  };
+  
+  window.addEventListener('load', mainF);
