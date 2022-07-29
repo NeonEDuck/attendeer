@@ -1,6 +1,8 @@
 @use '../abstracts' as *;
 
 :root {
+    --clr-link: blue;
+
     @each $color, $shades in $colors {
         @each $shade, $value in $shades {
             --clr-#{$color}-#{$shade}: #{$value};

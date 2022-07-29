@@ -10,8 +10,8 @@
 {% block content %}
     <input id="call-id" type="text" value="{{ callId }}" hidden>
     <main>
-        <div class="flex flex-row padding-8">
-            <div class="flex flex-column flex-item-2 gap-4">
+        <div id="class-grid">
+            <div id="class-sidebar">
                 <h1 id="class-name"></h1>
                 <div class="flex flex-row flex-align flex-wrap">
                     <p style="text-wrap: no-wrap;">{{ callId }}</p>
@@ -21,17 +21,18 @@
                     </div>
                 </div>
                 <div class="flex flex-center">
-                    <table>
+                    <table id="class-schedule">
                         <thead>
-                            <th>
-                                <td>星期一</td>
-                                <td>星期二</td>
-                                <td>星期三</td>
-                                <td>星期四</td>
-                                <td>星期五</td>
-                                <td>星期六</td>
-                                <td>星期日</td>
-                            </th>
+                            <tr>
+                                <th>節次</th>
+                                <th>一</th>
+                                <th>二</th>
+                                <th>三</th>
+                                <th>四</th>
+                                <th>五</th>
+                                <th>六</th>
+                                <th>日</th>
+                            </tr>
                         </thead>
                         <tbody>
                             <tr>
@@ -179,73 +180,177 @@
                 </div>
             </div>
 
-            <div class="flex flex-row flex-item-5 gap-4 padding-4">
-                <div class="flex flex-column gap-4">
-                    <div class="post flex flex-column">
-                        <div class="flex flex-row flex-align gap-2">
-                            <img src="/imgs/dummy_profile.png" alt="">
-                            <div class="flex flex-column">
-                                <p>name</p>
-                                <div class="flex flex-row">
-                                    <p>date</p>
-                                    <p>作業</p>
-                                </div>
-                            </div>
-                        </div>
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
-
-                        <div class="flex flex-column">
-                            <div class="flex flex-row flex-align gap-2">
-                                <img src="/imgs/dummy_profile.png" alt="">
-                                <div class="flex flex-column">
-                                    <p>name</p>
-                                    <div class="flex flex-row">
-                                        <p>date</p>
-                                        <p>作業</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex flex-row flex-align gap-2">
-                                <img src="/imgs/dummy_profile.png" alt="">
-                                <div class="flex flex-column">
-                                    <p>name</p>
-                                    <div class="flex flex-row">
-                                        <p>date</p>
-                                        <p>作業</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-row flex-align gap-2">
-                            <img src="/imgs/dummy_profile.png" alt="">
-                            <input type="text" class="flex-item-1">
-                            <button class="btn-primary">送出</button>
-                        </div>
-                    </div>
-                    <div class="post flex flex-column">
-                        <div class="flex flex-row flex-align gap-2">
-                            <img src="/imgs/dummy_profile.png" alt="">
-                            <div class="flex flex-column">
-                                <p>name</p>
-                                <div class="flex flex-row">
-                                    <p>date</p>
-                                    <p>作業</p>
-                                </div>
-                            </div>
-                        </div>
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
-
-                        <div class="flex flex-row flex-align gap-2">
-                            <img src="/imgs/dummy_profile.png" alt="">
-                            <input type="text" class="flex-item-1">
-                            <button class="btn-primary">送出</button>
-                        </div>
-                    </div>
+            <div id="class-main" data-current-tag="all">
+                <div id="bulletin-tab-container">
+                    <button id="add-post-tab" class="btn-tab-right">新增貼文</button>
+                    <button id="all-tab" data-tab-tag="all" class="btn-tab-right btn-on">全部</button>
+                    <button id="bulletin-tab" data-tab-tag="bulletin" class="btn-tab-right">公告</button>
+                    <button id="homework-tab" data-tab-tag="homework" class="btn-tab-right">作業</button>
+                    <button id="back-to-top-tab" class="btn-tab-right btn-primary">回到最上面</button>
                 </div>
-                <div class="flex flex-column">
-                    <button class="btn-transparent">公告</button>
-                    <button class="btn-transparent">作業</button>
+
+                <div id="bulletin" class="flex-item-1">
+                    <div id="add-post" class="post" hidden>
+                        <h1>新增貼文</h1>
+                        <p>標題</p>
+                        <input type="text" id="add-post-title-input">
+                        <p>內容</p>
+                        <textarea type="text" style="height: 11em; resize: vertical;"></textarea>
+                        <button id="add-post-btn" class="margin-inline-start-auto">張貼</button>
+                    </div>
+
+
+                    <div class="post" data-tag="bulletin">
+                        <div class="flex flex-row flex-align gap-2">
+                            <img class="post__picture" src="/imgs/dummy_profile.png" alt="">
+                            <div class="flex flex-column">
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__name">name</p>
+                                    <p class="post__date">2022/1/1</p>
+                                </div>
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__catagory">公告</p>
+                                    <p class="post__title">Title</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post__content">
+                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
+                        </div>
+
+                        <div class="post-comment-container flex flex-column gap-4">
+                            <button class="btn-link">50則留言</button>
+                            <div class="post-comment">
+                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                                <div class="flex flex-column">
+                                    <div class="flex flex-row gap-2">
+                                        <p class="post__name">name</p>
+                                        <p class="post__date">2022/1/1</p>
+                                    </div>
+                                    <p class="post-comment__content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae quos ea assumenda quo accusamus officia, accusantium asperiores aspernatur nam error?</p>
+                                </div>
+                            </div>
+                            <div class="post-comment">
+                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                                <div class="flex flex-column">
+                                    <div class="flex flex-row gap-2">
+                                        <p class="post__name">name</p>
+                                        <p class="post__date">2022/1/1</p>
+                                    </div>
+                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi mollitia debitis obcaecati unde consequatur cumque fuga eligendi, pariatur, nesciunt maiores labore ducimus rerum omnis ullam facere eveniet veniam commodi voluptatem a atque, non aspernatur! Distinctio repellat vitae tempora. Voluptatum architecto molestiae sed consequatur omnis quos praesentium repellat, ea eligendi maxime?</p>
+                                </div>
+                            </div>
+                            <div class="post-comment">
+                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                                <div class="flex flex-column">
+                                    <div class="flex flex-row gap-2">
+                                        <p class="post__name">name</p>
+                                        <p class="post__date">2022/1/1</p>
+                                    </div>
+                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ullam, animi, vitae itaque quae eaque tempore culpa quia autem id eligendi suscipit dolorem provident illo earum voluptas quis! Laudantium quod officiis dolore ipsa tempore unde qui temporibus laborum? Animi necessitatibus sint exercitationem voluptatum eveniet voluptas tempora nemo, iure placeat aliquid qui quo repellat, eaque error. Quam nemo voluptate quos beatae magni eaque possimus deserunt asperiores tenetur necessitatibus doloremque, cumque impedit eos?</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-row flex-align-start gap-2">
+                            <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                            <div class="flex flex-column flex-item-1">
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__name">name</p>
+                                    <p class="post__date">2022/1/1</p>
+                                </div>
+                                <div class="flex flex-row flex-align-start gap-2">
+                                    <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
+                                    <button class="btn-primary">送出</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post" data-tag="bulletin">
+                        <div class="flex flex-row flex-align gap-2">
+                            <img class="post__picture" src="/imgs/dummy_profile.png" alt="">
+                            <div class="flex flex-column flex-item-1">
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__name">name</p>
+                                    <p class="post__date">2022/1/1</p>
+                                </div>
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__catagory">作業</p>
+                                    <p class="post__title">Title</p>
+                                </div>
+                            </div>
+                            <button class="btn-primary">上傳</button>
+                        </div>
+                    </div>
+                    <div class="post" data-tag="homework">
+                        <div class="flex flex-row flex-align gap-2">
+                            <img class="post__picture" src="/imgs/dummy_profile.png" alt="">
+                            <div class="flex flex-column">
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__name">name</p>
+                                    <p class="post__date">2022/1/1</p>
+                                </div>
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__catagory">公告</p>
+                                    <p class="post__title">Title</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post__content">
+                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
+                        </div>
+
+                        <div class="post-comment-container flex flex-column gap-4">
+                            <button class="btn-link">50則留言</button>
+                            <div class="post-comment">
+                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                                <div class="flex flex-column">
+                                    <div class="flex flex-row gap-2">
+                                        <p class="post__name">name</p>
+                                        <p class="post__date">2022/1/1</p>
+                                    </div>
+                                    <p class="post-comment__content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae quos ea assumenda quo accusamus officia, accusantium asperiores aspernatur nam error?</p>
+                                </div>
+                            </div>
+                            <div class="post-comment">
+                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                                <div class="flex flex-column">
+                                    <div class="flex flex-row gap-2">
+                                        <p class="post__name">name</p>
+                                        <p class="post__date">2022/1/1</p>
+                                    </div>
+                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi mollitia debitis obcaecati unde consequatur cumque fuga eligendi, pariatur, nesciunt maiores labore ducimus rerum omnis ullam facere eveniet veniam commodi voluptatem a atque, non aspernatur! Distinctio repellat vitae tempora. Voluptatum architecto molestiae sed consequatur omnis quos praesentium repellat, ea eligendi maxime?</p>
+                                </div>
+                            </div>
+                            <div class="post-comment">
+                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                                <div class="flex flex-column">
+                                    <div class="flex flex-row gap-2">
+                                        <p class="post__name">name</p>
+                                        <p class="post__date">2022/1/1</p>
+                                    </div>
+                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ullam, animi, vitae itaque quae eaque tempore culpa quia autem id eligendi suscipit dolorem provident illo earum voluptas quis! Laudantium quod officiis dolore ipsa tempore unde qui temporibus laborum? Animi necessitatibus sint exercitationem voluptatum eveniet voluptas tempora nemo, iure placeat aliquid qui quo repellat, eaque error. Quam nemo voluptate quos beatae magni eaque possimus deserunt asperiores tenetur necessitatibus doloremque, cumque impedit eos?</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-row flex-align-start gap-2">
+                            <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+                            <div class="flex flex-column flex-item-1">
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__name">name</p>
+                                    <p class="post__date">2022/1/1</p>
+                                </div>
+                                <div class="flex flex-row flex-align-start gap-2">
+                                    <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
+                                    <button class="btn-primary">送出</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

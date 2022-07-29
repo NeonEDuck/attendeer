@@ -62,6 +62,7 @@
         border-radius: 1em;
 
         &__picture {
+            aspect-ratio: 1/1;
             border-radius: 100%;
             height: calc( var(--navbar-height) - ( var(--navbar-padding) + var(--profile-padding) ) * 2 );
             cursor: pointer;
