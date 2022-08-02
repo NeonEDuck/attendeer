@@ -1,0 +1,17 @@
+軟硬體需求與技術平台:
+	軟體需求:
+		Google Chrome, edge, Firefox, Safari, Opera;
+	硬體需求:
+		個人電腦, 手機, 麥克風, 網路攝像機;
+	技術平台:
+		Linux, Windows, MacOs;
+開發標準與使用工具:
+	作業系統:
+		Win10;
+	資料庫:
+		FireBase;
+	開發環境:
+		VisualStudioCode, Git-Fork;
+	程式語言:
+		javaScript, html, scss;
+	
