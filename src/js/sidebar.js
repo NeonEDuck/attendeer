@@ -42,8 +42,13 @@ const floatingAlertA    = document.querySelector('#floating-alert-a'),
       choose4    = floatingAlertA.querySelector('#choose-4');
 
 const slidePage = document.querySelector(".slidepage");
+const page2 = document.querySelector(".page-2");
+let options = document.querySelectorAll(".options");
+console.log(options);
 const prev1 = document.querySelector(".prev-1");
 const next1 = document.querySelector(".next-1");
+const addOptions = document.querySelector(".add_options");
+let bxX = document.querySelectorAll(".bx-x");
 const prev2 = document.querySelector(".prev-2");
 const next2 = document.querySelector(".next-2");
 const prev3 = document.querySelector(".prev-3");
@@ -57,6 +62,52 @@ let current = 1;
 const floatingAlertB  = document.querySelector('#floating-alert-b');
 
 const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+
+addOptions.addEventListener('click', () => {
+    const div = document.createElement('div');
+    div.classList.add("field", "options");
+    let a = page2.getElementsByTagName("div");
+    page2.insertBefore(div, page2.children[a.length-2]);
+    const input = document.createElement('input');
+    input.setAttribute("type", "text");
+    div.appendChild(input);
+    const icon = document.createElement('i');
+    icon.classList.add("bx", "bx-x");
+    div.appendChild(icon);
+    bxX = document.querySelectorAll(".bx-x");
+    Array.from(bxX).forEach((item) => {
+        if(a.length >= 4){
+            item.style.display = "block";
+        }else{
+            item.style.display = "none";
+        }
+    });
+    if(a.length >= 9){
+        addOptions.style.display = "none";
+    }
+    options = document.querySelectorAll(".options");
+    console.log(options);
+    delListener();
+});
+
+function delListener() {
+    // Array.from(bxX).forEach((item, index) => {
+    //     console.log(item,index);
+    //     item.addEventListener("click", (e) => {
+    //         console.log(options[index]);
+    //         console.log(index);
+    //         page2.removeChild(options[index]);
+    //     });
+    // });
+
+    
+    // for (let i = 0 ; i < bxX.length ; i++) {
+    //     bxX[i].addEventListener('click', (event) => {
+    //       console.log(i);
+    //       page2.removeChild(options[i]);
+    //     });
+    // }
+}
 
 prev1.addEventListener('click', () => {
     alertStepProgress.classList.toggle("close");
@@ -81,11 +132,13 @@ prev3.addEventListener('click', () => {
     current -= 1;
 });
 next1.addEventListener('click', () => {
-    slidePage.style.marginLeft = "-25%";
-    bullet[current - 1 ].classList.add("active");
-    progressText[current - 1 ].classList.add("active");
-    progressCheck[current - 1 ].classList.add("active");
-    current += 1;
+    if(document.getElementById('qst_text').value != ''){
+        slidePage.style.marginLeft = "-25%";
+        bullet[current - 1 ].classList.add("active");
+        progressText[current - 1 ].classList.add("active");
+        progressCheck[current - 1 ].classList.add("active");
+        current += 1;
+    }
 });
 next2.addEventListener('click', () => {
     slidePage.style.marginLeft = "-50%";
@@ -245,7 +298,7 @@ let changeForm = (e) => {
   };
   
   let mainF = (e) => {
-    for (var i = 0; i < switchBtn.length; i++) switchBtn[i].addEventListener('click', changeForm);
+    for (let i = 0; i < switchBtn.length; i++) switchBtn[i].addEventListener('click', changeForm);
   };
   
   window.addEventListener('load', mainF);
