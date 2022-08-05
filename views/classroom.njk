@@ -5,6 +5,53 @@
 {% endblock script %}
 
 {% block prefab %}
+<div class="post">
+    <div class="flex flex-row flex-align gap-2">
+        <div class="flex flex-column padding-inline-start-2 flex-item-1">
+            <h3 class="post__title">Title</h3>
+            <div class="flex flex-row gap-2">
+                <p class="post__catagory">公告</p>
+                <p class="post__date">2022/1/1</p>
+                <p class="post__state"></p>
+            </div>
+        </div>
+        <button class="post__upload-btn">上傳作業</button>
+        <button class="post__check-detail btn-link">查看</button>
+    </div>
+
+    <div class="post__content">
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
+    </div>
+
+    <div class="post-comment-container flex flex-column gap-4">
+        <button class="btn-link"><span class="post-comment-count"></span>則留言</button>
+    </div>
+
+    <div class="post-comment-writer flex flex-row flex-align-start gap-2">
+        <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+        <div class="flex flex-column flex-item-1">
+            <div class="flex flex-row gap-2">
+                <p class="post__name">name</p>
+                <p class="post__date">2022/1/1</p>
+            </div>
+            <div class="flex flex-row flex-align-start gap-2">
+                <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
+                <button class="btn-primary">送出</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="post-comment">
+    <img src="/imgs/dummy_profile.png" class="post__picture" alt="profile_picture">
+    <div class="flex flex-column">
+        <div class="flex flex-row gap-2">
+            <p class="post__name">name</p>
+            <p class="post__date">2022/1/1</p>
+        </div>
+        <p class="post-comment__content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae quos ea assumenda quo accusamus officia, accusantium asperiores aspernatur nam error?</p>
+    </div>
+</div>
 {% endblock prefab %}
 
 {% block content %}
@@ -21,335 +68,65 @@
                     </div>
                 </div>
                 <div class="flex flex-center">
-                    <table id="class-schedule">
-                        <thead>
-                            <tr>
-                                <th>節次</th>
-                                <th>一</th>
-                                <th>二</th>
-                                <th>三</th>
-                                <th>四</th>
-                                <th>五</th>
-                                <th>六</th>
-                                <th>日</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>一</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>二</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>三</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>四</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>五</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>六</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>七</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>八</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>九</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>十</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>十一</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>十二</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>十三</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>十四</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    {% include "util/class-schedule.njk" %}
                 </div>
             </div>
 
-            <div id="class-main" data-current-tag="all">
+            <div id="class-main" data-current-catagory="all">
                 <div id="bulletin-tab-container">
-                    <button id="add-post-tab" class="btn-tab-right">新增貼文</button>
-                    <button id="all-tab" data-tab-tag="all" class="btn-tab-right btn-on">全部</button>
-                    <button id="bulletin-tab" data-tab-tag="bulletin" class="btn-tab-right">公告</button>
-                    <button id="homework-tab" data-tab-tag="homework" class="btn-tab-right">作業</button>
+                    <button id="write-tab" data-catagory="write" class="btn-tab-right">新增貼文</button>
+                    <button id="announcement-tab" data-catagory="announcement" class="btn-tab-right">公告</button>
+                    <button id="homework-tab" data-catagory="homework" class="btn-tab-right">作業</button>
                     <button id="back-to-top-tab" class="btn-tab-right btn-primary">回到最上面</button>
                 </div>
 
                 <div id="bulletin" class="flex-item-1">
-                    <div id="add-post" class="post" hidden>
-                        <h1>新增貼文</h1>
-                        <p>標題</p>
-                        <input type="text" id="add-post-title-input">
-                        <p>內容</p>
-                        <textarea type="text" style="height: 11em; resize: vertical;"></textarea>
-                        <button id="add-post-btn" class="margin-inline-start-auto">張貼</button>
+                    <div data-catagory="write" hidden>
+                        <div class="post">
+                            <h1>新增貼文</h1>
+                            <div class="flex flex-row gap-4">
+                                <div class="flex flex-column gap-4">
+                                    <p>種類</p>
+                                    <select name="write-catagory" id="write-catagory">
+                                        <option value="announcement">公告</option>
+                                        <option value="homework">作業</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-column gap-4 flex-item-1">
+                                    <p>標題</p>
+                                    <input type="text" id="write-title">
+                                </div>
+                            </div>
+                            <p>內容</p>
+                            <textarea type="text" id="write-content" style="height: 11em; resize: vertical;"></textarea>
+                            <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
+                        </div>
                     </div>
 
+                    <div data-catagory="announcement" hidden>
+                    </div>
 
-                    <div class="post" data-tag="bulletin">
+                    <div data-catagory="homework" hidden>
+                    </div>
+
+                    <div data-catagory="detail" hidden>
                         <div class="flex flex-row flex-align gap-2">
-                            <img class="post__picture" src="/imgs/dummy_profile.png" alt="">
-                            <div class="flex flex-column">
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__name">name</p>
-                                    <p class="post__date">2022/1/1</p>
-                                </div>
+                            <div class="flex flex-column padding-inline-start-2 flex-item-1">
+                                <h3 class="post__title">Title</h3>
                                 <div class="flex flex-row gap-2">
                                     <p class="post__catagory">公告</p>
-                                    <p class="post__title">Title</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="post__content">
-                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
-                        </div>
-
-                        <div class="post-comment-container flex flex-column gap-4">
-                            <button class="btn-link">50則留言</button>
-                            <div class="post-comment">
-                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                                <div class="flex flex-column">
-                                    <div class="flex flex-row gap-2">
-                                        <p class="post__name">name</p>
-                                        <p class="post__date">2022/1/1</p>
-                                    </div>
-                                    <p class="post-comment__content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae quos ea assumenda quo accusamus officia, accusantium asperiores aspernatur nam error?</p>
-                                </div>
-                            </div>
-                            <div class="post-comment">
-                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                                <div class="flex flex-column">
-                                    <div class="flex flex-row gap-2">
-                                        <p class="post__name">name</p>
-                                        <p class="post__date">2022/1/1</p>
-                                    </div>
-                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi mollitia debitis obcaecati unde consequatur cumque fuga eligendi, pariatur, nesciunt maiores labore ducimus rerum omnis ullam facere eveniet veniam commodi voluptatem a atque, non aspernatur! Distinctio repellat vitae tempora. Voluptatum architecto molestiae sed consequatur omnis quos praesentium repellat, ea eligendi maxime?</p>
-                                </div>
-                            </div>
-                            <div class="post-comment">
-                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                                <div class="flex flex-column">
-                                    <div class="flex flex-row gap-2">
-                                        <p class="post__name">name</p>
-                                        <p class="post__date">2022/1/1</p>
-                                    </div>
-                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ullam, animi, vitae itaque quae eaque tempore culpa quia autem id eligendi suscipit dolorem provident illo earum voluptas quis! Laudantium quod officiis dolore ipsa tempore unde qui temporibus laborum? Animi necessitatibus sint exercitationem voluptatum eveniet voluptas tempora nemo, iure placeat aliquid qui quo repellat, eaque error. Quam nemo voluptate quos beatae magni eaque possimus deserunt asperiores tenetur necessitatibus doloremque, cumque impedit eos?</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-row flex-align-start gap-2">
-                            <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                            <div class="flex flex-column flex-item-1">
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__name">name</p>
                                     <p class="post__date">2022/1/1</p>
                                 </div>
-                                <div class="flex flex-row flex-align-start gap-2">
-                                    <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
-                                    <button class="btn-primary">送出</button>
+                                <div class="user-records">
+
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
-                    <div class="post" data-tag="bulletin">
-                        <div class="flex flex-row flex-align gap-2">
-                            <img class="post__picture" src="/imgs/dummy_profile.png" alt="">
-                            <div class="flex flex-column flex-item-1">
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__name">name</p>
-                                    <p class="post__date">2022/1/1</p>
-                                </div>
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__catagory">作業</p>
-                                    <p class="post__title">Title</p>
-                                </div>
-                            </div>
-                            <button class="btn-primary">上傳</button>
-                        </div>
-                    </div>
-                    <div class="post" data-tag="homework">
-                        <div class="flex flex-row flex-align gap-2">
-                            <img class="post__picture" src="/imgs/dummy_profile.png" alt="">
-                            <div class="flex flex-column">
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__name">name</p>
-                                    <p class="post__date">2022/1/1</p>
-                                </div>
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__catagory">公告</p>
-                                    <p class="post__title">Title</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="post__content">
-                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum voluptas placeat est! Iure itaque ab enim delectus qui facilis atque facere modi a possimus, quia saepe consequatur recusandae laborum hic? Labore ex eaque culpa! Illo reiciendis error autem velit quam debitis, quidem impedit quas rem, corporis laudantium aliquam voluptas animi!</p>
-                        </div>
-
-                        <div class="post-comment-container flex flex-column gap-4">
-                            <button class="btn-link">50則留言</button>
-                            <div class="post-comment">
-                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                                <div class="flex flex-column">
-                                    <div class="flex flex-row gap-2">
-                                        <p class="post__name">name</p>
-                                        <p class="post__date">2022/1/1</p>
-                                    </div>
-                                    <p class="post-comment__content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae quos ea assumenda quo accusamus officia, accusantium asperiores aspernatur nam error?</p>
-                                </div>
-                            </div>
-                            <div class="post-comment">
-                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                                <div class="flex flex-column">
-                                    <div class="flex flex-row gap-2">
-                                        <p class="post__name">name</p>
-                                        <p class="post__date">2022/1/1</p>
-                                    </div>
-                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi mollitia debitis obcaecati unde consequatur cumque fuga eligendi, pariatur, nesciunt maiores labore ducimus rerum omnis ullam facere eveniet veniam commodi voluptatem a atque, non aspernatur! Distinctio repellat vitae tempora. Voluptatum architecto molestiae sed consequatur omnis quos praesentium repellat, ea eligendi maxime?</p>
-                                </div>
-                            </div>
-                            <div class="post-comment">
-                                <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                                <div class="flex flex-column">
-                                    <div class="flex flex-row gap-2">
-                                        <p class="post__name">name</p>
-                                        <p class="post__date">2022/1/1</p>
-                                    </div>
-                                    <p class="post-comment__content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ullam, animi, vitae itaque quae eaque tempore culpa quia autem id eligendi suscipit dolorem provident illo earum voluptas quis! Laudantium quod officiis dolore ipsa tempore unde qui temporibus laborum? Animi necessitatibus sint exercitationem voluptatum eveniet voluptas tempora nemo, iure placeat aliquid qui quo repellat, eaque error. Quam nemo voluptate quos beatae magni eaque possimus deserunt asperiores tenetur necessitatibus doloremque, cumque impedit eos?</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-row flex-align-start gap-2">
-                            <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
-                            <div class="flex flex-column flex-item-1">
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__name">name</p>
-                                    <p class="post__date">2022/1/1</p>
-                                </div>
-                                <div class="flex flex-row flex-align-start gap-2">
-                                    <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
-                                    <button class="btn-primary">送出</button>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="loading">
+                        讀取...
                     </div>
                 </div>
             </div>

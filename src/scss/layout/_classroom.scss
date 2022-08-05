@@ -18,26 +18,41 @@
     filter: drop-shadow(0 0 5px lightgrey);
 }
 
+$bulletin-pad: 2em;
+$post-gap: 4em;
+
 #bulletin-tab-container {
     display: flex;
     flex-direction: column;
     gap: 0.5em;
-    padding-block: 2em;
+    padding-block: $bulletin-pad;
 }
 
 #bulletin {
-    --gap: 2em;
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--gap) / 2);
-    padding: var(--gap);
+    padding: $bulletin-pad;
     background-color: white;
-    border-radius: var(--gap);
+    border-radius: $bulletin-pad;
 
-    > :not([hidden]) + :not([hidden])::before {
-        content: "";
-        border-top: 1px solid gray;
-        // margin-block-start: calc(var(--gap) / 2);
+    > div {
+        display: flex;
+        flex-direction: column;
+        // gap: $post-gap;
+
+        > :not(:first-child) {
+            border-top: 1px solid gray;
+            padding-block-start: calc($post-gap / 2);
+        }
+        > :not(:last-child) {
+            padding-block-end: calc($post-gap / 2);
+        }
+    }
+
+    .loading {
+        display: block;
+    }
+
+    :not([hidden]) ~ .loading {
+        display: none;
     }
 }
 

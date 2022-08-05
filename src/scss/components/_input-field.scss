@@ -1,44 +1,38 @@
-input[type=text] {
+$border-radius: 0.5em;
+
+@mixin rounded-input() {
     text-decoration: none;
+    // border: 1px solid var(--clr-gray-400);
     border: none;
     font-size: 1em;
-    line-height: 1em;
+    line-height: 1.25em;
     margin: 0;
     padding: 0.5em 1em;
-    border-radius: 1em;
-    background: var(--clr-gray-400);
+    border-radius: $border-radius;
+    background: white;
+    box-shadow: 0 0 0.125em 0.125em inset var(--clr-gray-500);
     color: black;
-    height: 2em;
+    height: 2.25em;
+}
+
+input[type=text] {
+    @include rounded-input();
 }
 
 input[type=number] {
-    text-decoration: none;
-    border: none;
-    font-size: 1rem;
-    line-height: 1em;
-    margin: 0;
-    padding: 0.5em 1em;
-    border-radius: 1em;
-    background: var(--clr-gray-400);
-    color: black;
-    height: 2em;
+    @include rounded-input();
 }
 
 textarea {
-    text-decoration: none;
-    border: none;
-    font-size: 1rem;
-    line-height: 1em;
-    margin: 0;
-    padding: 0.5em 1em;
-    border-radius: 1em 1em 0 1em;
-    background: var(--clr-gray-400);
-    color: black;
-    height: 2em;
+    @include rounded-input();
+    border-radius: $border-radius $border-radius 0 $border-radius;
 }
 
 textarea.auto-resize {
-    border-radius: 1em;
+    border-radius: $border-radius;
     resize: none;
-    height: 2em;
+}
+
+select {
+    @include rounded-input();
 }

@@ -84,6 +84,7 @@ button {
 
 .btn-link {
     background-color: transparent;
+    text-decoration: underline;
     @include content-color(var(--clr-link));
 }
 
