@@ -42,12 +42,12 @@ const floatingAlertA    = document.querySelector('#floating-alert-a'),
       choose4    = floatingAlertA.querySelector('#choose-4');
 
 const slidePage = document.querySelector(".slidepage");
-const page2 = document.querySelector(".page-2");
-let options = document.querySelectorAll(".options");
-console.log(options);
+let page2 = document.querySelector(".page-2");
+const options = document.querySelector(".options");
+let option = document.querySelectorAll(".option");
 const prev1 = document.querySelector(".prev-1");
 const next1 = document.querySelector(".next-1");
-const addOptions = document.querySelector(".add_options");
+const addBtn = document.querySelector(".add_options");
 let bxX = document.querySelectorAll(".bx-x");
 const prev2 = document.querySelector(".prev-2");
 const next2 = document.querySelector(".next-2");
@@ -58,55 +58,71 @@ const progressCheck = document.querySelectorAll(".step .check");
 const bullet = document.querySelectorAll(".step .bullet");
 let max = 3;
 let current = 1;
+let optionsTotal = 0;
 
 const floatingAlertB  = document.querySelector('#floating-alert-b');
 
 const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
-addOptions.addEventListener('click', () => {
+for(let i = 0; i < 2; i++){
+    addOptions();
+}
+
+addBtn.addEventListener('click', () => {
+    addOptions();
+});
+
+function addOptions(){
+    optionsTotal += 1;
     const div = document.createElement('div');
-    div.classList.add("field", "options");
-    let a = page2.getElementsByTagName("div");
-    page2.insertBefore(div, page2.children[a.length-2]);
+    div.classList.add("field", "option");
+    options.appendChild(div);
+    const divNo = document.createElement('div');
+    divNo.classList.add("div_no");
+    div.appendChild(divNo);
+    const spanNo = document.createElement('span');
+    spanNo.classList.add("span_no");
+    divNo.appendChild(spanNo);
     const input = document.createElement('input');
     input.setAttribute("type", "text");
+    input.classList.add("option_input");
     div.appendChild(input);
     const icon = document.createElement('i');
     icon.classList.add("bx", "bx-x");
     div.appendChild(icon);
+    icon.addEventListener('click', () => {
+        div.remove();
+        optionsTotal -= 1;
+        bxX = document.querySelectorAll(".bx-x");
+        let spansNo = document.querySelectorAll(".span_no");
+        let x = 0;
+        Array.from(bxX).forEach((item) => {
+            spansNo[x].innerHTML = x+1;
+            x += 1;
+            if(optionsTotal <= 2){
+                item.style.display = "none";
+            }else if(optionsTotal < 6){
+                addBtn.style.display = "block";
+            }else{
+                item.style.display = "block";
+            }
+        });
+    });
     bxX = document.querySelectorAll(".bx-x");
+    let spansNo = document.querySelectorAll(".span_no");
+    let x = 0;
     Array.from(bxX).forEach((item) => {
-        if(a.length >= 4){
+        spansNo[x].innerHTML = x+1;
+        x += 1;
+        if(optionsTotal >= 3){
             item.style.display = "block";
         }else{
             item.style.display = "none";
         }
     });
-    if(a.length >= 9){
-        addOptions.style.display = "none";
+    if(optionsTotal >= 6){
+        addBtn.style.display = "none";
     }
-    options = document.querySelectorAll(".options");
-    console.log(options);
-    delListener();
-});
-
-function delListener() {
-    // Array.from(bxX).forEach((item, index) => {
-    //     console.log(item,index);
-    //     item.addEventListener("click", (e) => {
-    //         console.log(options[index]);
-    //         console.log(index);
-    //         page2.removeChild(options[index]);
-    //     });
-    // });
-
-    
-    // for (let i = 0 ; i < bxX.length ; i++) {
-    //     bxX[i].addEventListener('click', (event) => {
-    //       console.log(i);
-    //       page2.removeChild(options[i]);
-    //     });
-    // }
 }
 
 prev1.addEventListener('click', () => {
@@ -141,11 +157,20 @@ next1.addEventListener('click', () => {
     }
 });
 next2.addEventListener('click', () => {
-    slidePage.style.marginLeft = "-50%";
-    bullet[current - 1 ].classList.add("active");
-    progressText[current - 1 ].classList.add("active");
-    progressCheck[current - 1 ].classList.add("active");
-    current += 1;
+    let optionInput = document.querySelectorAll('.option_input');
+    let x = 0;
+    for(let i = 0; i < optionInput.length; i++){
+        if(optionInput[i].value != ''){
+            x += 1;
+        }
+    }
+    if(x === optionInput.length){
+        slidePage.style.marginLeft = "-50%";
+        bullet[current - 1 ].classList.add("active");
+        progressText[current - 1 ].classList.add("active");
+        progressCheck[current - 1 ].classList.add("active");
+        current += 1;
+    }
 });
 
 next3.addEventListener('click', () => {
