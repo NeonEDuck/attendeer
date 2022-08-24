@@ -1,18 +1,26 @@
 import { onSnapshot, collection, doc, addDoc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, query, where, limit, orderBy } from "firebase/firestore";
 import { firestore } from "./firebase-config.js";
-import './base.js'
+import './base.js';
+import { prefab } from './prefab.js';
+import { ClassModal } from './classModel.js';
 import { getUser, getUserData } from './util.js';
 
-const anPostPrefab      = document.querySelector('.prefab > .post[data-catagory="announce"]');
-const hwPostPrefab      = document.querySelector('.prefab > .post[data-catagory="homework"]');
-const postreplyPrefab   = document.querySelector('.post-reply');
+const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
+const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
+const postreplyPrefab   = prefab.querySelector('.post-reply');
 const className         = document.querySelector('#class-name');
+const settingBtn        = document.querySelector('#setting-btn');
 const callBtn           = document.querySelector('#call-btn');
 const classSchedule     = document.querySelector('#class-schedule');
+const scheduleTooltip   = document.querySelector('#class-schedule__tooltip');
+const scheduleCancelBtn = document.querySelector('#class-schedule__cancel');
+const scheduleSaveBtn   = document.querySelector('#class-schedule__save');
+const scheduleEditBtn   = document.querySelector('#class-schedule__edit');
 
 const tabs              = document.querySelectorAll('#bulletin-tab-container button');
+const writeTab          = document.querySelector('#write-tab');
 const backToTopTab      = document.querySelector('#back-to-top-tab');
-const entireTab   = document.querySelector('#bulletin-tab-container > [data-catagory="entire"]');
+const entireTab         = document.querySelector('#bulletin-tab-container > [data-catagory="entire"]');
 const catagoryTabs      = document.querySelectorAll('#bulletin-tab-container [data-catagory]');
 const pages             = document.querySelectorAll('#bulletin > [data-catagory]');
 const postDetail        = document.querySelector('#bulletin > [data-catagory="detail"]');
@@ -29,26 +37,102 @@ const callDoc  = doc(calls, callId);
 const users    = collection(firestore, 'users');
 const posts    = collection(callDoc, 'posts');
 
+const classModal = new ClassModal();
+let prevSchedule = [];
+let editingSchedule = false;
+
 document.onreadystatechange = async () => {
     const user = await getUser();
 
     const callDoc = await getDoc(doc(calls, callId));
-    console.log(callId)
-    console.log(className)
-    const { name } = callDoc.data();
+    const { name, host, schedule } = callDoc.data();
+    if (user.uid === host){
+        settingBtn.hidden = false;
+        scheduleEditBtn.hidden = false;
+        writeTab.hidden = false;
+    }
 
     className.innerHTML = name;
 
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
     for (const row of rows) {
         const cells = row.querySelectorAll('td');
-        cells[3].classList.add('on');
+        for (var i = 1; i < cells.length; i++) {
+            const cell = cells[i];
+            cell.addEventListener('click', () => {toggleScheduleCell(cell)});
+        }
     }
+
+    if (schedule) {
+        prevSchedule = schedule;
+    }
+    refreshSchedule();
     entireTab.click();
 };
 
+settingBtn.addEventListener('click', async (e) => {
+    classModal.openModifyModal(callId);
+});
+
+classModal.oldSubmitForm = classModal._submitForm;
+classModal._submitForm = async (e) => {
+    await classModal.oldSubmitForm(e);
+    window.location.reload();
+}
+
 callBtn.addEventListener('click', () => {
     window.location.href = `/${callId}/meeting`
+});
+
+function toggleScheduleCell(cell) {
+    if (editingSchedule) {
+        if (cell.classList.contains('on')) {
+            cell.classList.remove('on');
+        }
+        else {
+            cell.classList.add('on');
+        }
+    }
+}
+
+scheduleCancelBtn.addEventListener('click', () => {
+    scheduleEditBtn.hidden = false;
+    scheduleCancelBtn.hidden = true;
+    scheduleSaveBtn.hidden = true;
+    scheduleTooltip.hidden = true;
+    editingSchedule = false;
+    refreshSchedule();
+});
+
+scheduleSaveBtn.addEventListener('click', async () => {
+    scheduleEditBtn.hidden = false;
+    scheduleCancelBtn.hidden = true;
+    scheduleSaveBtn.hidden = true;
+    scheduleTooltip.hidden = true;
+    editingSchedule = false;
+
+    const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
+    const schedule = [];
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].querySelectorAll('td');
+        for (var j = 1; j < cells.length; j++) {
+            if (cells[j].classList.contains('on')) {
+                schedule.push((j)*100+i+1);
+            }
+        }
+    }
+    await updateDoc(callDoc, {schedule});
+    prevSchedule = schedule;
+    refreshSchedule();
+});
+
+scheduleEditBtn.addEventListener('click', () => {
+    scheduleEditBtn.hidden = true;
+    scheduleCancelBtn.hidden = false;
+    scheduleSaveBtn.hidden = false;
+    scheduleTooltip.hidden = false;
+    editingSchedule = true;
+    refreshSchedule();
 });
 
 for (const tab of catagoryTabs) {
@@ -102,7 +186,24 @@ writeSubmitBtn.addEventListener('click', async () => {
     writeCatagory.selectedIndex = 0;
     writeTitle.value = '';
     writeContent.value = '';
+    entireTab.click();
 });
+
+function refreshSchedule() {
+    const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
+    for (const row of rows) {
+        const cells = row.querySelectorAll('td');
+        for (var i = 1; i < cells.length; i++) {
+            cells[i].classList.remove('on');
+        }
+    }
+    for (const date of prevSchedule) {
+        const weekday = Math.trunc(date / 100);
+        const when    = date % 100;
+        const cells = rows[when-1].querySelectorAll('td');
+        cells[weekday].classList.add('on');
+    }
+}
 
 function turnOnTab(target) {
     for (const tab of tabs) {

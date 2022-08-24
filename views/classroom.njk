@@ -51,6 +51,8 @@
                 <p class="post__state"></p>
             </div>
         </div>
+        <label for="file-upload">上傳作業</label>
+        <input type="file" name="" id="file-upload" hidden>
         <button class="post__upload-btn">上傳作業</button>
         <button class="post__check-detail btn-link">查看</button>
     </div>
@@ -73,11 +75,11 @@
     <main>
         <div id="class-grid">
             <div id="class-sidebar">
-                <h1 id="class-name"></h1>
+                <h1 id="class-name">讀取中...</h1>
                 <div class="flex flex-row flex-align flex-wrap">
                     <p style="text-wrap: no-wrap;">{{ callId }}</p>
-                    <div class="flex flex-row margin-inline-start-auto">
-                        <button class="btn-transparent">{% include './svg/setting.svg' %}</button>
+                    <div class="flex flex-row margin-inline-start-auto gap-2">
+                        <button id="setting-btn" class="btn-transparent" hidden>{% include 'svg/setting.svg' %}</button>
                         <button id="call-btn" class="btn-primary">進入會議</button>
                     </div>
                 </div>
@@ -88,7 +90,7 @@
 
             <div id="class-main" data-current-catagory="entire">
                 <div id="bulletin-tab-container">
-                    <button id="write-tab" data-catagory="write" class="btn-tab-right">新增貼文</button>
+                    <button id="write-tab" data-catagory="write" class="btn-tab-right" hidden>新增貼文</button>
                     <button id="entire-tab" data-catagory="entire" class="btn-tab-right">公告</button>
                     <button id="homework-tab" data-catagory="homework" class="btn-tab-right">作業</button>
                     <button id="back-to-top-tab" class="btn-tab-right btn-primary">回到最上面</button>
@@ -136,14 +138,15 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="loading">
-                        讀取...
+                        <p style="text-align: center">讀取中...</p>
                     </div>
                 </div>
             </div>
         </div>
+
+        {% include "util/class_modal.njk" %}
     </main>
 {% endblock content %}

@@ -1,5 +1,6 @@
 import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
+import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
 
@@ -14,8 +15,8 @@ const servers = {
 
 
 // HTML elements
-const camPrefab  = document.querySelector('.cam');
-const msgPrefab  = document.querySelector('.msg');
+const camPrefab  = prefab.querySelector('.cam');
+const msgPrefab  = prefab.querySelector('.msg');
 
 const confirmPanel = document.querySelector('#confirm-panel');
 const cpVideoTray  = document.querySelector('#confirm-panel__video-tray');
@@ -40,10 +41,6 @@ const callId     = document.querySelector('#call-id')?.value?.trim() || document
 // Default state
 webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
-
-// Delete prefab
-camPrefab.remove()
-msgPrefab.remove()
 
 // Global variable
 const userDict = {};
