@@ -10,22 +10,30 @@
                         <legend>警醒</legend>
                         <div class="field"  id="alertType">
                             <label for="alert-interval">警醒類型:</label>
-                            <label id="alert-type"></label>
+                            <label id="alert-type" class="alert-type"></label>
                         </div>
                         <label for="alert-interval">警醒間隔:</label>
                         <div class="field">
                             
-                            <input id="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                            <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" min="5" max="50" required>
                             <label for="alert-interval">分鐘</label>
                         </div>
                         <label for="alert-time">警醒持續時間:</label>
                         <div class="field">
-                            <input id="alert-time" name="alert-time" type="number" min="1" max="3" required>
+                            <input id="alert-time" class="alert-time" name="alert-time" type="number" min="1" max="3" required>
                             <label for="alert-time">分鐘</label>
                         </div>
                     </fieldset>
-                    <input type="submit" id="submit-form" hidden disabled/>
-                    <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+                    <div class="type-info">
+                        <fieldset class="fieldset">
+                            
+                        </fieldset>
+                    </div>
+
+                    <div class="center-btn">
+                        <input type="submit" id="submit-form" hidden disabled/>
+                        <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+                    </div>
                 </form>
 
                 {# ---------------------------------------------------------------------------------- #}
@@ -54,7 +62,7 @@
                     <div class="card">
                         <div class="content">
                         <h2 class="title">選擇題警醒</h2>
-                        <p class="copy">搭配警醒按鈕，附加選擇題，從一組選項當中，選出一個或多個作為正確（或較適合）的答案，並完成警醒簽到。</p>
+                        <p class="copy">搭配警醒按鈕，附加選擇題，從一組選項當中，選出一個作為正確的答案，並完成警醒簽到。</p>
                         <button class="btn" id="choose-2">選擇</button>
                         </div>
                     </div>
@@ -76,7 +84,33 @@
             </div>
         </div>
 
-        <div class="alert-step-progress close">
+        <div class="alert-step-progress button-setting close">
+            <div class="alert_icon_buttons" id="alert-btn-return" style="left: 15px;">
+                <i class="bx bx-arrow-back"></i>
+            </div>
+            <div class="container">
+                <header>警醒按鈕設定</header>
+                <fieldset>
+                    <legend>警醒</legend>
+                    <label for="alert-interval">警醒間隔:</label>
+                    <div class="field">
+                        
+                        <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" min="5" max="50" required="">
+                        <label for="alert-interval">分鐘</label>
+                    </div>
+                    <label for="alert-time">警醒持續時間:</label>
+                    <div class="field">
+                        <input id="alert-time" class="alert-time" name="alert-time" type="number" min="1" max="3" required="">
+                        <label for="alert-time">分鐘</label>
+                    </div>
+                </fieldset>
+                <div class="center-btn">
+                    <button type="button" id="alert-btn-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert-step-progress multiple-choice-setting close">
             <div class="container">
                 <header>設定選擇題流程</header>
                 <div class="process-bar">
@@ -108,7 +142,7 @@
                             <div class="title">輸入題目問題</div>
                             <div class="field">
                                 <div class="label">Question:</div>
-                                <textarea id="qst_text" cols="45" rows="10" maxlength="50"></textarea>
+                                <textarea class="qst_text" cols="45" rows="10" maxlength="50"></textarea>
                             </div>
                             <div class="field btns">
                                 <button class="prev-1 prev">返回</button>
@@ -133,13 +167,12 @@
                             <div class="field">
                                 <label for="alert-interval">警醒間隔:</label>
                                 <div class="field">
-                            
-                                    <input id="alert-interval" name="alert-interval" type="number" min="5" max="50">
+                                    <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" min="5" max="50">
                                     <label for="alert-interval">分鐘</label>
                                 </div>
                                 <label for="alert-time">警醒持續時間:</label>
                                 <div class="field">
-                                    <input id="alert-time" name="alert-time" type="number" min="1" max="3">
+                                    <input id="alert-time" class="alert-time" name="alert-time" type="number" min="1" max="3">
                                     <label for="alert-time">分鐘</label>
                                 </div>
                             </div>

@@ -413,6 +413,46 @@ body.dark .switch::before {
     width: 100vw;
     z-index: 99;
 
+    .center-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .btn-primary {
+            width: 180px;
+            height: 50px;
+            border-radius: 25px;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1.15px;
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+            box-shadow: 8px 8px 16px var(--floating--color-2), -8px -8px 16px var(--floating--color-3);
+            border: none;
+            outline: none;
+            margin-inline-start: 0;
+            position: absolute;
+            bottom: 3px;
+        }
+    }
+
+    input {
+        width: 350px;
+        height: 40px;
+        margin: 4px 0;
+        padding-left: 25px;
+        font-size: 13px;
+        color: var(--text-color);
+        letter-spacing: 0.15px;
+        border: none;
+        outline: none;
+        font-family: "Montserrat", "sans-serif";
+        background-color: var(--floating--color-1);
+        transition: 0.25s ease;
+        border-radius: 8px;
+        box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
+    }
+
     &.show {
 
         .close-floating_button {
@@ -465,6 +505,21 @@ body.dark .switch::before {
                     background-color: var(--floating--color-1);
                     right: calc(100% - 1000px);
 
+                    .span_No {
+                        box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--button-color-3);
+                        position: relative;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        cursor: pointer;
+                        width: 2.8rem;
+                        height: 2.8rem;
+                        border-radius: 50%;
+                        &.answear {
+                            background-color: var(--primary-color);
+                        }
+                    }
+
                     &.is-txl {
                         left: 110px;
                         transition: 1.25s;
@@ -485,6 +540,14 @@ body.dark .switch::before {
                             flex-direction: column;
                             width: 100%;
                             height: 100%;
+
+                            .type-info {
+                                .fieldset {
+                                    .option_Input {
+                                        width: 447px;
+                                    }
+                                }
+                            }
                         }
 
                         #alertType {
@@ -508,21 +571,24 @@ body.dark .switch::before {
                             box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
                         }
 
-                        #submit-setting {
-                            width: 180px;
+                        textarea {
+                            top: 40px;
+                            width: 500px;
                             height: 50px;
-                            border-radius: 25px;
-                            margin-top: 15px;
-                            font-weight: 700;
-                            font-size: 14px;
-                            letter-spacing: 1.15px;
-                            background-color: var(--primary-color);
-                            color: var(--button-text-color);
-                            box-shadow: 8px 8px 16px var(--floating--color-2), -8px -8px 16px var(--floating--color-3);
+                            font-size: 20px;
+                            margin: 4px 0;
+                            padding-left: 25px;
+                            color: var(--text-color);
+                            letter-spacing: 0.15px;
                             border: none;
                             outline: none;
-                            margin-inline-start: 0;
+                            font-family: "Montserrat", "sans-serif";
+                            background-color: var(--floating--color-1);
+                            transition: 0.25s ease;
+                            border-radius: 8px;
+                            box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
                         }
+
                     }
 
                     &.a {
@@ -645,19 +711,19 @@ body.dark .switch::before {
                                 }
 
                                 &:nth-child(1):before {
-                                    background-image: url(https://images.unsplash.com/photo-1517021897933-0e0319cfbc28?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ);
+                                    background-image: url(https://i.ytimg.com/vi/vCTIYdDIRUQ/maxresdefault.jpg);
                                 }
 
                                 &:nth-child(2):before {
-                                    background-image: url(https://images.unsplash.com/photo-1533903345306-15d1c30952de?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ);
+                                    background-image: url(https://cdn2.ettoday.net/images/821/d821963.jpg);
                                 }
 
                                 &:nth-child(3):before {
-                                    background-image: url(https://images.unsplash.com/photo-1545243424-0ce743321e11?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ);
+                                    background-image: url(https://www.fastweb.com/uploads/article_photo/photo/2035786/sample-essay-questions-for-college-apps.jpg);
                                 }
 
                                 &:nth-child(4):before {
-                                    background-image: url(https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ);
+                                    background-image: url(https://amp.theportugalnews.com/uploads/news/large/Page3-Vote.jpg);
                                 }
                             }
 
@@ -789,16 +855,33 @@ body.dark .switch::before {
                         }
                     }
 
+                    .button-setting {
+                        &.close {
+                            opacity: 0;
+                            display: none;
+                        }
+
+                        #alert-btn-setting {
+                            left: 15px;
+                        }
+
+                        .field {
+                            justify-content: center;
+                        }
+                    }
+
+                    .multiple-choice-setting {
+                        &.close {
+                            opacity: 0;
+                            display: none;
+                        }
+                    }
+
                     .alert-step-progress {
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         opacity: 1;
-
-                        &.close {
-                            opacity: 0;
-                            display: none;
-                        }
 
                         .container {
                             text-align: center;
@@ -972,6 +1055,9 @@ body.dark .switch::before {
                                                 border: 2px solid #fff;
                                                 display: inline-block;
                                                 border-radius: 50%;
+                                                &.answer {
+                                                    background: #f00;
+                                                }
                                                 .span_no {
                                                     font-weight: 500;
                                                     font-size: 30px;

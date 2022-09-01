@@ -17,13 +17,13 @@ const fltCntr             = document.querySelector(".floating-container"),
 const navBtn  = document.querySelectorAll('.nav-btn');
 
 const classModel         = document.querySelector('#class-modal'),
-      classModelForm     = classModel.querySelector('#close-modal__form'),
-      classModelTitle    = classModel.querySelector('#class-modal__title'),
-      alertType          = classModel.querySelector('#alert-type'),
-      alertInterval      = classModel.querySelector("#alert-interval"),
-      alertTime          = classModel.querySelector("#alert-time"),
-      submitSettingBtn   = classModel.querySelector('#submit-setting'),
-      submitForm         = classModel.querySelector('#submit-form');
+      classModelForm     = document.querySelector('#close-modal__form'),
+      classModelTitle    = document.querySelector('#class-modal__title'),
+      alertType          = document.querySelector('.alert-type'),
+      alertInterval      = document.querySelectorAll(".alert-interval"),
+      alertTime          = document.querySelectorAll(".alert-time"),
+      submitSettingBtn   = document.querySelector('#submit-setting'),
+      submitForm         = document.querySelector('#submit-form');
 
 const switchCtn = document.querySelector('#switch-cnt'),
       switchC1  = switchCtn.querySelector('#switch-c1'),
@@ -36,6 +36,10 @@ const floatingAlertA    = document.querySelector('#floating-alert-a'),
       alertExchange     = floatingAlertA.querySelector('#alert-exchange'),
       alertReturn       = floatingAlertA.querySelector('#alert-return'),
       alertStepProgress = document.querySelector('.alert-step-progress'),
+      buttonSetting = document.querySelector('.button-setting'),
+      alertBtnReturn = document.querySelector('#alert-btn-return'),
+      alertBtnFinish = document.querySelector('#alert-btn-finish'),
+      multipleChoiceSetting = document.querySelector('.multiple-choice-setting'),
       choose1    = floatingAlertA.querySelector('#choose-1'),
       choose2    = floatingAlertA.querySelector('#choose-2'),
       choose3    = floatingAlertA.querySelector('#choose-3'),
@@ -49,6 +53,7 @@ const prev1 = document.querySelector(".prev-1");
 const next1 = document.querySelector(".next-1");
 const addBtn = document.querySelector(".add_options");
 let bxX = document.querySelectorAll(".bx-x");
+let divNo = document.querySelectorAll(".div_no");
 const prev2 = document.querySelector(".prev-2");
 const next2 = document.querySelector(".next-2");
 const prev3 = document.querySelector(".prev-3");
@@ -56,9 +61,15 @@ const next3 = document.querySelector(".next-3");
 const progressText = document.querySelectorAll(".step p");
 const progressCheck = document.querySelectorAll(".step .check");
 const bullet = document.querySelectorAll(".step .bullet");
+const qstText = document.querySelector(".qst_text");
 let max = 3;
 let current = 1;
 let optionsTotal = 0;
+let globalInterval;
+let globalTime;
+let globalTpye;
+let answerID;
+let question, answer;
 
 const floatingAlertB  = document.querySelector('#floating-alert-b');
 
@@ -108,6 +119,13 @@ function addOptions(){
             }
         });
     });
+    divNo.addEventListener('click', () => {
+        let no = document.querySelectorAll(".div_no");
+        Array.from(no).forEach((item) => {
+            item.classList.remove("answer");
+        });
+        divNo.classList.toggle("answer");
+    });
     bxX = document.querySelectorAll(".bx-x");
     let spansNo = document.querySelectorAll(".span_no");
     let x = 0;
@@ -125,8 +143,13 @@ function addOptions(){
     }
 }
 
+alertBtnReturn.addEventListener('click', () => {
+    buttonSetting.classList.toggle("close");
+    alertChoose.classList.remove("close");
+});
+
 prev1.addEventListener('click', () => {
-    alertStepProgress.classList.toggle("close");
+    multipleChoiceSetting.classList.toggle("close");
     alertChoose.classList.remove("close");
     bullet[current - 2 ].classList.remove("active");
     progressText[current - 2 ].classList.remove("active");
@@ -148,7 +171,7 @@ prev3.addEventListener('click', () => {
     current -= 1;
 });
 next1.addEventListener('click', () => {
-    if(document.getElementById('qst_text').value != ''){
+    if(qstText.value != ''){
         slidePage.style.marginLeft = "-25%";
         bullet[current - 1 ].classList.add("active");
         progressText[current - 1 ].classList.add("active");
@@ -164,7 +187,14 @@ next2.addEventListener('click', () => {
             x += 1;
         }
     }
-    if(x === optionInput.length){
+
+    const answer = document.querySelector(".answer");
+
+    if(answer != null) {
+        answerID = answer.children[0].innerHTML;
+    }
+
+    if(x === optionInput.length && answer != null ){
         slidePage.style.marginLeft = "-50%";
         bullet[current - 1 ].classList.add("active");
         progressText[current - 1 ].classList.add("active");
@@ -173,16 +203,104 @@ next2.addEventListener('click', () => {
     }
 });
 
-next3.addEventListener('click', () => {
-    bullet[current - 1 ].classList.add("active");
-    progressText[current - 1 ].classList.add("active");
-    progressCheck[current - 1 ].classList.add("active");
-    current += 1;
+alertBtnFinish.addEventListener('click', async () => {
+    const alertInterval = document.querySelectorAll(".alert-interval");
+    const alertTime     = document.querySelectorAll(".alert-time");
+
+    const interval = Number(alertInterval[1].value);
+    const time     = Number(alertTime[1].value);
+    const alertType = 'click';
+
+    const data = {
+        alert: {
+            interval,
+            time,
+            alertType,
+        },
+    }
+    
+    const callDoc = doc(calls, callId);
+    await updateDoc(callDoc, data);
+
+    alertInfo.classList.remove("close");
+    alertChoose.classList.toggle("close");
+    fltCntr.classList.remove("show");
+    buttonSetting.classList.toggle("close");
+    alertChoose.classList.toggle("close");
+    Array.from(navBtn).forEach((item) => {
+        item.className = "nav-btn";
+    });
+});
+
+next3.addEventListener('click', async () => {
+
+    const alertInterval = document.querySelectorAll(".alert-interval");
+    const alertTime     = document.querySelectorAll(".alert-time");
+    question = qstText.value;
+    const interval = Number(alertInterval[2].value);
+    const time     = Number(alertTime[2].value);
+    const alertType = 'multiple choice';
+    answer = answerID;
+
+    const optionInput = document.querySelectorAll(".option_input");
+    let multipleChoiceDict = {};
+    
+    for(let i=0; i < optionInput.length; i++){
+        multipleChoiceDict[i] = optionInput[i].value;
+    }
+
+    const multipleChoice = Object.values(multipleChoiceDict);
+
+    const data = {
+        alert: {
+            interval,
+            time,
+            alertType,
+            question,
+            answer,
+        },
+        multipleChoice,
+    }
+    
+    const callDoc = doc(calls, callId);
+    await updateDoc(callDoc, data);
+
+    slidePage.style.marginLeft = "0%";
+    bullet[current - 2 ].classList.remove("active");
+    progressText[current - 2 ].classList.remove("active");
+    progressCheck[current - 2 ].classList.remove("active");
+    current -= 1;
+    bullet[current - 2 ].classList.remove("active");
+    progressText[current - 2 ].classList.remove("active");
+    progressCheck[current - 2 ].classList.remove("active");
+    current -= 1;
+    qstText.value = "";
+    for(let i=0; i < optionInput.length; i++){
+        optionInput[i].value = "";
+    }
+    document.querySelector(".answer").classList.remove("answer");
+    
+    alertInfo.classList.remove("close");
+    alertChoose.classList.toggle("close");
+    fltCntr.classList.remove("show");
+    multipleChoiceSetting.classList.toggle("close");
+    alertChoose.classList.toggle("close");
+    Array.from(navBtn).forEach((item) => {
+        item.className = "nav-btn";
+    });
+});
+choose1.addEventListener('click', () => {
+    buttonSetting.classList.remove("close");
+    alertChoose.classList.toggle("close");
+    alertInterval[1].value = globalInterval;
+    alertTime[1].value     = globalTime;
 });
 
 choose2.addEventListener('click', () => {
-    alertStepProgress.classList.remove("close");
+    multipleChoiceSetting.classList.remove("close");
     alertChoose.classList.toggle("close");
+    alertInterval[2].value = globalInterval;
+    alertTime[2].value     = globalTime;
 });
 
 alertExchange.addEventListener('click', () => {
@@ -226,8 +344,12 @@ export function sidebarListener() {
 
             if(navText === '警醒資訊') {
 
-                const { alert, host } = (await getDoc(callDoc)).data();
+                const { alert, host, multipleChoice } = (await getDoc(callDoc)).data();
                 const { interval, time: duration, alertType:type } = alert;     
+
+                globalInterval = interval;
+                globalTime = duration;
+                globalTpye = type;
 
                 const user = await getUser();
 
@@ -242,8 +364,52 @@ export function sidebarListener() {
                     classModelTitle.innerHTML = '警醒資訊';
                     
                     alertType.innerHTML = type;
-                    alertInterval.value = interval;
-                    alertTime.value     = duration;
+                    alertInterval[0].value = interval;
+                    alertTime[0].value     = duration;
+
+                    if(type === 'click') {
+                        const typeInfo = document.querySelector('.type-info');
+                        const fieldset = document.querySelector('.fieldset');
+                        typeInfo.removeChild(fieldset);
+                    }else if(type === 'multiple choice') {
+                        const { question, answer } = alert;  
+                        const typeInfo = document.querySelector('.type-info');
+                        const fieldset = document.querySelector('.fieldset');
+                        if(fieldset != null){
+                            typeInfo.removeChild(fieldset);
+                        }
+                        const fieldset2 = document.createElement('fieldset');
+                        fieldset2.classList.add("fieldset");    
+                        typeInfo.appendChild(fieldset2);
+                        const legend = document.createElement('legend');
+                        legend.innerHTML = '選擇題';
+                        fieldset2.appendChild(legend);
+                        const label = document.createElement('label');
+                        label.innerHTML = '選擇題問題:';
+                        fieldset2.appendChild(label);
+                        const textarea = document.createElement('textarea');
+                        textarea.setAttribute("readonly", "readonly");
+                        textarea.innerHTML = question;
+                        fieldset2.appendChild(textarea);
+                        for (let i = 0; i < multipleChoice.length; i++) {
+                            const div = document.createElement('div');
+                            div.classList.add("field");
+                            fieldset2.appendChild(div);
+                            const span = document.createElement('span');
+                            span.classList.add("span_No");
+                            span.innerHTML = i+1;
+                            div.appendChild(span);
+                            const input = document.createElement('input');
+                            input.classList.add("option_Input");
+                            input.setAttribute("readonly", "readonly");
+                            input.value = multipleChoice[i];
+                            div.appendChild(input);
+                            console.log(answer === (i+1).toString());
+                            if(answer === (i+1).toString()){
+                                span.classList.toggle('answear');
+                            }
+                        }
+                    }
                 }
                 else {
                     console.log('不是主辦人只提供個人警醒資訊');
@@ -254,36 +420,38 @@ export function sidebarListener() {
     });
 }
 
-submitSettingBtn.addEventListener('click', () => {
-    console.log('submitSetting');
-    action = 'update';
-    submitForm.disabled = false;
-    submitForm.click();
-    submitForm.disabled = true;
-});
-
-classModelForm.addEventListener('submit', async (e) => {
-    e.preventDefault()
-
+submitSettingBtn.addEventListener('click', async () => {
     const alertInterval = classModel.querySelector("#alert-interval");
     const alertTime     = classModel.querySelector("#alert-time");
 
     const interval = Number(alertInterval.value);
     const time     = Number(alertTime.value);
-    const alertType = 'click';
+    const alertType = globalTpye;
 
-    const data = {
-        alert: {
-            interval,
-            time,
-            alertType,
-        },
-    }
-
-    if (action === 'update') {
+    if (alertType === 'click') {
+        const data = {
+            alert: {
+                interval,
+                time,
+                alertType,
+            },
+        }
+        const callDoc = doc(calls, callId);
+        await updateDoc(callDoc, data);
+    } else if (alertType === 'multiple choice') {
+        const data = {
+            alert: {
+                interval,
+                time,
+                alertType,
+                question, 
+                answer,
+            },
+        }
         const callDoc = doc(calls, callId);
         await updateDoc(callDoc, data);
     }
+    
 
     fltCntr.classList.remove("show");
     Array.from(navBtn).forEach((item) => {
