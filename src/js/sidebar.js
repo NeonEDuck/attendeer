@@ -2,7 +2,7 @@ import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
-
+import { setupAlertScheduler, setupAlertListener, unsubscribe, intervalID } from './meeting.js';
 // HTML elements
 const body       = document.querySelector('body'),
       sidebar    = body.querySelector(".sidebar"),
@@ -63,13 +63,13 @@ const progressCheck = document.querySelectorAll(".step .check");
 const bullet = document.querySelectorAll(".step .bullet");
 const qstText = document.querySelector(".qst_text");
 let max = 3;
-let current = 1;
+let current = 0;
 let optionsTotal = 0;
 let globalInterval;
 let globalTime;
 let globalTpye;
-let answerID;
-let question, answer;
+let answearID;
+let question, answear;
 
 const floatingAlertB  = document.querySelector('#floating-alert-b');
 
@@ -122,9 +122,9 @@ function addOptions(){
     divNo.addEventListener('click', () => {
         let no = document.querySelectorAll(".div_no");
         Array.from(no).forEach((item) => {
-            item.classList.remove("answer");
+            item.classList.remove("answear-chosen");
         });
-        divNo.classList.toggle("answer");
+        divNo.classList.toggle("answear-chosen");
     });
     bxX = document.querySelectorAll(".bx-x");
     let spansNo = document.querySelectorAll(".span_no");
@@ -151,31 +151,27 @@ alertBtnReturn.addEventListener('click', () => {
 prev1.addEventListener('click', () => {
     multipleChoiceSetting.classList.toggle("close");
     alertChoose.classList.remove("close");
-    bullet[current - 2 ].classList.remove("active");
-    progressText[current - 2 ].classList.remove("active");
-    progressCheck[current - 2 ].classList.remove("active");
-    current -= 1;
 });
 prev2.addEventListener('click', () => {
     slidePage.style.marginLeft = "0%";
-    bullet[current - 2 ].classList.remove("active");
-    progressText[current - 2 ].classList.remove("active");
-    progressCheck[current - 2 ].classList.remove("active");
+    bullet[current-1].classList.remove("active");
+    progressText[current-1].classList.remove("active");
+    progressCheck[current-1].classList.remove("active");
     current -= 1;
 });
 prev3.addEventListener('click', () => {
     slidePage.style.marginLeft = "-25%";
-    bullet[current - 2 ].classList.remove("active");
-    progressText[current - 2 ].classList.remove("active");
-    progressCheck[current - 2 ].classList.remove("active");
+    bullet[current-1].classList.remove("active");
+    progressText[current-1].classList.remove("active");
+    progressCheck[current-1].classList.remove("active");
     current -= 1;
 });
 next1.addEventListener('click', () => {
     if(qstText.value != ''){
         slidePage.style.marginLeft = "-25%";
-        bullet[current - 1 ].classList.add("active");
-        progressText[current - 1 ].classList.add("active");
-        progressCheck[current - 1 ].classList.add("active");
+        bullet[current].classList.add("active");
+        progressText[current].classList.add("active");
+        progressCheck[current].classList.add("active");
         current += 1;
     }
 });
@@ -188,17 +184,19 @@ next2.addEventListener('click', () => {
         }
     }
 
-    const answer = document.querySelector(".answer");
+    const answearChosen = document.querySelector(".answear-chosen");
 
-    if(answer != null) {
-        answerID = answer.children[0].innerHTML;
+    console.log(answearChosen);
+
+    if(answearChosen != null) {
+        answear = answearChosen.children[0].innerHTML;
     }
 
-    if(x === optionInput.length && answer != null ){
+    if(x === optionInput.length && answear != null ){
         slidePage.style.marginLeft = "-50%";
-        bullet[current - 1 ].classList.add("active");
-        progressText[current - 1 ].classList.add("active");
-        progressCheck[current - 1 ].classList.add("active");
+        bullet[current].classList.add("active");
+        progressText[current].classList.add("active");
+        progressCheck[current].classList.add("active");
         current += 1;
     }
 });
@@ -230,6 +228,8 @@ alertBtnFinish.addEventListener('click', async () => {
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
     });
+
+    AlertReplace();
 });
 
 next3.addEventListener('click', async () => {
@@ -240,7 +240,7 @@ next3.addEventListener('click', async () => {
     const interval = Number(alertInterval[2].value);
     const time     = Number(alertTime[2].value);
     const alertType = 'multiple choice';
-    answer = answerID;
+    answearID = answear;
 
     const optionInput = document.querySelectorAll(".option_input");
     let multipleChoiceDict = {};
@@ -257,7 +257,7 @@ next3.addEventListener('click', async () => {
             time,
             alertType,
             question,
-            answer,
+            answear,
         },
         multipleChoice,
     }
@@ -266,19 +266,19 @@ next3.addEventListener('click', async () => {
     await updateDoc(callDoc, data);
 
     slidePage.style.marginLeft = "0%";
-    bullet[current - 2 ].classList.remove("active");
-    progressText[current - 2 ].classList.remove("active");
-    progressCheck[current - 2 ].classList.remove("active");
+    bullet[current - 1].classList.remove("active");
+    progressText[current - 1 ].classList.remove("active");
+    progressCheck[current - 1 ].classList.remove("active");
     current -= 1;
-    bullet[current - 2 ].classList.remove("active");
-    progressText[current - 2 ].classList.remove("active");
-    progressCheck[current - 2 ].classList.remove("active");
+    bullet[current - 1 ].classList.remove("active");
+    progressText[current - 1 ].classList.remove("active");
+    progressCheck[current - 1 ].classList.remove("active");
     current -= 1;
     qstText.value = "";
     for(let i=0; i < optionInput.length; i++){
         optionInput[i].value = "";
     }
-    document.querySelector(".answer").classList.remove("answer");
+    document.querySelector(".answear").classList.remove("answear");
     
     alertInfo.classList.remove("close");
     alertChoose.classList.toggle("close");
@@ -288,6 +288,8 @@ next3.addEventListener('click', async () => {
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
     });
+
+    AlertReplace();
 });
 choose1.addEventListener('click', () => {
     buttonSetting.classList.remove("close");
@@ -319,6 +321,16 @@ closeFloatingButton.addEventListener('click', () => {
         item.className = "nav-btn";
     });
 });
+
+async function AlertReplace() {
+    const { alert, host } = (await getDoc(callDoc)).data();
+    const { interval, time: duration, alertType} = alert;
+
+    clearInterval(intervalID);
+    setupAlertScheduler(interval, duration, alertType);
+
+
+}
 
 // Global variable
 let action;
@@ -368,15 +380,16 @@ export function sidebarListener() {
                     alertTime[0].value     = duration;
 
                     if(type === 'click') {
-                        const typeInfo = document.querySelector('.type-info');
                         const fieldset = document.querySelector('.fieldset');
-                        typeInfo.removeChild(fieldset);
+                        if(fieldset != null){
+                            fieldset.remove();
+                        }
                     }else if(type === 'multiple choice') {
-                        const { question, answer } = alert;  
+                        const { question, answear } = alert;  
                         const typeInfo = document.querySelector('.type-info');
                         const fieldset = document.querySelector('.fieldset');
                         if(fieldset != null){
-                            typeInfo.removeChild(fieldset);
+                            fieldset.remove();
                         }
                         const fieldset2 = document.createElement('fieldset');
                         fieldset2.classList.add("fieldset");    
@@ -388,6 +401,7 @@ export function sidebarListener() {
                         label.innerHTML = '選擇題問題:';
                         fieldset2.appendChild(label);
                         const textarea = document.createElement('textarea');
+                        textarea.classList.add("info-textarea");
                         textarea.setAttribute("readonly", "readonly");
                         textarea.innerHTML = question;
                         fieldset2.appendChild(textarea);
@@ -404,8 +418,8 @@ export function sidebarListener() {
                             input.setAttribute("readonly", "readonly");
                             input.value = multipleChoice[i];
                             div.appendChild(input);
-                            console.log(answer === (i+1).toString());
-                            if(answer === (i+1).toString()){
+                            if(answear === (i+1).toString()){
+                                answearID = answear;
                                 span.classList.toggle('answear');
                             }
                         }
@@ -439,13 +453,18 @@ submitSettingBtn.addEventListener('click', async () => {
         const callDoc = doc(calls, callId);
         await updateDoc(callDoc, data);
     } else if (alertType === 'multiple choice') {
+
+        const infoTextarea = classModel.querySelector(".info-textarea");
+        const question = infoTextarea.value;
+        const answear = answearID;
+
         const data = {
             alert: {
                 interval,
                 time,
                 alertType,
                 question, 
-                answer,
+                answear,
             },
         }
         const callDoc = doc(calls, callId);
@@ -457,6 +476,8 @@ submitSettingBtn.addEventListener('click', async () => {
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
     });
+
+    AlertReplace();
 });
 
 modeSwitch.addEventListener("click", () =>{

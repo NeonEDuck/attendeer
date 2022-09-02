@@ -447,7 +447,7 @@ body.dark .switch::before {
         border: none;
         outline: none;
         font-family: "Montserrat", "sans-serif";
-        background-color: var(--floating--color-1);
+        background-color: transparent;
         transition: 0.25s ease;
         border-radius: 8px;
         box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
@@ -1055,7 +1055,7 @@ body.dark .switch::before {
                                                 border: 2px solid #fff;
                                                 display: inline-block;
                                                 border-radius: 50%;
-                                                &.answer {
+                                                &.answear-chosen {
                                                     background: #f00;
                                                 }
                                                 .span_no {

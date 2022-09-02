@@ -4,6 +4,7 @@ import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
 import { sidebarListener } from './sidebar.js';
 
+
 const servers = {
     iceServers: [
         {
@@ -32,9 +33,8 @@ const webcamBtn    = document.querySelector('#webcam-btn');
 const enterBtn     = document.querySelector('#enter-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn    = document.querySelector('#hang-up-btn');
-const alertBtn     = document.querySelector('#alert-btn');
-const alertBtnTime = document.querySelector('#alert-btn__time');
-const alertBtnText = document.querySelector('#alert-btn__text');
+const alertModule = document.querySelector('#alert');
+const alertShow = document.querySelector('.alert-show');
 const camArea    = document.querySelector('#cam-area');
 const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
@@ -74,6 +74,8 @@ localScreenShare.cam.hidden = true;
 cpVideoTray.appendChild(localScreenShare.cam);
 const videoTrayDict = {};
 let userAbove = '';
+export let intervalID;
+export let unsubscribe;
 
 // Firestore
 const calls = collection(firestore, 'calls');
@@ -195,13 +197,17 @@ enterBtn.addEventListener('click', async () => {
     });
 
     const { alert, host } = (await getDoc(callDoc)).data();
-    const { interval, time: duration } = alert;
+    const { interval, time: duration, alertType} = alert;
     if (localUserId === host){
         console.log('您是會議主辦人');
-        setupAlertScheduler(interval, duration);
+        setupAlertScheduler(interval, duration, alertType);
     }
     else {
         console.log('您不是會議主辦人');
+        
+        if( alertShow != null ) {
+            alertShow.remove();
+        }
         setupAlertListener();
     }
 
@@ -260,31 +266,6 @@ msgInput.addEventListener("keyup", function(event) {
     if (event.keyCode === 13) { // press enter
         event.preventDefault();
         sendMsgBtn.click();
-    }
-});
-
-alertBtn.addEventListener('click', async () => {
-    if (alertBtn.dataset.id) {
-        
-        const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
-        const participants = collection(alertDoc, 'participants');
-        const userDoc      = doc(participants, localUserId);
-
-        const data = {
-            click : true,
-            timestamp: new Date()
-        }
-        await updateDoc(userDoc, data);
-
-        alertBtnTime.hidden = true;
-        alertBtnText.innerHTML = '簽到完成';
-        alertBtn.classList.add('active');
-
-        await delay(2000);
-        alertBtn.hidden = true;
-        alertBtnTime.hidden = false;
-        alertBtnText.innerHTML = '警醒按鈕';
-        alertBtn.classList.remove('active');
     }
 });
 
@@ -482,14 +463,14 @@ async function setupCandidateListener(remoteId) {
     });
 }
 
-function setupAlertScheduler(interval, duration) {
+export function setupAlertScheduler(interval, duration, alertType) {
     console.log('setupAlertScheduler');
-    setInterval(async () => {
+    intervalID = setInterval(async () => {
         const alertDoc = doc(alertRecords);
         const data = {
             timestamp: new Date(),
             duration: duration, //時長
-            alertType: 'click',
+            alertType: alertType,
         };
         console.log('add alert');
 
@@ -497,63 +478,168 @@ function setupAlertScheduler(interval, duration) {
     }, interval * MINUTE);
 }
 
-function setupAlertListener() {
+export function setupAlertListener() {
     console.log('setupAlertListener');
-    onSnapshot(alertRecords, (snapshot) => {
+    unsubscribe = onSnapshot(alertRecords, (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
             if (change.type === 'added') {
                 const alertDoc     = doc(alertRecords, change.doc.id);
                 const participants = collection(alertDoc, 'participants');
                 const userDoc      = doc(participants, localUserId);
-        
-                const data = {
-                    click : false,
-                    timestamp: new Date()
-                }
-                await setDoc(userDoc, data);
-
-                const { alertType, duration, timestamp: timestampStart } = change.doc.data();
+                const { alert,multipleChoice } = (await getDoc(callDoc)).data();
+                const { question, answear, alertType } = alert;
+                const { duration, timestamp: timestampStart } = change.doc.data();
                 const timestampEnd = new Date(timestampStart.toMillis() + duration * MINUTE);
                 const now = new Date();
-                if (timestampStart <= now && now < timestampEnd) {
-                    console.log('see alert');
-                    alertBtn.hidden = false;
-                    alertBtn.dataset.id = change.doc.id;
 
-                    if (Math.random() < 0.5) {
-                        alertBtn.style.left  = `${getRandom(50)}%`;
-                        alertBtn.style.right = `initial`;
+                if( timestampStart <= now && now < timestampEnd ) {
+                    if( (await getDoc(userDoc)).data() === undefined ) {
+                        const data = {
+                            click : false,
+                        }
+                        await setDoc(userDoc, data);
                     }
-                    else {
-                        alertBtn.style.right = `${getRandom(50)}%`;
-                        alertBtn.style.left  = `initial`;
-                    }
+                    const {click} = (await getDoc(userDoc)).data(); 
+                    if( click === false ) {
+                        console.log('see alert');
+                        alertModule.hidden = false;
+                        const alertShow = document.createElement('div');
+                        alertShow.classList.add('alert-show')
+                        alertModule.appendChild(alertShow);
 
-                    if (Math.random() < 0.5) {
-                        alertBtn.style.top     = `${getRandom(50)}%`;
-                        alertBtn.style.bottom  = `initial`;
-                    }
-                    else {
-                        alertBtn.style.bottom  = `${getRandom(50)}%`;
-                        alertBtn.style.top     = `initial`;
-                    }
+                        if(alertType === 'multiple choice') {
+                            const textarea = document.createElement('textarea');
+                            textarea.setAttribute("readonly", "readonly");
+                            textarea.classList.add('qst_show')
+                            textarea.innerHTML = question;
+                            alertShow.appendChild(textarea);
+                            for (let i = 0; i < multipleChoice.length; i++) {
+                                const field = document.createElement('div');
+                                field.classList.add('field')
+                                alertShow.appendChild(field);
+                                const span = document.createElement('span');
+                                span.classList.add('span_No');
+                                span.innerHTML = i+1;
+                                field.appendChild(span);
+                                const input = document.createElement('input');
+                                input.classList.add('option_Input')
+                                input.setAttribute("readonly", "readonly");
+                                input.value = multipleChoice[i];
+                                field.appendChild(input);
 
-                    const countDownInterval = setIntervalImmediately(() => {
-                        const now = new Date();
+                                span.addEventListener('click', () => {
+                                    let no = document.querySelectorAll(".span_No");
+                                    Array.from(no).forEach((item) => {
+                                        item.classList.remove("chosen");
+                                    });
+                                    span.classList.toggle("chosen");
+                                });
+                            }
+                        }
 
-                        const distance = timestampEnd.getTime() - now.getTime();
+                        const alertBtnDiv = document.createElement('div');
+                        alertBtnDiv.classList.add('alert-btn-div')
+                        alertShow.appendChild(alertBtnDiv);
+                        const alertBtn = document.createElement('button');
+                        alertBtn.setAttribute('id','alert-btn');
+                        alertBtnDiv.appendChild(alertBtn);
+                        const alertBtnText = document.createElement('p');
+                        alertBtnText.setAttribute('id','alert-btn__text');
+                        alertBtnText.innerHTML = '警醒按鈕';
+                        alertBtn.appendChild(alertBtnText);
+                        const alertBtnTime = document.createElement('span');
+                        alertBtnTime.setAttribute('id','alert-btn__time');
+                        alertBtnTime.innerHTML = '00:00';
+                        alertBtn.appendChild(alertBtnTime);
 
-                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        alertModule.hidden = false;
 
-                        alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
-                    }, 1000);
+                        alertBtn.addEventListener('click', async () => {
+                            if (alertBtn.dataset.id) {
+                                const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
+                                const participants = collection(alertDoc, 'participants');
+                                const userDoc      = doc(participants, localUserId);
+                                const answearChosen = document.querySelector(".chosen");
 
-                    setTimeout(() => {
-                        clearInterval(countDownInterval);
-                        alertBtn.hidden = true;
-                    }, timestampEnd.getTime() - now.getTime());
-                }
+                                if(alertType === 'click') {
+                                    const data = {
+                                        click : true,
+                                        timestamp: new Date()
+                                    }
+                                    await updateDoc(userDoc, data);
+                                    alertBtnTime.hidden = true;
+                                    alertBtnText.innerHTML = '簽到完成';    
+                                    alertBtn.classList.add('active');   
+                                        
+                                    await delay(2000);  
+                                    alertBtn.hidden = true; 
+                                    alertBtnTime.hidden = false;    
+                                    alertBtnText.innerHTML = '警醒按鈕';    
+                                    alertBtn.classList.remove('active');    
+
+                                    alertModule.hidden = true;
+                                }else if(alertType === 'multiple choice') {
+                                    if(answearChosen != null) {
+                                        const data = {
+                                            click: true,
+                                            answear: answearChosen.innerHTML,
+                                            timestamp: new Date(),
+                                        }
+                                        await updateDoc(userDoc, data);
+                                        alertBtnTime.hidden = true;
+                                        alertBtnText.innerHTML = '簽到完成';
+                                        alertBtn.classList.add('active');
+                                
+                                        await delay(2000);
+                                        alertBtn.hidden = true;
+                                        alertBtnTime.hidden = false;
+                                        alertBtnText.innerHTML = '警醒按鈕';
+                                        alertBtn.classList.remove('active');
+
+                                        alertModule.hidden = true;
+                                    }
+                                }
+                            }
+                        });
+    
+                        alertBtn.dataset.id = change.doc.id;
+
+                        if (Math.random() < 0.5) {
+                            alertModule.style.left  = `${getRandom(50)}%`;
+                            alertModule.style.right = `initial`;
+                        }
+                        else {
+                            alertModule.style.right = `${getRandom(50)}%`;
+                            alertModule.style.left  = `initial`;
+                        }
+
+                        if (Math.random() < 0.5) {
+                            alertModule.style.top     = `${getRandom(50)}%`;
+                            alertModule.style.bottom  = `initial`;
+                        }
+                        else {
+                            alertModule.style.bottom  = `${getRandom(50)}%`;
+                            alertModule.style.top     = `initial`;
+                        }
+
+                        const countDownInterval = setIntervalImmediately(() => {
+                            const now = new Date();
+
+                            const distance = timestampEnd.getTime() - now.getTime();
+
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                            alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
+                        }, 1000);
+
+                        setTimeout(() => {
+                            clearInterval(countDownInterval);
+                            alertModule.hidden = true;
+                            alertShow.remove();
+                        }, timestampEnd.getTime() - now.getTime());
+                    } 
+                }               
             }
         });
     });
