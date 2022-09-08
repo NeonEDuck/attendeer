@@ -3,10 +3,11 @@ import { firestore } from "./firebase-config.js";
 import './base.js';
 import { prefab } from './prefab.js';
 import { ClassModal } from './classModel.js';
-import { getUser, getUserData } from './util.js';
+import { getUser, getUserData, delay } from './util.js';
 
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
+const msgPrefab         = prefab.querySelector('.msg');
 const postreplyPrefab   = prefab.querySelector('.post-reply');
 const className         = document.querySelector('#class-name');
 const settingBtn        = document.querySelector('#setting-btn');
@@ -17,11 +18,11 @@ const scheduleCancelBtn = document.querySelector('#class-schedule__cancel');
 const scheduleSaveBtn   = document.querySelector('#class-schedule__save');
 const scheduleEditBtn   = document.querySelector('#class-schedule__edit');
 
-const tabs              = document.querySelectorAll('#bulletin-tab-container button');
+const tabs              = document.querySelectorAll(':where(#bulletin-horizontal-tab-container, #bulletin-vertical-tab-container) button');
 const writeTab          = document.querySelector('#write-tab');
 const backToTopTab      = document.querySelector('#back-to-top-tab');
-const entireTab         = document.querySelector('#bulletin-tab-container > [data-catagory="entire"]');
-const catagoryTabs      = document.querySelectorAll('#bulletin-tab-container [data-catagory]');
+const entireTab         = document.querySelector('#bulletin-vertical-tab-container > [data-catagory="entire"]');
+const catagoryTabs      = document.querySelectorAll(':where(#bulletin-horizontal-tab-container, #bulletin-vertical-tab-container) [data-catagory]');
 const pages             = document.querySelectorAll('#bulletin > [data-catagory]');
 const postDetail        = document.querySelector('#bulletin > [data-catagory="detail"]');
 
@@ -30,12 +31,16 @@ const writeTitle        = document.querySelector('#write-title');
 const writeContent      = document.querySelector('#write-content');
 const writeSubmitBtn    = document.querySelector('#write-submit-btn');
 
+const chatLog           = document.querySelector('#chat-log');
+const downloadChatBtn   = document.querySelector('#download-chat-btn');
+
 const callId = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
 const calls    = collection(firestore, 'calls');
 const callDoc  = doc(calls, callId);
 const users    = collection(firestore, 'users');
 const posts    = collection(callDoc, 'posts');
+const messages = collection(callDoc, 'messages');
 
 const classModal = new ClassModal();
 let prevSchedule = [];
@@ -54,6 +59,28 @@ document.onreadystatechange = async () => {
 
     className.innerHTML = name;
 
+    let chatInit = true;
+    onSnapshot(messages, async (snapshot) => {
+        if (chatInit) {
+            chatInit = false;
+
+            const q = query(messages, orderBy('timestamp', 'asc'));
+            const messageDocs = await getDocs(q);
+            for (const msgDoc of messageDocs.docs) {
+                await addMessageToLog(msgDoc.data());
+            }
+        }
+        else {
+            snapshot.docChanges().forEach( async (change) => {
+                if (change.type === 'added') {
+                    await addMessageToLog(change.doc.data());
+                }
+            });
+        }
+
+        await delay(100);
+    });
+
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
     for (const row of rows) {
         const cells = row.querySelectorAll('td');
@@ -69,6 +96,22 @@ document.onreadystatechange = async () => {
     refreshSchedule();
     entireTab.click();
 };
+
+async function addMessageToLog(msgData) {
+    const { user, text, timestamp } = msgData;
+    const timeString = timestamp.toDate().toLocaleString();
+    const { name } = await getUserData(user) || { name: "???" };
+
+    const msg = msgPrefab.cloneNode(true);
+    const msgUser = msg.querySelector('.msg__user');
+    const msgTime = msg.querySelector('.msg__timestamp');
+    const msgText = msg.querySelector('.msg__text');
+    msgUser.innerHTML = name;
+    msgTime.innerHTML = timeString;
+    msgText.innerHTML = text;
+    // chatLog.insert(msg, chatLog.firstChild);
+    chatLog.appendChild(msg);
+}
 
 settingBtn.addEventListener('click', async (e) => {
     classModal.openModifyModal(callId);
@@ -146,7 +189,7 @@ for (const tab of catagoryTabs) {
                 targetPage = page;
             }
         }
-        if (catagory !== 'write') {
+        if (catagory !== 'write' && catagory !== 'chat') {
             targetPage.innerHTML = '';
             let q = query(posts, orderBy('timestamp', 'desc'));
             if (catagory !== 'entire') {
@@ -188,6 +231,34 @@ writeSubmitBtn.addEventListener('click', async () => {
     writeContent.value = '';
     entireTab.click();
 });
+
+downloadChatBtn.addEventListener('click', async () => {
+    const element = document.createElement('a');
+    const chatLogString = await getChatLog();
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(chatLogString));
+    element.setAttribute('download', 'chatLog.txt');
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+});
+
+async function getChatLog() {
+    const msgs = chatLog.querySelectorAll('.msg');
+    const messageDocs = await getDocs(messages);
+    console.log(messageDocs);
+    let log = '';
+    for (const msg of messageDocs.docs) {
+        const { user, timestamp, text } = msg.data();
+        const timeString = timestamp.toDate().toLocaleString();
+        const { name } = await getUserData(user) || { name: "???" };
+        log += name + ' '
+                + timeString + '\n'
+                + text + '\n';
+    }
+    return log;
+}
 
 function refreshSchedule() {
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');

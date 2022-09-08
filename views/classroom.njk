@@ -68,6 +68,14 @@
         <p class="post-reply__content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae quos ea assumenda quo accusamus officia, accusantium asperiores aspernatur nam error?</p>
     </div>
 </div>
+
+<li class="msg">
+    <p>
+        <span class="msg__user"></span>
+        <span class="msg__timestamp"></span>
+    </p>
+    <p class="msg__text"></p>
+</li>
 {% endblock prefab %}
 
 {% block content %}
@@ -89,59 +97,81 @@
             </div>
 
             <div id="class-main" data-current-catagory="entire">
-                <div id="bulletin-tab-container">
-                    <button id="write-tab" data-catagory="write" class="btn-tab-right" hidden>新增貼文</button>
-                    <button id="entire-tab" data-catagory="entire" class="btn-tab-right">公告</button>
-                    <button id="homework-tab" data-catagory="homework" class="btn-tab-right">作業</button>
-                    <button id="back-to-top-tab" class="btn-tab-right btn-primary">回到最上面</button>
+                <div id="bulletin-horizontal-tab-container">
+                    <button id="write-tab" data-catagory="write" class="btn-tab-top" hidden>新增貼文</button>
+                    <button id="chat-tab" data-catagory="chat" class="btn-tab-top">聊天紀錄</button>
+                    <button id="alert-tab" data-catagory="alert" class="btn-tab-top">警醒紀錄</button>
                 </div>
 
-                <div id="bulletin" class="flex-item-1">
-                    <div data-catagory="write" hidden>
-                        <div class="post">
-                            <h1>新增貼文</h1>
-                            <div class="flex flex-row gap-4">
-                                <div class="flex flex-column gap-4">
-                                    <p>種類</p>
-                                    <select name="write-catagory" id="write-catagory">
-                                        <option value="entire">公告</option>
-                                        <option value="homework">作業</option>
-                                    </select>
-                                </div>
-                                <div class="flex flex-column gap-4 flex-item-1">
-                                    <p>標題</p>
-                                    <input type="text" id="write-title">
-                                </div>
-                            </div>
-                            <p>內容</p>
-                            <textarea type="text" id="write-content" style="height: 11em; resize: vertical;"></textarea>
-                            <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
-                        </div>
+                <div id="class-secondary">
+                    <div id="bulletin-vertical-tab-container">
+                        <button id="write-tab" data-catagory="write" class="btn-tab-right" hidden>新增貼文</button>
+                        <button id="entire-tab" data-catagory="entire" class="btn-tab-right">公告</button>
+                        <button id="homework-tab" data-catagory="homework" class="btn-tab-right">作業</button>
+                        <button id="back-to-top-tab" class="btn-tab-right btn-primary">回到最上面</button>
                     </div>
 
-                    <div data-catagory="entire" hidden>
-                    </div>
-
-                    <div data-catagory="homework" hidden>
-                    </div>
-
-                    <div data-catagory="detail" hidden>
-                        <div class="flex flex-row flex-align gap-2">
-                            <div class="flex flex-column padding-inline-start-2 flex-item-1">
-                                <h3 class="post__title">Title</h3>
-                                <div class="flex flex-row gap-2">
-                                    <p class="post__catagory">公告</p>
-                                    <p class="post__date">2022/1/1</p>
+                    <div id="bulletin" class="flex-item-1">
+                        <div data-catagory="write" hidden>
+                            <div class="post">
+                                <h1>新增貼文</h1>
+                                <div class="flex flex-row gap-4">
+                                    <div class="flex flex-column gap-4">
+                                        <p>種類</p>
+                                        <select name="write-catagory" id="write-catagory">
+                                            <option value="entire">公告</option>
+                                            <option value="homework">作業</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-column gap-4 flex-item-1">
+                                        <p>標題</p>
+                                        <input type="text" id="write-title">
+                                    </div>
                                 </div>
-                                <div class="user-records">
-
-                                </div>
+                                <p>內容</p>
+                                <textarea type="text" id="write-content" style="height: 11em; resize: vertical;"></textarea>
+                                <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="loading">
-                        <p style="text-align: center">讀取中...</p>
+                        <div data-catagory="chat" hidden>
+                            <div class="flex flex-column gap-4">
+                                <div class="flex flex-row flex-align gap-4 flex-item-1">
+                                    <h1>聊天紀錄</h1>
+                                    <button id="download-chat-btn">下載</button>
+                                </div>
+                                <ul id="chat-log">
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div data-catagory="alert" hidden>
+                        </div>
+
+                        <div data-catagory="entire" hidden>
+                        </div>
+
+                        <div data-catagory="homework" hidden>
+                        </div>
+
+                        <div data-catagory="detail" hidden>
+                            <div class="flex flex-row flex-align gap-2">
+                                <div class="flex flex-column padding-inline-start-2 flex-item-1">
+                                    <h3 class="post__title">Title</h3>
+                                    <div class="flex flex-row gap-2">
+                                        <p class="post__catagory">公告</p>
+                                        <p class="post__date">2022/1/1</p>
+                                    </div>
+                                    <div class="user-records">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="loading">
+                            <p style="text-align: center">讀取中...</p>
+                        </div>
                     </div>
                 </div>
             </div>

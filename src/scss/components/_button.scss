@@ -57,6 +57,14 @@ button {
 }
 
 .btn-tab {
+    &-top {
+        border-radius: 1em 1em 0 0;
+    }
+
+    &-bottem {
+        border-radius: 0 0 1em 1em;
+    }
+
     &-right {
         border-radius: 0 1em 1em 0;
     }
@@ -64,6 +72,19 @@ button {
     &-left {
         border-radius: 1em 0 0 1em;
     }
+
+    &-top,
+    &-bottem {
+        height: 2em;
+        min-width: 6em;
+        padding-inline: 1em;
+        background-color: lightgrey;
+        @include content-color(black);
+        &.btn-on {
+            background-color: white;
+        }
+    }
+
     &-right,
     &-left {
         width: 2em;
