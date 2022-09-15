@@ -113,16 +113,35 @@ $post-gap: 4em;
 }
 
 #class-schedule {
-    text-align: center;
-    width: 100%;
-    td, th {
-        padding-block: 0.25em;
-        &.on {
-            background-color: lime;
-        }
-    }
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 0;
+    align-items: flex-end;
+    gap: 0.5em;
+    background-color: var(--bg-main);
+    border-radius: 1.2em;
+    padding: 0.5em;
+    position: relative;
+    overflow: hidden;
 
+    &__table {
+        text-align: center;
+        width: 100%;
+        background-color: transparent;
+
+        tr:nth-child(2n), th {
+            background-color: var(--clr-gray-300);
+        }
+        td, th {
+            padding-block: 0.5em;
+            &.on {
+                background-color: var(--clr-active-700);
+            }
+        }
+
+    }
 }
+
 
 #back-to-top-tab {
     position: sticky;
