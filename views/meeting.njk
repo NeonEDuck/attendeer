@@ -1,6 +1,7 @@
 {% extends "util/base.njk" %}
 
 {% block script %}
+    <script src="/socket.io/socket.io.js" defer></script>
     <script src="/js/meeting.js" type="module" defer></script>
 {% endblock script %}
 
@@ -27,7 +28,7 @@
     <div id="meeting-panel">
         <div id="meeting-panel__left">
             <div id="cam-area">
-                <div id="video-tray">
+                <div id="cam-container">
 
                 </div>
 
@@ -72,7 +73,7 @@
     </div>
 
     <div id="confirm-panel" class="flex flex-column flex-center gap-2">
-        <div id="confirm-panel__video-tray" class="flex flex-row gap-2"></div>
+        <div id="confirm-panel__cam-container" class="flex flex-row gap-2"></div>
 
         <div class="flex flex-row gap-2">
             <button id="mic-btn" class="btn-switch btn-round btn-on" disabled>{% include './svg/mic.svg' %}{% include './svg/mic_off.svg' %}</button>

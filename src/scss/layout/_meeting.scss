@@ -47,7 +47,7 @@
     overflow: hidden;
 }
 
-#video-tray {
+#cam-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -64,7 +64,7 @@
     }
 }
 
-#confirm-panel__video-tray {
+#confirm-panel__cam-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
