@@ -1,6 +1,7 @@
+import { prefab } from './prefab.js';
 import { getUserData, debounce } from './util.js';
 
-const camPrefab  = document.querySelector('.cam');
+const camPrefab = prefab.querySelector('.cam');
 
 const servers = {
     iceServers: [

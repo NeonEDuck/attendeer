@@ -3,7 +3,7 @@ html, body {
     background-color: var(--clr-gray-300);
 }
 
-html, body, input, button {
+html, body, input, button, textarea {
     font-family: 'Noto Sans TC', sans-serif;
 }
 
@@ -36,7 +36,7 @@ legend {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 100vw;
+    width: 100%;
 }
 
 main {
@@ -55,5 +55,22 @@ table {
 }
 
 h1 {
+    font-size: 2rem;
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+h3 {
     font-size: 1.5rem;
+}
+
+h1, h2, h3, h4, h5, h6, p, span {
+    line-height: 1.5em;
+    min-height: 1.5em;
+}
+
+a {
+    color: blue;
 }

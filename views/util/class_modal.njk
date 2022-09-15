@@ -1,0 +1,58 @@
+<div class="prefab">
+    <table>
+        <tr class="attendee-row" data-id="">
+            <td class="attendee-row__name"></td>
+            <td class="attendee-row__email"></td>
+        </tr>
+    </table>
+</div>
+
+<dialog id="class-modal">
+    <div class="flex flex-column gap-4">
+        <h1 id="class-modal__title">設定</h1>
+
+        <button id="close-modal-btn" class="btn-round btn-red">{% include 'svg/cross.svg' %}</button>
+        <form id="close-modal__form" class="flex flex-column gap-4">
+            <input id="class-modal__class-id" name="class-id" type="text" hidden>
+
+            <fieldset>
+                <legend>資訊</legend>
+                <div class="field">
+                    <label for="class-modal__class-name">課程名稱:</label>
+                    <input id="class-modal__class-name" name="class-name" type="text" autocomplete="off" required>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>警醒</legend>
+                <div class="field">
+                    <label for="class-modal__alert-interval">警醒間隔:</label>
+                    <input id="class-modal__alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                    <label for="class-modal__alert-interval">分鐘</label>
+                </div>
+                <div class="field">
+                    <label for="class-modal__alert-time">警醒持續時間:</label>
+                    <input id="class-modal__alert-time" name="alert-time" type="number" min="1" max="3" required>
+                    <label for="class-modal__alert-time">分鐘</label>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>參與者</legend>
+                <div class="field">
+                    <label for="attendee-input">Email:</label>
+                    <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
+                    <button type="button" id="add-attendee-btn" class="btn-primary">新增參與者</button>
+                </div>
+                <table id="attendee-table">
+                    <thead>
+                        <th>email</th>
+                        <th>名字</th>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </fieldset>
+            <input type="submit" id="submit-form" hidden disabled/>
+        </form>
+        <button type="button" id="submit-class" class="margin-inline-start-auto btn-primary">建立課程</button>
+        <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+    </div>
+</dialog>

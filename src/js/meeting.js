@@ -1,14 +1,15 @@
 import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
+import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getLocalUser, getUserData, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserData, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
 
 const socket = io('/');
 
 // HTML elements
-const camPrefab  = document.querySelector('.cam');
-const msgPrefab  = document.querySelector('.msg');
+const camPrefab  = prefab.querySelector('.cam');
+const msgPrefab  = prefab.querySelector('.msg');
 
 const micBtn         = document.querySelector('#mic-btn');
 const webcamBtn      = document.querySelector('#webcam-btn');
@@ -66,7 +67,7 @@ const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
 
 document.onreadystatechange = async () => {
-    const user = await getLocalUser();
+    const user = await getUser();
     let callDocSnapshot;
 
     console.log('checking permission');
@@ -406,7 +407,7 @@ async function requestStreamPermission() {
     }
     catch {
         console.log('microphone request failed');
-        Button.toggleOpen(micBtn.open, false);
+        Button.toggleOpen(micBtn, false);
         unmute = false;
     }
     try {

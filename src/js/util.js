@@ -74,7 +74,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-export function getLocalUser() {
+export function getUser() {
     return new Promise(async (resolve) => {
         while (_user === null) {
             await delay(100);
@@ -85,18 +85,13 @@ export function getLocalUser() {
 
 const userDict = {};
 
-export function subscribeUserData(userId) {
-    return new Promise(async (resolve) => {
-        resolve(await getUserData(userId));
-    });
-}
-
 export async function getUserData(userId) {
     if (!userDict[userId]) {
         const userDoc = doc(users, userId);
 
-        const userSnapshot = await getDoc(userDoc);
-        userDict[userId] = userSnapshot?.data();
+        const userSnapshot = await getDoc(userDoc)
+        userDict[userId] = userSnapshot.data();
     }
+
     return userDict[userId];
 }

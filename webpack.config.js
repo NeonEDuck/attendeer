@@ -12,7 +12,7 @@ export default {
     entry: {
         index: './src/js/index.js',
         meeting: './src/js/meeting.js',
-        overview: './src/js/overview.js',
+        classroom: './src/js/classroom.js',
         login: './src/js/login.js',
     },
     output: {

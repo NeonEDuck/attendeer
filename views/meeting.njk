@@ -42,9 +42,9 @@
                 {# <span id="call-id">{{ callId }}</span> #}
                 <input id="call-id" type="text" value="{{ callId }}" hidden>
                 {# <input id="call-input" type="text"> #}
-                <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button>
-                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang_up.svg' %}</button>
-                <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
+                <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include 'svg/screen_share.svg' %}</button>
+                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include 'svg/hang_up.svg' %}</button>
+                <button id="message-btn" class="btn-primary btn-round">{% include 'svg/message.svg' %}</button>
             </div>
         </div>
 
@@ -69,16 +69,16 @@
 
     <div id="end-panel" class="flex flex-column flex-center gap-2">
         <h1>通話結束</h1>
-        <a href="/overview">返回課程</a>
+        <a href="/">返回課程</a>
     </div>
 
     <div id="confirm-panel" class="flex flex-column flex-center gap-2">
         <div id="confirm-panel__cam-container" class="flex flex-row gap-2"></div>
 
         <div class="flex flex-row gap-2">
-            <button id="mic-btn" class="btn-switch btn-round btn-on" disabled>{% include './svg/mic.svg' %}{% include './svg/mic_off.svg' %}</button>
-            <button id="webcam-btn" class="btn-switch btn-round" disabled>{% include './svg/webcam.svg' %}{% include './svg/webcam_off.svg' %}</button>
-            <button id="enter-btn" class="btn-round" disabled>{% include './svg/right_arrow.svg' %}</button>
+            <button id="mic-btn" class="btn-switch btn-round btn-on" disabled>{% include 'svg/mic.svg' %}{% include 'svg/mic_off.svg' %}</button>
+            <button id="webcam-btn" class="btn-switch btn-round" disabled>{% include 'svg/webcam.svg' %}{% include 'svg/webcam_off.svg' %}</button>
+            <button id="enter-btn" class="btn-round" disabled>{% include 'svg/right_arrow.svg' %}</button>
         </div>
     </div>
 {% endblock content %}
