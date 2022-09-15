@@ -13,6 +13,14 @@ const className         = document.querySelector('#class-name');
 const settingBtn        = document.querySelector('#setting-btn');
 const callBtn           = document.querySelector('#call-btn');
 const classSchedule     = document.querySelector('#class-schedule');
+const calendarTooltip   = document.querySelector('#calendar__tooltip');
+const calendarCancelBtn = document.querySelector('#calendar__cancel');
+const calendarSaveBtn   = document.querySelector('#calendar__save');
+const calendarEditBtn   = document.querySelector('#calendar__edit');
+const calendar          = document.querySelector('.calendar');
+const calendarDetailDate= calendar.querySelector('.calendar .calendar-footer .detail__date');
+const calendarDetailText= calendar.querySelector('.calendar .calendar-footer .detail__text');
+const calendarDetailEdit= calendar.querySelector('.calendar .calendar-footer .detail__edit');
 const scheduleTooltip   = document.querySelector('#class-schedule__tooltip');
 const scheduleCancelBtn = document.querySelector('#class-schedule__cancel');
 const scheduleSaveBtn   = document.querySelector('#class-schedule__save');
@@ -41,6 +49,7 @@ const callDoc  = doc(calls, callId);
 const users    = collection(firestore, 'users');
 const posts    = collection(callDoc, 'posts');
 const messages = collection(callDoc, 'messages');
+const events   = collection(callDoc, 'events');
 
 const classModal = new ClassModal();
 let prevSchedule = [];
@@ -53,6 +62,7 @@ document.onreadystatechange = async () => {
     const { name, host, schedule } = callDoc.data();
     if (user.uid === host){
         settingBtn.hidden = false;
+        calendarEditBtn.hidden = false;
         scheduleEditBtn.hidden = false;
         writeTab.hidden = false;
     }
@@ -137,6 +147,63 @@ function toggleScheduleCell(cell) {
         }
     }
 }
+
+calendarCancelBtn.addEventListener('click', () => {
+    calendarEditBtn.hidden = false;
+    calendarCancelBtn.hidden = true;
+    calendarSaveBtn.hidden = true;
+    calendarTooltip.hidden = true;
+    calendar.dataset.editing = false;
+    calendarDetailText.hidden = false;
+    calendarDetailEdit.hidden = true;
+    calendarDetailEdit.value = '';
+});
+
+calendarEditBtn.addEventListener('click', () => {
+    calendarEditBtn.hidden = true;
+    calendarCancelBtn.hidden = false;
+    calendarSaveBtn.hidden = false;
+    calendarTooltip.hidden = false;
+    calendarDetailText.hidden = true;
+    calendarDetailEdit.hidden = false;
+    calendar.dataset.editing = true;
+});
+
+calendarSaveBtn.addEventListener('click', async () => {
+    calendarEditBtn.hidden = false;
+    calendarCancelBtn.hidden = true;
+    calendarSaveBtn.hidden = true;
+    calendarTooltip.hidden = true;
+    calendar.dataset.editing = false;
+    calendarDetailText.hidden = false;
+    calendarDetailEdit.hidden = true;
+
+    const date = calendar.dataset.curDate;
+    const text = calendarDetailEdit.value.trim();
+
+    const q = query(events, where('date', '==', date), limit(1));
+    const dateDocs = await getDocs(q);
+
+    if (text !== '') {
+        if (dateDocs.size > 0) {
+            calendar.querySelector('.current-selected-day')?.classList.add('detailed-date');
+            await updateDoc(dateDocs.docs[0].ref, {text});
+        }
+        else {
+            calendar.querySelector('.current-selected-day')?.classList.add('detailed-date');
+            await addDoc(events, {date, text});
+        }
+    }
+    else {
+        if (dateDocs.size > 0) {
+            calendar.querySelector('.current-selected-day')?.classList.remove('detailed-date');
+            await deleteDoc(dateDocs.docs[0].ref);
+        }
+    }
+
+    calendar.querySelector('.current-selected-day').dataset.detail = text;
+    calendarDetailText.innerHTML = text || '無行程';
+});
 
 scheduleCancelBtn.addEventListener('click', () => {
     scheduleEditBtn.hidden = false;
@@ -390,4 +457,125 @@ async function populateReply(post, count) {
 
         replyContainer.appendChild(reply);
     }
+}
+
+/*
+ *  Calendar Script
+ */
+
+const month_names = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+
+function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0 && year % 400 !== 0) || (year % 100 === 0 && year % 400 ===0)
+}
+
+function getFebDays(year) {
+    return isLeapYear(year) ? 29 : 28
+}
+
+async function generateCalendar(month, year) {
+    const calendar_days = calendar.querySelector('.calendar-days')
+    const calendar_header_year = calendar.querySelector('#year')
+
+    const days_of_month = [31, getFebDays(year), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    calendar_days.innerHTML = ''
+
+    const currDate = new Date()
+    if (month == undefined) month = currDate.getMonth()
+    if (year == undefined) year = currDate.getFullYear()
+
+    const calendarEvents = {};
+    const eventDocs = await getDocs(events);
+
+    for (const eventDoc of eventDocs.docs) {
+        const { date, text } = eventDoc.data();
+        calendarEvents[date] = text;
+    }
+    console.log(calendarEvents)
+
+
+    const curr_month = `${month_names[month]}`
+    month_picker.innerHTML = curr_month
+    calendar_header_year.innerHTML = year
+
+    // get first day of month
+
+    const first_day = new Date(year, month, 1)
+
+    for (let i = 0; i <= days_of_month[month] + first_day.getDay() - 1; i++) {
+        const dayDiv = document.createElement('div')
+        const day = i - first_day.getDay() + 1;
+        if (i >= first_day.getDay()) {
+            dayDiv.classList.add('calendar-day-hover')
+            dayDiv.innerHTML = i - first_day.getDay() + 1
+            if (day === currDate.getDate() && year === currDate.getFullYear() && month === currDate.getMonth()) {
+                dayDiv.classList.add('curr-date')
+            }
+            const detail = calendarEvents[`${year}/${month+1}/${day}`]
+            if (detail) {
+                dayDiv.classList.add('detailed-date')
+                dayDiv.dataset.detail = detail;
+            }
+            dayDiv.addEventListener('click', () => {
+                if (calendar.dataset.editing === 'true') {
+                    return;
+                }
+                for (const dd of calendar.querySelectorAll('.current-selected-day')) {
+                    dd.classList.remove('current-selected-day');
+                }
+                dayDiv.classList.add('current-selected-day');
+                const calendar_detail_date = calendar.querySelector('.calendar-footer .detail__date');
+                const calendar_detail_text = calendar.querySelector('.calendar-footer .detail__text');
+                const calendar_detail_edit = calendar.querySelector('.calendar-footer .detail__edit');
+                calendar_detail_date.innerHTML = `${year}/${month+1}/${i - first_day.getDay() + 1}`
+                calendar.dataset.curDate = `${year}/${month+1}/${i - first_day.getDay() + 1}`;
+                if (dayDiv.dataset.detail) {
+                    calendar_detail_text.innerHTML = dayDiv.dataset.detail;
+                    calendar_detail_edit.value = dayDiv.dataset.detail;
+                }
+                else {
+                    calendar_detail_text.innerHTML = `無行程`;
+                    calendar_detail_edit.value = '';
+                }
+            });
+        }
+        calendar_days.appendChild(dayDiv)
+    }
+}
+
+const month_list = calendar.querySelector('.month-list')
+
+month_names.forEach((e, index) => {
+    const month = document.createElement('div')
+    month.innerHTML = `<div data-month="${index}">${e}</div>`
+    month.querySelector('div').onclick = () => {
+        month_list.classList.remove('show')
+        curr_month.value = index
+        generateCalendar(index, curr_year.value)
+    }
+    month_list.appendChild(month)
+})
+
+const month_picker = calendar.querySelector('#month-picker')
+
+month_picker.onclick = () => {
+    month_list.classList.add('show')
+}
+
+const currDate = new Date()
+
+const curr_month = {value: currDate.getMonth()}
+const curr_year = {value: currDate.getFullYear()}
+
+generateCalendar(curr_month.value, curr_year.value)
+
+document.querySelector('#prev-year').onclick = () => {
+    --curr_year.value
+    generateCalendar(curr_month.value, curr_year.value)
+}
+
+document.querySelector('#next-year').onclick = () => {
+    ++curr_year.value
+    generateCalendar(curr_month.value, curr_year.value)
 }

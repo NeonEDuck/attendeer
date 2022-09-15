@@ -80,7 +80,7 @@
 
 {% block content %}
     <input id="call-id" type="text" value="{{ callId }}" hidden>
-    <main>
+    <main class="light">
         <div id="class-grid">
             <div id="class-sidebar">
                 <h1 id="class-name">讀取中...</h1>
@@ -90,6 +90,9 @@
                         <button id="setting-btn" class="btn-transparent" hidden>{% include 'svg/setting.svg' %}</button>
                         <button id="call-btn" class="btn-primary">進入會議</button>
                     </div>
+                </div>
+                <div class="flex flex-center">
+                    {% include "util/calendar.njk" %}
                 </div>
                 <div class="flex flex-center">
                     {% include "util/class-schedule.njk" %}
