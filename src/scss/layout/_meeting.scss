@@ -368,8 +368,8 @@ body.dark {
     --border--color: rgb(135, 135, 135);
     --input--color: #fff;
     --floating--color-1: #262626;
-    --floating--color-2: #505050;
-    --floating--color-3: #101010;
+    --floating--color-2: #50505052;
+    --floating--color-3: #10101078;
 
     .sidebar header .toggle {
         color: var(--text-color);
@@ -996,7 +996,7 @@ body.dark .switch::before {
                                 height: 100%;
                                 overflow: hidden;
 
-                                form {
+                                .form-inner {
                                     display: flex;
                                     width: 800%;
 

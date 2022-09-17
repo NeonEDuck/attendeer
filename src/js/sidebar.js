@@ -2,7 +2,7 @@ import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
-import { setupAlertScheduler, setupAlertListener, unsubscribe, intervalID } from './meeting.js';
+import { setupAlertScheduler, setupAlertListener, intervalID } from './meeting.js';
 // HTML elements
 const body       = document.querySelector('body'),
       sidebar    = body.querySelector(".sidebar"),
@@ -192,7 +192,7 @@ next2.addEventListener('click', () => {
         answear = answearChosen.children[0].innerHTML;
     }
 
-    if(x === optionInput.length && answear != null ){
+    if(x === optionInput.length && answearChosen != null ){
         slidePage.style.marginLeft = "-50%";
         bullet[current].classList.add("active");
         progressText[current].classList.add("active");
@@ -278,7 +278,7 @@ next3.addEventListener('click', async () => {
     for(let i=0; i < optionInput.length; i++){
         optionInput[i].value = "";
     }
-    document.querySelector(".answear").classList.remove("answear");
+    document.querySelector(".answear-chosen").classList.remove("answear-chosen");
     
     alertInfo.classList.remove("close");
     alertChoose.classList.toggle("close");
@@ -326,9 +326,10 @@ async function AlertReplace() {
     const { alert, host } = (await getDoc(callDoc)).data();
     const { interval, time: duration, alertType} = alert;
 
+    
+
     clearInterval(intervalID);
     setupAlertScheduler(interval, duration, alertType);
-
 
 }
 

@@ -1,5 +1,5 @@
 import { firestore } from './firebase-config.js';
-import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, where, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
 import { sidebarListener } from './sidebar.js';
@@ -34,7 +34,6 @@ const enterBtn     = document.querySelector('#enter-btn');
 const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn    = document.querySelector('#hang-up-btn');
 const alertModule = document.querySelector('#alert');
-const alertShow = document.querySelector('.alert-show');
 const camArea    = document.querySelector('#cam-area');
 const videoTray  = document.querySelector('#video-tray');
 const chat       = document.querySelector('#chat');
@@ -75,7 +74,6 @@ cpVideoTray.appendChild(localScreenShare.cam);
 const videoTrayDict = {};
 let userAbove = '';
 export let intervalID;
-export let unsubscribe;
 
 // Firestore
 const calls = collection(firestore, 'calls');
@@ -200,14 +198,21 @@ enterBtn.addEventListener('click', async () => {
     const { interval, time: duration, alertType} = alert;
     if (localUserId === host){
         console.log('您是會議主辦人');
+
+        const q1 = query(alertRecords, where('done', '==', false ));
+        const snapshot1 = await getDocs(q1);
+
+        snapshot1.forEach(async (alert) => {;
+            const alertDoc  =   doc(alertRecords, alert.id);
+            await deleteDoc(alertDoc);
+            console.log('del alert');
+        });
+
         setupAlertScheduler(interval, duration, alertType);
     }
     else {
         console.log('您不是會議主辦人');
         
-        if( alertShow != null ) {
-            alertShow.remove();
-        }
         setupAlertListener();
     }
 
@@ -463,36 +468,81 @@ async function setupCandidateListener(remoteId) {
     });
 }
 
-export function setupAlertScheduler(interval, duration, alertType) {
+export async function setupAlertScheduler(interval, duration, alertType) {
     console.log('setupAlertScheduler');
-    intervalID = setInterval(async () => {
-        const alertDoc = doc(alertRecords);
-        const data = {
-            timestamp: new Date(),
-            duration: duration, //時長
-            alertType: alertType,
-        };
-        console.log('add alert');
 
-        await setDoc(alertDoc, data);
-    }, interval * MINUTE);
+    const q1 = query(alertRecords, where('done', '==', false ));
+    const snapshot1 = await getDocs(q1);
+    snapshot1.forEach(async (alert) => {;
+        const alertDoc  =   doc(alertRecords, alert.id);
+        await updateDoc(alertDoc, {outdated: true});
+        console.log('del alert');
+    });
+
+    intervalID = setIntervalImmediately(async () => {
+
+        try {
+            
+            let alertDoc = doc(alertRecords);
+
+            let data = {
+                timestamp: new Date(),
+                duration: duration, //時長
+                alertType: alertType,
+                interval: interval,
+                started: false,
+                done: false,
+                outdated: false,
+            };
+            console.log('add alert');
+
+            setDoc(alertDoc, data);
+
+            await delay( interval * MINUTE );
+
+            updateDoc(alertDoc, {started: true});
+
+            console.log('alert started');
+
+            await delay( duration * MINUTE );
+            
+            if ((await getDoc(alertDoc))?.data()?.outdated === true) {
+                deleteDoc(alertDoc);
+            }
+            else {
+                updateDoc(alertDoc, {done: true});
+                console.log('alert done');
+            }
+
+        } catch (error) {
+            
+            //因為重新設定警醒時，舊文件會被刪除，所以導致更新文件會顯示錯誤。
+
+        }
+
+    }, (interval+duration) * MINUTE );
 }
 
 export function setupAlertListener() {
     console.log('setupAlertListener');
-    unsubscribe = onSnapshot(alertRecords, (snapshot) => {
+    let unsubscribe = onSnapshot(alertRecords, (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
-            if (change.type === 'added') {
+            //資料庫新增一個開始欄位true or false
+            //將 added 改成 modified 
+            if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == false) {
+
+                console.log('alert started');
+
                 const alertDoc     = doc(alertRecords, change.doc.id);
                 const participants = collection(alertDoc, 'participants');
                 const userDoc      = doc(participants, localUserId);
                 const { alert,multipleChoice } = (await getDoc(callDoc)).data();
                 const { question, answear, alertType } = alert;
-                const { duration, timestamp: timestampStart } = change.doc.data();
-                const timestampEnd = new Date(timestampStart.toMillis() + duration * MINUTE);
+                const { duration, timestamp , interval ,done } = change.doc.data();
+                const timestampStart = new Date(timestamp.toMillis() + interval * MINUTE);
+                const timestampEnd = new Date(timestamp.toMillis() + (interval + duration) * MINUTE);
                 const now = new Date();
 
-                if( timestampStart <= now && now < timestampEnd ) {
                     if( (await getDoc(userDoc)).data() === undefined ) {
                         const data = {
                             click : false,
@@ -633,13 +683,19 @@ export function setupAlertListener() {
                             alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
                         }, 1000);
 
+                        const now = new Date();
                         setTimeout(() => {
                             clearInterval(countDownInterval);
                             alertModule.hidden = true;
                             alertShow.remove();
                         }, timestampEnd.getTime() - now.getTime());
                     } 
-                }               
+                              
+            }else if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == true) {
+                const alertShows = document.querySelectorAll('.alert-show');
+                alertShows.forEach(alertShow => {
+                    alertShow.remove();
+                });
             }
         });
     });
