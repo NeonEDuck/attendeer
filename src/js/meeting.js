@@ -2,7 +2,7 @@ import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, where, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
-import { sidebarListener } from './sidebar.js';
+import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 
 const servers = {
@@ -82,6 +82,7 @@ const callDoc = doc(calls, callId);
 const participants = collection(callDoc, 'participants');
 const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
+export let alertDocCurrently;
 let localUserDoc;
 let localClients;
 
@@ -208,7 +209,16 @@ enterBtn.addEventListener('click', async () => {
             console.log('del alert');
         });
 
-        setupAlertScheduler(interval, duration, alertType);
+        let dataAlert = {
+            alert: {
+                interval: interval,
+                time: duration,
+                alertType: 'click',
+            },
+        }
+        await updateDoc(callDoc, dataAlert);
+
+        setupAlertScheduler();
     }
     else {
         console.log('您不是會議主辦人');
@@ -225,6 +235,8 @@ enterBtn.addEventListener('click', async () => {
     dockListener();
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
+
+    camMenu.hidden = false;
 
     sidebarListener();
 
@@ -468,7 +480,7 @@ async function setupCandidateListener(remoteId) {
     });
 }
 
-export async function setupAlertScheduler(interval, duration, alertType) {
+export async function setupAlertScheduler() {
     console.log('setupAlertScheduler');
 
     const q1 = query(alertRecords, where('done', '==', false ));
@@ -476,16 +488,21 @@ export async function setupAlertScheduler(interval, duration, alertType) {
     snapshot1.forEach(async (alert) => {;
         const alertDoc  =   doc(alertRecords, alert.id);
         await updateDoc(alertDoc, {outdated: true});
-        console.log('del alert');
     });
+
+    const { alert } = (await getDoc(callDoc)).data();
+    const { interval, time: duration } = alert;
 
     intervalID = setIntervalImmediately(async () => {
 
         try {
             
-            let alertDoc = doc(alertRecords);
+            const { alert } = (await getDoc(callDoc)).data();
+            const { interval, time: duration, alertType} = alert;
 
-            let data = {
+            alertDocCurrently = doc(alertRecords);
+
+            let dataNormal = {
                 timestamp: new Date(),
                 duration: duration, //時長
                 alertType: alertType,
@@ -494,24 +511,40 @@ export async function setupAlertScheduler(interval, duration, alertType) {
                 done: false,
                 outdated: false,
             };
+
+            if(alertType === 'multiple choice') {
+                dataNormal = Object.assign(dataNormal, dataMultipleChoice );
+            }
+
+            setDoc(alertDocCurrently, dataNormal);
+
             console.log('add alert');
 
-            setDoc(alertDoc, data);
+            let alertPrevious = alertDocCurrently;
 
             await delay( interval * MINUTE );
 
-            updateDoc(alertDoc, {started: true});
+            updateDoc(alertPrevious, {started: true});
 
             console.log('alert started');
 
             await delay( duration * MINUTE );
-            
-            if ((await getDoc(alertDoc))?.data()?.outdated === true) {
-                deleteDoc(alertDoc);
+
+            if ((await getDoc(alertPrevious))?.data()?.outdated === true) {
+                deleteDoc(alertPrevious);
             }
             else {
-                updateDoc(alertDoc, {done: true});
+                updateDoc(alertPrevious, {done: true});
                 console.log('alert done');
+
+                let dataAlert = {
+                    alert: {
+                        interval: interval,
+                        time: duration,
+                        alertType: 'click',
+                    },
+                }
+                updateDoc(callDoc, dataAlert);
             }
 
         } catch (error) {
@@ -520,15 +553,13 @@ export async function setupAlertScheduler(interval, duration, alertType) {
 
         }
 
-    }, (interval+duration) * MINUTE );
+    }, (interval+duration) * MINUTE + 1000 );
 }
 
 export function setupAlertListener() {
     console.log('setupAlertListener');
     let unsubscribe = onSnapshot(alertRecords, (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
-            //資料庫新增一個開始欄位true or false
-            //將 added 改成 modified 
             if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == false) {
 
                 console.log('alert started');
@@ -578,7 +609,7 @@ export function setupAlertListener() {
                                 field.appendChild(input);
 
                                 span.addEventListener('click', () => {
-                                    let no = document.querySelectorAll(".span_No");
+                                    let no = alertShow.querySelectorAll(".span_No");
                                     Array.from(no).forEach((item) => {
                                         item.classList.remove("chosen");
                                     });

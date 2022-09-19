@@ -1,7 +1,7 @@
 <div class="alert">
     <div class = "floating-alert a" id="floating-alert-a">
         <div class="alert-info">
-            <div id="class-modal">
+            <div id="class-modal" >
                 <h1 id="class-modal__title">警醒資訊</h1>
                 
                 {# 警醒設定畫面 #}
@@ -15,12 +15,12 @@
                         <label for="alert-interval">警醒間隔:</label>
                         <div class="field">
                             
-                            <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required>
+                            <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" readonly required>
                             <label for="alert-interval">分鐘</label>
                         </div>
                         <label for="alert-time">警醒持續時間:</label>
                         <div class="field">
-                            <input id="alert-time" class="alert-time" name="alert-time" type="number" required>
+                            <input id="alert-time" class="alert-time" name="alert-time" type="number" readonly required>
                             <label for="alert-time">分鐘</label>
                         </div>
                     </fieldset>
@@ -31,8 +31,13 @@
                     </div>
 
                     <div class="center-btn">
+                        <button type="button" id="setting" class="margin-inline-start-auto btn-primary">修改</button>
+                    </div>
+
+                    <div class="center-btn" hidden>
                         <input type="submit" id="submit-form" hidden disabled/>
                         <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+                        <button type="button" id="cancel-setting" class="margin-inline-start-auto btn-primary">取消</button>
                     </div>
                 </form>
 
@@ -188,7 +193,7 @@
     </div>
 
     <div class = "floating-alert b" id="floating-alert-b">
-        <div id="class-modal">
+        <div id="">
             
         </div>
     </div>

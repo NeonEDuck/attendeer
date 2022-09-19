@@ -2,7 +2,8 @@ import { firestore } from './firebase-config.js';
 import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
-import { setupAlertScheduler, setupAlertListener, intervalID } from './meeting.js';
+import { setupAlertScheduler, setupAlertListener, intervalID, alertDocCurrently } from './meeting.js';
+
 // HTML elements
 const body       = document.querySelector('body'),
       sidebar    = body.querySelector(".sidebar"),
@@ -22,7 +23,10 @@ const classModel         = document.querySelector('#class-modal'),
       alertType          = document.querySelector('.alert-type'),
       alertInterval      = document.querySelectorAll(".alert-interval"),
       alertTime          = document.querySelectorAll(".alert-time"),
+      settingBtn         = document.querySelector('#setting'),
+      centerBtns         = document.querySelectorAll('.center-btn'),
       submitSettingBtn   = document.querySelector('#submit-setting'),
+      cancelSettingBtn   = document.querySelector('#cancel-setting'),
       submitForm         = document.querySelector('#submit-form');
 
 const switchCtn = document.querySelector('#switch-cnt'),
@@ -40,40 +44,49 @@ const floatingAlertA    = document.querySelector('#floating-alert-a'),
       alertBtnReturn = document.querySelector('#alert-btn-return'),
       alertBtnFinish = document.querySelector('#alert-btn-finish'),
       multipleChoiceSetting = document.querySelector('.multiple-choice-setting'),
+      container = multipleChoiceSetting.querySelector('.container'),
       choose1    = floatingAlertA.querySelector('#choose-1'),
       choose2    = floatingAlertA.querySelector('#choose-2'),
       choose3    = floatingAlertA.querySelector('#choose-3'),
       choose4    = floatingAlertA.querySelector('#choose-4');
+const floatingAlertB  = document.querySelector('#floating-alert-b');
 
-const slidePage = document.querySelector(".slidepage");
-let page2 = document.querySelector(".page-2");
-const options = document.querySelector(".options");
-let option = document.querySelectorAll(".option");
-const prev1 = document.querySelector(".prev-1");
-const next1 = document.querySelector(".next-1");
-const addBtn = document.querySelector(".add_options");
-let bxX = document.querySelectorAll(".bx-x");
-let divNo = document.querySelectorAll(".div_no");
-const prev2 = document.querySelector(".prev-2");
-const next2 = document.querySelector(".next-2");
-const prev3 = document.querySelector(".prev-3");
-const next3 = document.querySelector(".next-3");
-const progressText = document.querySelectorAll(".step p");
-const progressCheck = document.querySelectorAll(".step .check");
-const bullet = document.querySelectorAll(".step .bullet");
-const qstText = document.querySelector(".qst_text");
+const slidePage = container.querySelector(".slidepage");
+let page2 = container.querySelector(".page-2");
+const options = container.querySelector(".options");
+let option = container.querySelectorAll(".option");
+const prev1 = container.querySelector(".prev-1");
+const next1 = container.querySelector(".next-1");
+const addBtn = container.querySelector(".add_options");
+let bxX = container.querySelectorAll(".bx-x");
+let divNo = container.querySelectorAll(".div_no");
+const prev2 = container.querySelector(".prev-2");
+const next2 = container.querySelector(".next-2");
+const prev3 = container.querySelector(".prev-3");
+const next3 = container.querySelector(".next-3");
+const progressText = container.querySelectorAll(".step p");
+const progressCheck = container.querySelectorAll(".step .check");
+const bullet = container.querySelectorAll(".step .bullet");
+const qstText = container.querySelector(".qst_text");
+
+// Global variable
 let max = 3;
 let current = 0;
 let optionsTotal = 0;
 let globalInterval;
 let globalTime;
 let globalTpye;
+let globalmultipleChoice;
 let answearID;
 let question, answear;
+export let dataMultipleChoice = {}; 
+let action;
+let localUserId = null;
 
-const floatingAlertB  = document.querySelector('#floating-alert-b');
-
+// Firestore
+const calls = collection(firestore, 'calls');
 const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+const callDoc = doc(calls, callId);
 
 for(let i = 0; i < 2; i++){
     addOptions();
@@ -104,15 +117,15 @@ function addOptions(){
     icon.addEventListener('click', () => {
         div.remove();
         optionsTotal -= 1;
-        bxX = document.querySelectorAll(".bx-x");
-        let spansNo = document.querySelectorAll(".span_no");
+        bxX = container.querySelectorAll(".bx-x");
+        let spansNo = container.querySelectorAll(".span_no");
         let x = 0;
         Array.from(bxX).forEach((item) => {
             spansNo[x].innerHTML = x+1;
-            x += 1;
+            x += 1; 
             if(optionsTotal <= 2){
                 item.style.display = "none";
-            }else if(optionsTotal < 6){
+            }else if(optionsTotal < 5){
                 addBtn.style.display = "block";
             }else{
                 item.style.display = "block";
@@ -120,14 +133,14 @@ function addOptions(){
         });
     });
     divNo.addEventListener('click', () => {
-        let no = document.querySelectorAll(".div_no");
+        let no = container.querySelectorAll(".div_no");
         Array.from(no).forEach((item) => {
             item.classList.remove("answear-chosen");
         });
         divNo.classList.toggle("answear-chosen");
     });
-    bxX = document.querySelectorAll(".bx-x");
-    let spansNo = document.querySelectorAll(".span_no");
+    bxX = container.querySelectorAll(".bx-x");
+    let spansNo = container.querySelectorAll(".span_no");
     let x = 0;
     Array.from(bxX).forEach((item) => {
         spansNo[x].innerHTML = x+1;
@@ -138,7 +151,7 @@ function addOptions(){
             item.style.display = "none";
         }
     });
-    if(optionsTotal >= 6){
+    if(optionsTotal >= 5){
         addBtn.style.display = "none";
     }
 }
@@ -176,7 +189,7 @@ next1.addEventListener('click', () => {
     }
 });
 next2.addEventListener('click', () => {
-    let optionInput = document.querySelectorAll('.option_input');
+    let optionInput = container.querySelectorAll('.option_input');
     let x = 0;
     for(let i = 0; i < optionInput.length; i++){
         if(optionInput[i].value != ''){
@@ -184,9 +197,7 @@ next2.addEventListener('click', () => {
         }
     }
 
-    const answearChosen = document.querySelector(".answear-chosen");
-
-    console.log(answearChosen);
+    const answearChosen = container.querySelector(".answear-chosen");
 
     if(answearChosen != null) {
         answear = answearChosen.children[0].innerHTML;
@@ -242,28 +253,31 @@ next3.addEventListener('click', async () => {
     const alertType = 'multiple choice';
     answearID = answear;
 
-    const optionInput = document.querySelectorAll(".option_input");
+    const optionInput = container.querySelectorAll(".option_input");
     let multipleChoiceDict = {};
     
     for(let i=0; i < optionInput.length; i++){
         multipleChoiceDict[i] = optionInput[i].value;
     }
 
-    const multipleChoice = Object.values(multipleChoiceDict);
+    let multipleChoice = Object.values(multipleChoiceDict);
 
-    const data = {
+    dataMultipleChoice = {
+        question: question,
+        answear: answearID,
+        multipleChoice: multipleChoice,
+    }
+
+    let dataAlert = {
         alert: {
-            interval,
-            time,
-            alertType,
-            question,
-            answear,
+            interval: interval,
+            time: time,
+            alertType: alertType,
         },
-        multipleChoice,
     }
     
     const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, data);
+    await updateDoc(callDoc, dataAlert);
 
     slidePage.style.marginLeft = "0%";
     bullet[current - 1].classList.remove("active");
@@ -278,7 +292,7 @@ next3.addEventListener('click', async () => {
     for(let i=0; i < optionInput.length; i++){
         optionInput[i].value = "";
     }
-    document.querySelector(".answear-chosen").classList.remove("answear-chosen");
+    container.querySelector(".answear-chosen").classList.remove("answear-chosen");
     
     alertInfo.classList.remove("close");
     alertChoose.classList.toggle("close");
@@ -290,6 +304,20 @@ next3.addEventListener('click', async () => {
     });
 
     AlertReplace();
+
+    const option = multipleChoiceSetting.querySelectorAll('.option');
+
+    option.forEach(option => {
+        option.remove();
+    });
+
+    optionsTotal = 0;
+
+    addBtn.style.display = "block";
+
+    for(let i = 0; i < 2; i++){
+        addOptions();
+    }
 });
 choose1.addEventListener('click', () => {
     buttonSetting.classList.remove("close");
@@ -308,6 +336,7 @@ choose2.addEventListener('click', () => {
 alertExchange.addEventListener('click', () => {
     alertInfo.classList.toggle("close");
     alertChoose.classList.remove("close");
+    closeModalForm();
 });
 
 alertReturn.addEventListener('click', () => {
@@ -316,29 +345,68 @@ alertReturn.addEventListener('click', () => {
 });
 
 closeFloatingButton.addEventListener('click', () => {
+    
     fltCntr.classList.remove("show");
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
     });
+
+    floatingAlertA.className = "";
+    floatingAlertA.classList.add("floating-alert","a");
+    floatingAlertB.className = "";
+    floatingAlertB.classList.add("floating-alert","b");
+    switchCtn.className = "";
+    switchCtn.classList.add("switch");
+
+    alertInfo.className = "";
+    alertInfo.classList.add("alert-info");
+    alertChoose.className = "";
+    alertChoose.classList.add("alert-choose","close");
+    buttonSetting.className = "";
+    buttonSetting.classList.add("alert-step-progress","button-setting","close");
+    multipleChoiceSetting.className = "";
+    multipleChoiceSetting.classList.add("alert-step-progress","multiple-choice-setting","close");
+
+    slidePage.style.marginLeft = "0%";
+    let progressLength = current;
+    for (let i = 0; i < progressLength; i++) {
+        bullet[current - 1 ].classList.remove("active");
+        progressText[current - 1 ].classList.remove("active");
+        progressCheck[current - 1 ].classList.remove("active");
+        current -= 1;
+    }
+    
+    qstText.value = "";
+    const optionInput = container.querySelectorAll(".option_input");
+    for(let i=0; i < optionInput.length; i++){
+        optionInput[i].value = "";
+    }
+    
+    if( container.querySelector(".answear-chosen") != null ) {
+        container.querySelector(".answear-chosen").classList.remove("answear-chosen");
+    }
+    
+    const option = multipleChoiceSetting.querySelectorAll('.option');
+
+    option.forEach(option => {
+        option.remove();
+    });
+
+    optionsTotal = 0;
+
+    addBtn.style.display = "block";
+
+    for(let i = 0; i < 2; i++){
+        addOptions();
+    }
 });
 
 async function AlertReplace() {
-    const { alert, host } = (await getDoc(callDoc)).data();
-    const { interval, time: duration, alertType} = alert;
-
-    
 
     clearInterval(intervalID);
-    setupAlertScheduler(interval, duration, alertType);
+    setupAlertScheduler();
 
 }
-
-// Global variable
-let action;
-let localUserId = null;
-// Firestore
-const calls = collection(firestore, 'calls');
-const callDoc = doc(calls, callId);
 
 export function sidebarListener() {
     Array.from(navBtn).forEach((item, index) => {
@@ -355,76 +423,18 @@ export function sidebarListener() {
 
             fltCntr.classList.add("show");
 
-            if(navText === '警醒資訊') {
+            if(navText === '警醒資訊') {  
 
-                const { alert, host, multipleChoice } = (await getDoc(callDoc)).data();
-                const { interval, time: duration, alertType:type } = alert;     
-
-                globalInterval = interval;
-                globalTime = duration;
-                globalTpye = type;
+                const { alert, host } = (await getDoc(callDoc)).data();
 
                 const user = await getUser();
-
                 localUserId = user.uid;
 
                 if (localUserId === host){
                     console.log('會議主辦人警醒資訊');
 
-                    floatingAlertA.style.opacity = 1;
-                    floatingAlertB.style.opacity = 1;
-                    switchCtn.style.opacity = 1;
-                    classModelTitle.innerHTML = '警醒資訊';
-                    
-                    alertType.innerHTML = type;
-                    alertInterval[0].value = interval;
-                    alertTime[0].value     = duration;
+                    closeModalForm();
 
-                    if(type === 'click') {
-                        const fieldset = document.querySelector('.fieldset');
-                        if(fieldset != null){
-                            fieldset.remove();
-                        }
-                    }else if(type === 'multiple choice') {
-                        const { question, answear } = alert;  
-                        const typeInfo = document.querySelector('.type-info');
-                        const fieldset = document.querySelector('.fieldset');
-                        if(fieldset != null){
-                            fieldset.remove();
-                        }
-                        const fieldset2 = document.createElement('fieldset');
-                        fieldset2.classList.add("fieldset");    
-                        typeInfo.appendChild(fieldset2);
-                        const legend = document.createElement('legend');
-                        legend.innerHTML = '選擇題';
-                        fieldset2.appendChild(legend);
-                        const label = document.createElement('label');
-                        label.innerHTML = '選擇題問題:';
-                        fieldset2.appendChild(label);
-                        const textarea = document.createElement('textarea');
-                        textarea.classList.add("info-textarea");
-                        textarea.setAttribute("readonly", "readonly");
-                        textarea.innerHTML = question;
-                        fieldset2.appendChild(textarea);
-                        for (let i = 0; i < multipleChoice.length; i++) {
-                            const div = document.createElement('div');
-                            div.classList.add("field");
-                            fieldset2.appendChild(div);
-                            const span = document.createElement('span');
-                            span.classList.add("span_No");
-                            span.innerHTML = i+1;
-                            div.appendChild(span);
-                            const input = document.createElement('input');
-                            input.classList.add("option_Input");
-                            input.setAttribute("readonly", "readonly");
-                            input.value = multipleChoice[i];
-                            div.appendChild(input);
-                            if(answear === (i+1).toString()){
-                                answearID = answear;
-                                span.classList.toggle('answear');
-                            }
-                        }
-                    }
                 }
                 else {
                     console.log('不是主辦人只提供個人警醒資訊');
@@ -435,6 +445,150 @@ export function sidebarListener() {
     });
 }
 
+settingBtn.addEventListener('click', async () => {
+    centerBtns[0].hidden = true;
+    centerBtns[1].hidden = false;
+
+    const alertInterval = classModel.querySelector("#alert-interval");
+    const alertTime     = classModel.querySelector("#alert-time");
+    const textarea = classModel.querySelector('.info-textarea');
+    const input = classModel.querySelectorAll('.option_Input');
+    const spanNo = classModel.querySelectorAll('.span_No');
+    const fieldset = classModel.querySelector('.fieldset');
+
+    alertInterval.classList.add('Revise');
+    alertTime.classList.add('Revise');
+
+    alertInterval.removeAttribute('readOnly');
+    alertTime.removeAttribute('readOnly');
+
+    if( globalTpye === 'multiple choice' ) {
+
+        let optionsTotal = 0;
+
+        textarea.removeAttribute('readOnly');
+        input.forEach(input => {
+            input.removeAttribute('readOnly');
+            optionsTotal +=1;
+        });
+
+        spanNo.forEach(spanNo => {
+            spanNo.classList.remove('disable');
+        });
+
+        Array.from(spanNo).forEach((item, index) => {
+            item.addEventListener("click", async (e) => {
+                Array.from(spanNo).forEach((item) => {
+                    item.classList.remove("answear");
+                });
+                item.classList.add("answear");
+            });
+        });
+
+        const addOption = classModel.querySelector('.addOption');
+        const button = document.createElement('button');
+        button.classList.add('infoAddBtn');
+        button.type = "button";  
+        button.innerHTML = '新增';
+        addOption.appendChild(button);
+        
+        const field = fieldset.querySelectorAll('.field');
+        Array.from(field).forEach((item, index) => {
+            const icon = document.createElement('i');
+            icon.classList.add("bx", "bx-x");
+            item.appendChild(icon);
+            icon.addEventListener("click", async (e) => {
+                item.remove();
+                optionsTotal -= 1;
+                bxX = fieldset.querySelectorAll(".bx-x");
+                let spanNo = fieldset.querySelectorAll(".span_No");
+                let x = 0;
+                Array.from(bxX).forEach((item) => {
+                    spanNo[x].innerHTML = x+1;
+                    x += 1;
+                    if(optionsTotal <= 2){
+                        item.style.display = "none";
+                    }else if(optionsTotal < 5){
+                        button.style.display = "block";
+                    }else{
+                        item.style.display = "block";
+                    }
+                });
+            });
+        });
+
+        button.addEventListener('click', async () => {
+            optionsTotal += 1;
+            const div = document.createElement('div');
+            div.classList.add("field");
+            fieldset.appendChild(div);
+            let spanNo = document.createElement('span');
+            spanNo.classList.add("span_No");
+            div.appendChild(spanNo);
+            const input = document.createElement('input');
+            input.classList.add("option_Input");
+            div.appendChild(input);
+            const icon = document.createElement('i');
+            icon.classList.add("bx", "bx-x");
+            div.appendChild(icon);
+            icon.addEventListener('click', () => {
+                div.remove();
+                optionsTotal -= 1;
+                bxX = fieldset.querySelectorAll(".bx-x");
+                let spanNo = fieldset.querySelectorAll(".span_No");
+                let x = 0;
+                Array.from(bxX).forEach((item) => {
+                    spanNo[x].innerHTML = x+1;
+                    x += 1;
+                    if(optionsTotal <= 2){
+                        item.style.display = "none";
+                    }else if(optionsTotal < 5){
+                        button.style.display = "block";
+                    }else{
+                        item.style.display = "block";
+                    }
+                });
+            });
+            spanNo = fieldset.querySelectorAll(".span_No");
+            Array.from(spanNo).forEach((item) => {
+                item.addEventListener('click', () => {
+                    let no = fieldset.querySelectorAll(".span_No");
+                    Array.from(no).forEach((item) => {
+                        item.classList.remove("answear");
+                    });
+                    item.classList.toggle("answear");
+                });
+            });
+            
+            let bxX = fieldset.querySelectorAll(".bx-x");
+            let spansNo = fieldset.querySelectorAll(".span_No");
+            let x = 0;
+            Array.from(bxX).forEach((item) => {
+                spansNo[x].innerHTML = x+1;
+                x += 1;
+                if(optionsTotal >= 3){
+                    item.style.display = "block";
+                }else{
+                    item.style.display = "none";
+                }
+            });
+            if(optionsTotal >= 5){
+                button.style.display = "none";
+            }
+        });
+
+
+    }
+
+
+});
+
+cancelSettingBtn.addEventListener('click', async () => {
+
+    closeModalForm();
+    
+});
+
 submitSettingBtn.addEventListener('click', async () => {
     const alertInterval = classModel.querySelector("#alert-interval");
     const alertTime     = classModel.querySelector("#alert-time");
@@ -443,37 +597,49 @@ submitSettingBtn.addEventListener('click', async () => {
     const time     = Number(alertTime.value);
     const alertType = globalTpye;
 
-    if (alertType === 'click') {
-        const data = {
-            alert: {
-                interval,
-                time,
-                alertType,
-            },
-        }
-        const callDoc = doc(calls, callId);
-        await updateDoc(callDoc, data);
-    } else if (alertType === 'multiple choice') {
+    alertInterval.classList.remove('Revise');
+    alertTime.classList.remove('Revise');
 
-        const infoTextarea = classModel.querySelector(".info-textarea");
-        const question = infoTextarea.value;
-        const answear = answearID;
+    if (alertType === 'multiple choice') {
 
-        const data = {
-            alert: {
-                interval,
-                time,
-                alertType,
-                question, 
-                answear,
-            },
+        const spanNoAnswear = classModel.querySelector(".answear");
+        if(spanNoAnswear != null) {
+            answear = spanNoAnswear.innerHTML;
         }
-        const callDoc = doc(calls, callId);
-        await updateDoc(callDoc, data);
+        const optionInput = classModel.querySelectorAll(".option_Input");
+        let multipleChoiceDict = {};
+        
+        for(let i=0; i < optionInput.length; i++){
+            multipleChoiceDict[i] = optionInput[i].value;
+        }
+
+        globalmultipleChoice = Object.values(multipleChoiceDict);
+
+        dataMultipleChoice = {
+            question: question,
+            answear: answear,
+            multipleChoice: globalmultipleChoice,
+        }
     }
     
+    const data = {
+        alert: {
+            interval,
+            time,
+            alertType,
+        },
+    }
+    const callDoc = doc(calls, callId);
+    await updateDoc(callDoc, data);
 
     fltCntr.classList.remove("show");
+
+    centerBtns[0].hidden = false;
+    centerBtns[1].hidden = true;
+
+    alertInterval.setAttribute('readOnly','true');
+    alertTime.setAttribute('readOnly','true');
+
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
     });
@@ -510,10 +676,94 @@ let changeForm = (e) => {
     floatingAlertA.classList.toggle('is-txl');
     floatingAlertB.classList.toggle('is-txl');
     floatingAlertB.classList.toggle('is-z200');
-  };
+
+    closeModalForm();
+};
   
-  let mainF = (e) => {
+let mainF = (e) => {
     for (let i = 0; i < switchBtn.length; i++) switchBtn[i].addEventListener('click', changeForm);
-  };
+};
   
-  window.addEventListener('load', mainF);
+window.addEventListener('load', mainF);
+
+async function closeModalForm() {
+
+    const Interval = classModel.querySelector("#alert-interval");
+    const Time     = classModel.querySelector("#alert-time");
+
+    Interval.classList.remove('Revise');
+    Time.classList.remove('Revise');
+
+    centerBtns[0].hidden = false;
+    centerBtns[1].hidden = true;
+
+    const { alert } = (await getDoc(callDoc)).data();
+    const { interval, time: duration, alertType:type } = alert;   
+    const { answear, question, multipleChoice } = (await getDoc(alertDocCurrently)).data();
+    globalInterval = interval;
+    globalTime = duration;
+    globalTpye = type;
+
+    floatingAlertA.style.opacity = 1;
+    floatingAlertB.style.opacity = 1;
+    switchCtn.style.opacity = 1;
+    classModelTitle.innerHTML = '警醒資訊';
+                    
+    alertType.innerHTML = type;
+    alertInterval[0].value = interval;
+    alertTime[0].value     = duration;
+
+    if(type === 'click') {
+        const fieldset = document.querySelector('.fieldset');
+        if(fieldset != null){
+            fieldset.remove();
+        }
+    }else if(type === 'multiple choice') {
+
+        // globalAnswear = answear;
+        // globalQuestion = question;
+        globalmultipleChoice = multipleChoice;
+
+        const typeInfo = document.querySelector('.type-info');
+        const fieldset = document.querySelector('.fieldset');
+        if(fieldset != null){
+            fieldset.remove();
+        }
+        const fieldset2 = document.createElement('fieldset');
+        fieldset2.classList.add("fieldset");    
+        typeInfo.appendChild(fieldset2);
+        const legend = document.createElement('legend');
+        legend.innerHTML = '選擇題';
+        fieldset2.appendChild(legend);
+        const div = document.createElement('div');
+        div.classList.add("addOption");
+        fieldset2.appendChild(div);
+        const label = document.createElement('label');
+        label.innerHTML = '問題:';
+        div.appendChild(label);
+        const textarea = document.createElement('textarea');
+        textarea.classList.add("info-textarea");
+        textarea.setAttribute("readonly", "readonly");
+        textarea.innerHTML = question;
+        fieldset2.appendChild(textarea);
+        for (let i = 0; i < multipleChoice.length; i++) {
+            const div = document.createElement('div');
+            div.classList.add("field");
+            fieldset2.appendChild(div);
+            const span = document.createElement('span');
+            span.classList.add("span_No" , "disable");
+            span.innerHTML = i+1;
+            div.appendChild(span);
+            const input = document.createElement('input');
+            input.classList.add("option_Input");
+            input.setAttribute("readonly", "readonly");
+            input.value = multipleChoice[i];
+            div.appendChild(input);
+            if(answear === (i+1).toString()){
+                answearID = answear;
+                span.classList.toggle('answear');
+            }
+        }
+    }
+
+}
