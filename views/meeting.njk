@@ -12,6 +12,17 @@
     <div class="cam">
         <video class="cam__video" autoplay playsinline control=false></video>
         <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
+        <div id="cam__menu" class="cam__menu close">
+            <li class="cam__li" style="--i:0;" >
+                <button><i class='bx bx-pin'></i></button>
+            </li>
+            <li class="cam__li" style="--i:1;" >
+                <button><i class='bx bx-pin'></i></button>
+            </li>
+            <li class="cam__li" style="--i:2;" >
+                <button><i class='bx bx-pin'></i></button>
+            </li>
+        </div>
         <span class="cam__name"></span>
         <span class="cam__warning" hidden>!</span>
     </div>
@@ -20,35 +31,171 @@
             <span class="msg__user"></span>
             <span class="msg__timestamp"></span>
         </p>
-        <p class="msg__text"></p>
+        <div class="msg__date" data-content-after=":after">
+            <p class="msg__text" ></p>
+        </div>
+    </li>
+    <li class="my-msg">
+        <p>
+            <span class="my-msg__timestamp"></span>
+            <span class="my-msg__user"></span>
+        </p>
+        <div class="my-msg__date" data-content-before=":before">
+            <p class="my-msg__text" ></p>
+        </div>
     </li>
 {% endblock prefab %}
 
 {% block content %}
-    <div id="meeting-panel">
+
+    <div id="meeting-panel" class="close-message">
+
+        <nav class="sidebar close">
+            <header>
+                <div class="image-text">
+                    <span class="image">
+                         <img src="/imgs/logo.png" alt="logo">
+                    </span>
+
+                    <div class="text header-text">
+                        <span class="name">應用統計學</span>
+                        <span class="profession">xxx-xxx</span>
+                    </div>
+                </div>
+            </header>
+            <div class="toggle">
+                <i class='bx bx-chevron-right'></i>
+            </div>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <button class="nav-btn">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">裝置設定</span>
+                            </button>
+                        </li>
+                        <li class="nav-link">
+                            <button class="nav-btn">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">會議選項</span>
+                            </button>
+                        </li>
+                        <li class="nav-link">
+                            <button class="nav-btn">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">會議資訊</span>
+                            </button>
+                        </li>
+                        <li class="nav-link">
+                            <button class="nav-btn">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">警醒資訊</span>
+                            </button>
+                        </li>
+                        <li class="nav-link">
+                            <button class="nav-btn">
+                                <i class='bx bxs-cog icon'></i>
+                                <span class="text nav-text">背景效果</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">黑暗模式</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+
+        <div class="floating-container">
+
+            <div class="floating">
+
+                <div class="close-floating_button">
+                    <i class='bx bx-x-circle'></i>
+                </div>
+
+                {% include './sidebar/alert-info.njk' %}
+
+            </div>
+        </div>
+
         <div id="meeting-panel__left">
             <div id="cam-area">
                 <div id="cam-container">
 
                 </div>
 
-                <button id="alert-btn" class="btn-red" hidden>
-                    <span id="alert-btn__title">點擊簽到</span>
-                    <span id="alert-btn__time">00:00</span>
-                </button>
+                <div id='alert' hidden>
+
+                </div>
+
             </div>
 
             <div id="toolbar">
+
+                <div class="dock">
+                    <div class="dock-container">
+                        <li class="li-1">
+                            <div class="name">麥克風</div>
+                            <div class="ico" id="ico"></div>
+                        </li>
+                        <li class="li-2">
+                            <div class="name">視訊</div>
+                            <div class="ico" id="ico"></div>
+                        </li>
+                        <li class="li-3">
+                            <div class="name">螢幕分享</div>
+                            <div class="ico" id="ico"><button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button></div>
+                        </li>
+                        <li class="li-bin li-4">
+                            <div class="name">退出會議</div>
+                            <div class="ico" id="ico"><button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang_up.svg' %}</button></div>
+                        </li>
+
+                    </div>
+                </div>
+
                 {# <span id="call-id">{{ callId }}</span> #}
                 <input id="call-id" type="text" value="{{ callId }}" hidden>
                 {# <input id="call-input" type="text"> #}
-                <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include 'svg/screen_share.svg' %}</button>
+                {# <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include 'svg/screen_share.svg' %}</button>
                 <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include 'svg/hang_up.svg' %}</button>
-                <button id="message-btn" class="btn-primary btn-round">{% include 'svg/message.svg' %}</button>
+                <button id="message-btn" class="btn-primary btn-round">{% include 'svg/message.svg' %}</button> #}
+
+
+                <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
             </div>
         </div>
 
-        <div id="meeting-panel__right">
+        <div id="meeting-panel__right" class="sidebar-right close">
+            <header>
+                <div class="segmented-control">
+
+                    <input type="radio" name="radio2" value="3" id="tab-1" checked/>
+                    <label for="tab-1" class= "segmented-control__1">
+                        <p>聊天室</p></label>
+
+                    <input type="radio" name="radio2" value="4" id="tab-2" />
+                    <label for="tab-2" class= "segmented-control__2">
+                        <p>參與者</p></label>
+
+                    <div class="segmented-control__color"></div>
+
+                </div>
+            </header>
             <div id="chat">
                 <ul id="chat__room" class="margin-block-end-2"></ul>
 
@@ -61,7 +208,7 @@
                         autocomplete="off"
                         required
                     />
-                    <button id="send-msg-btn" class="btn-primary">送出</button>
+                    <button id="send-msg-btn" class="btn-primary"><i class='bx bx-send'></i></button>
                 </div>
             </div>
         </div>

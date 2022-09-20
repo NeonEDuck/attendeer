@@ -1,10 +1,91 @@
-#alert-btn {
+#alert{
     position: absolute;
-    flex-direction: column;
-    height: 5em;
-    width: 5em;
-    font-size: 0.75em;
     left: 0%;
     top: 0%;
     z-index: 100;
+    .alert-show{
+        background-color: var(--floating--color-1);
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
+        cursor: pointer;
+        .qst_show {
+            top: 40px;
+            width: 318px;
+            height: 50px;
+            font-size: 20px;
+            margin: 4px 0;
+            padding-left: 25px;
+            color: var(--text-color);
+            letter-spacing: 0.15px;
+            border: none;
+            outline: none;
+            font-family: "Montserrat", "sans-serif";
+            background-color: var(--floating--color-1);
+            transition: 0.25s ease;
+            border-radius: 8px;
+            box-shadow: inset -2px -2px 4px var(--floating--color-2), inset 2px 2px 4px var(--floating--color-3);
+        }
+        .field {
+            .span_No {
+                box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--button-color-3);
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 50%;
+
+                &.chosen {
+                    background-color: var(--primary-color);
+                }
+            }
+            .option_Input {
+                width: 270px;
+                height: 40px;
+                margin: 4px 0;
+                padding-left: 25px;
+                font-size: 13px;
+                color: var(--text-color);
+                letter-spacing: 0.15px;
+                border: none;
+                outline: none;
+                font-family: "Montserrat", "sans-serif";
+                background-color: transparent;
+                transition: 0.25s ease;
+                border-radius: 8px;
+                box-shadow: inset -2px -2px 4px var(--floating--color-2), inset 2px 2px 4px var(--floating--color-3);
+            }
+        }
+        .alert-btn-div {
+            display: flex;
+            justify-content: center;
+            margin: 2px;
+
+            #alert-btn {
+                width: 170px;
+                height: 55px;
+                border: 0;
+                outline: none;
+                background: #2f2f2f;
+                color: #fff;
+                font-size: 22px;
+                border-radius: 40px;
+                text-align: center;
+                box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
+                overflow: hidden;
+
+                &.active {
+                    background: #ff2b75;
+                    transition: 1s;
+                    p {
+                        transition: 1s;
+                    } 
+                }
+            }
+        
+        }
+    }
 }

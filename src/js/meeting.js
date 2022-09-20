@@ -1,15 +1,23 @@
 import { firestore } from './firebase-config.js';
-import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, where, orderBy } from 'firebase/firestore';
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
 import { MINUTE, delay, debounce, getUser, getUserData, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
+import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
 
 // HTML elements
-const camPrefab  = prefab.querySelector('.cam');
-const msgPrefab  = prefab.querySelector('.msg');
+const body = document.querySelector('body');
+
+const camPrefab    = prefab.querySelector('.cam');
+const msgPrefab    = prefab.querySelector('.msg');
+const myMsgPrefab  = prefab.querySelector('.my-msg');
+
+const sidebarRight = document.querySelector(".sidebar-right");
+const icons  = document.querySelectorAll('.ico');
+// const camMenu  = document.querySelector('#cam__menu');
 
 const micBtn         = document.querySelector('#mic-btn');
 const webcamBtn      = document.querySelector('#webcam-btn');
@@ -18,8 +26,9 @@ const screenShareBtn = document.querySelector('#screen-share-btn');
 const hangUpBtn      = document.querySelector('#hang-up-btn');
 const messageBtn     = document.querySelector('#message-btn');
 const sendMsgBtn     = document.querySelector('#send-msg-btn');
-const alertBtn       = document.querySelector('#alert-btn');
-const alertBtnTime   = document.querySelector('#alert-btn__time');
+// const alertBtn       = document.querySelector('#alert-btn');
+// const alertBtnTime   = document.querySelector('#alert-btn__time');
+const alertModule = document.querySelector('#alert');
 
 const confirmPanel   = document.querySelector('#confirm-panel');
 const meetingPanel   = document.querySelector('#meeting-panel');
@@ -55,9 +64,8 @@ webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
 localCams.screenShare.node.hidden = true;
 
-// Delete prefab
-camPrefab.remove();
-msgPrefab.remove();
+let userAbove = '';
+export let intervalID;
 
 // Firestore
 const calls = collection(firestore, 'calls');
@@ -66,7 +74,10 @@ const participants = collection(callDoc, 'participants');
 const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
 
+export let alertDocCurrently;
+
 document.onreadystatechange = async () => {
+    document.getElementById("cam__menu").style.display = "none";
     const user = await getUser();
     let callDocSnapshot;
 
@@ -168,6 +179,9 @@ screenShareBtn.addEventListener('click', async () => {
 })
 
 enterBtn.addEventListener('click', async () => {
+    // camMenu.style.display = "flex";
+    body.classList.toggle("dark");
+
     console.log(`join call: ${callId} as ${localUserId}`);
     socket.emit('join-call', callId, localUserId);
 
@@ -275,20 +289,20 @@ enterBtn.addEventListener('click', async () => {
 
     let chatInit = true;
 
-    async function addMessageToChat(msgData) {
-        const { user, text, timestamp } = msgData;
-        const timeString = timestamp.toDate().toLocaleString();
-        const { name } = await getUserData(user) || { name: "???" };
+    // async function addMessageToChat(msgData) {
+    //     const { user, text, timestamp } = msgData;
+    //     const timeString = timestamp.toDate().toLocaleString();
+    //     const { name } = await getUserData(user) || { name: "???" };
 
-        const msg = msgPrefab.cloneNode(true);
-        const msgUser = msg.querySelector('.msg__user');
-        const msgTime = msg.querySelector('.msg__timestamp');
-        const msgText = msg.querySelector('.msg__text');
-        msgUser.innerHTML = name;
-        msgTime.innerHTML = timeString;
-        msgText.innerHTML = text;
-        chatRoom.appendChild(msg);
-    }
+    //     const msg = msgPrefab.cloneNode(true);
+    //     const msgUser = msg.querySelector('.msg__user');
+    //     const msgTime = msg.querySelector('.msg__timestamp');
+    //     const msgText = msg.querySelector('.msg__text');
+    //     msgUser.innerHTML = name;
+    //     msgTime.innerHTML = timeString;
+    //     msgText.innerHTML = text;
+    //     chatRoom.appendChild(msg);
+    // }
     onSnapshot(messages, async (snapshot) => {
         if (chatInit) {
             chatInit = false;
@@ -313,13 +327,33 @@ enterBtn.addEventListener('click', async () => {
     });
 
     const { alert, host } = (await getDoc(callDoc)).data();
-    const { interval, time: duration } = alert;
+    const { interval, time: duration, alertType} = alert;
     if (localUserId === host){
         console.log('您是會議主辦人');
-        setupAlertScheduler(interval, duration);
+
+        const q1 = query(alertRecords, where('done', '==', false ));
+        const snapshot1 = await getDocs(q1);
+
+        snapshot1.forEach(async (alert) => {;
+            const alertDoc  =   doc(alertRecords, alert.id);
+            await deleteDoc(alertDoc);
+            console.log('del alert');
+        });
+
+        let dataAlert = {
+            alert: {
+                interval: interval,
+                time: duration,
+                alertType: 'click',
+            },
+        }
+        await updateDoc(callDoc, dataAlert);
+
+        setupAlertScheduler();
     }
     else {
         console.log('您不是會議主辦人');
+
         setupAlertListener();
     }
 
@@ -327,11 +361,19 @@ enterBtn.addEventListener('click', async () => {
     camContainer.appendChild(localCams.webcam.node);
     camContainer.appendChild(localCams.screenShare.node);
     Cam.resizeAll();
-    toolbar.insertBefore(micBtn, hangUpBtn);
-    toolbar.insertBefore(webcamBtn, hangUpBtn);
-    toolbar.insertBefore(screenShareBtn, hangUpBtn);
+    // toolbar.insertBefore(micBtn, hangUpBtn);
+    // toolbar.insertBefore(webcamBtn, hangUpBtn);
+    // toolbar.insertBefore(screenShareBtn, hangUpBtn);
+    icons[0].appendChild(micBtn);
+    icons[1].appendChild(webcamBtn);
+    dockListener();
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
+
+    // camMenu.hidden = false;
+
+    sidebarListener();
+
 });
 
 hangUpBtn.addEventListener('click', async () => {
@@ -352,16 +394,22 @@ hangUpBtn.addEventListener('click', async () => {
     hangUpBtn.disabled = true;
 });
 
+// messageBtn.addEventListener('click', async () => {
+//     if (meetingPanel.classList.contains('open-message')) {
+//         meetingPanel.classList.remove('open-message');
+//         chat.hidden = false;
+//     }
+//     else {
+//         meetingPanel.classList.add('open-message');
+//         chat.hidden = true;
+//     }
+//     resizeCam();
+// });
+
 messageBtn.addEventListener('click', async () => {
-    if (meetingPanel.classList.contains('open-message')) {
-        meetingPanel.classList.remove('open-message');
-        chat.hidden = false;
-    }
-    else {
-        meetingPanel.classList.add('open-message');
-        chat.hidden = true;
-    }
-    resizeCam();
+    sidebarRight.classList.toggle("close");
+    meetingPanel.classList.toggle("close-message");
+    Cam.resizeAll();
 });
 
 sendMsgBtn.addEventListener('click', async () => {
@@ -386,20 +434,20 @@ msgInput.addEventListener("keyup", function(event) {
     }
 });
 
-alertBtn.addEventListener('click', async () => {
-    if (alertBtn.dataset.id) {
-        const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
-        const participants = collection(alertDoc, 'participants');
-        const userDoc      = doc(participants, localUserId);
+// alertBtn.addEventListener('click', async () => {
+//     if (alertBtn.dataset.id) {
+//         const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
+//         const participants = collection(alertDoc, 'participants');
+//         const userDoc      = doc(participants, localUserId);
 
-        const data = {
-            timestamp: new Date()
-        }
-        await setDoc(userDoc, data);
+//         const data = {
+//             timestamp: new Date()
+//         }
+//         await setDoc(userDoc, data);
 
-        alertBtn.hidden = true;
-    }
-});
+//         alertBtn.hidden = true;
+//     }
+// });
 
 async function requestStreamPermission() {
     try {
@@ -450,71 +498,344 @@ async function refreshStream() {
     }
 }
 
-function setupAlertScheduler(interval, duration) {
+export async function setupAlertScheduler() {
     console.log('setupAlertScheduler');
-    setInterval(async () => {
-        const alertDoc = doc(alertRecords);
-        const data = {
-            timestamp: new Date(),
-            duration: duration, //時長
-            alertType: 'click',
-        };
-        console.log('add alert');
 
-        await setDoc(alertDoc, data);
-    }, interval * MINUTE);
+    const q1 = query(alertRecords, where('done', '==', false ));
+    const snapshot1 = await getDocs(q1);
+    snapshot1.forEach(async (alert) => {;
+        const alertDoc  =   doc(alertRecords, alert.id);
+        await updateDoc(alertDoc, {outdated: true});
+    });
+
+    const { alert } = (await getDoc(callDoc)).data();
+    const { interval, time: duration } = alert;
+
+    intervalID = setIntervalImmediately(async () => {
+
+        try {
+
+            const { alert } = (await getDoc(callDoc)).data();
+            const { interval, time: duration, alertType} = alert;
+
+            alertDocCurrently = doc(alertRecords);
+
+            let dataNormal = {
+                timestamp: new Date(),
+                duration: duration, //時長
+                alertType: alertType,
+                interval: interval,
+                started: false,
+                done: false,
+                outdated: false,
+            };
+
+            if(alertType === 'multiple choice') {
+                dataNormal = Object.assign(dataNormal, dataMultipleChoice );
+            }
+
+            setDoc(alertDocCurrently, dataNormal);
+
+            console.log('add alert');
+
+            let alertPrevious = alertDocCurrently;
+
+            await delay( interval * MINUTE );
+
+            updateDoc(alertPrevious, {started: true});
+
+            console.log('alert started');
+
+            await delay( duration * MINUTE );
+
+            if ((await getDoc(alertPrevious))?.data()?.outdated === true) {
+                deleteDoc(alertPrevious);
+            }
+            else {
+                updateDoc(alertPrevious, {done: true});
+                console.log('alert done');
+
+                let dataAlert = {
+                    alert: {
+                        interval: interval,
+                        time: duration,
+                        alertType: 'click',
+                    },
+                }
+                updateDoc(callDoc, dataAlert);
+            }
+
+        } catch (error) {
+
+            //因為重新設定警醒時，舊文件會被刪除，所以導致更新文件會顯示錯誤。
+
+        }
+
+    }, (interval+duration) * MINUTE + 1000 );
 }
 
-function setupAlertListener() {
+export function setupAlertListener() {
     console.log('setupAlertListener');
-    onSnapshot(alertRecords, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-            if (change.type === 'added') {
-                const { alertType, duration, timestamp: timestampStart } = change.doc.data();
-                const timestampEnd = new Date(timestampStart.toMillis() + duration * MINUTE);
+    let unsubscribe = onSnapshot(alertRecords, (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+            if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == false) {
+
+                console.log('alert started');
+
+                const alertDoc     = doc(alertRecords, change.doc.id);
+                const participants = collection(alertDoc, 'participants');
+                const userDoc      = doc(participants, localUserId);
+                const { alert,multipleChoice } = (await getDoc(callDoc)).data();
+                const { question, answear, alertType } = alert;
+                const { duration, timestamp , interval ,done } = change.doc.data();
+                const timestampStart = new Date(timestamp.toMillis() + interval * MINUTE);
+                const timestampEnd = new Date(timestamp.toMillis() + (interval + duration) * MINUTE);
                 const now = new Date();
-                if (timestampStart <= now && now < timestampEnd) {
-                    console.log('see alert');
-                    alertBtn.hidden = false;
-                    alertBtn.dataset.id = change.doc.id;
 
-                    if (Math.random() < 0.5) {
-                        alertBtn.style.left  = `${getRandom(50)}%`;
-                        alertBtn.style.right = `initial`;
+                    if( (await getDoc(userDoc)).data() === undefined ) {
+                        const data = {
+                            click : false,
+                        }
+                        await setDoc(userDoc, data);
                     }
-                    else {
-                        alertBtn.style.right = `${getRandom(50)}%`;
-                        alertBtn.style.left  = `initial`;
-                    }
+                    const {click} = (await getDoc(userDoc)).data();
+                    if( click === false ) {
+                        console.log('see alert');
+                        alertModule.hidden = false;
+                        const alertShow = document.createElement('div');
+                        alertShow.classList.add('alert-show')
+                        alertModule.appendChild(alertShow);
 
-                    if (Math.random() < 0.5) {
-                        alertBtn.style.top     = `${getRandom(50)}%`;
-                        alertBtn.style.bottom  = `initial`;
-                    }
-                    else {
-                        alertBtn.style.bottom  = `${getRandom(50)}%`;
-                        alertBtn.style.top     = `initial`;
-                    }
+                        if(alertType === 'multiple choice') {
+                            const textarea = document.createElement('textarea');
+                            textarea.setAttribute("readonly", "readonly");
+                            textarea.classList.add('qst_show')
+                            textarea.innerHTML = question;
+                            alertShow.appendChild(textarea);
+                            for (let i = 0; i < multipleChoice.length; i++) {
+                                const field = document.createElement('div');
+                                field.classList.add('field')
+                                alertShow.appendChild(field);
+                                const span = document.createElement('span');
+                                span.classList.add('span_No');
+                                span.innerHTML = i+1;
+                                field.appendChild(span);
+                                const input = document.createElement('input');
+                                input.classList.add('option_Input')
+                                input.setAttribute("readonly", "readonly");
+                                input.value = multipleChoice[i];
+                                field.appendChild(input);
 
-                    const countDownInterval = setIntervalImmediately(() => {
+                                span.addEventListener('click', () => {
+                                    let no = alertShow.querySelectorAll(".span_No");
+                                    Array.from(no).forEach((item) => {
+                                        item.classList.remove("chosen");
+                                    });
+                                    span.classList.toggle("chosen");
+                                });
+                            }
+                        }
+
+                        const alertBtnDiv = document.createElement('div');
+                        alertBtnDiv.classList.add('alert-btn-div')
+                        alertShow.appendChild(alertBtnDiv);
+                        const alertBtn = document.createElement('button');
+                        alertBtn.setAttribute('id','alert-btn');
+                        alertBtnDiv.appendChild(alertBtn);
+                        const alertBtnText = document.createElement('p');
+                        alertBtnText.setAttribute('id','alert-btn__text');
+                        alertBtnText.innerHTML = '警醒按鈕';
+                        alertBtn.appendChild(alertBtnText);
+                        const alertBtnTime = document.createElement('span');
+                        alertBtnTime.setAttribute('id','alert-btn__time');
+                        alertBtnTime.innerHTML = '00:00';
+                        alertBtn.appendChild(alertBtnTime);
+
+                        alertModule.hidden = false;
+
+                        alertBtn.addEventListener('click', async () => {
+                            if (alertBtn.dataset.id) {
+                                const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
+                                const participants = collection(alertDoc, 'participants');
+                                const userDoc      = doc(participants, localUserId);
+                                const answearChosen = document.querySelector(".chosen");
+
+                                if(alertType === 'click') {
+                                    const data = {
+                                        click : true,
+                                        timestamp: new Date()
+                                    }
+                                    await updateDoc(userDoc, data);
+                                    alertBtnTime.hidden = true;
+                                    alertBtnText.innerHTML = '簽到完成';
+                                    alertBtn.classList.add('active');
+
+                                    await delay(2000);
+                                    alertBtn.hidden = true;
+                                    alertBtnTime.hidden = false;
+                                    alertBtnText.innerHTML = '警醒按鈕';
+                                    alertBtn.classList.remove('active');
+
+                                    alertModule.hidden = true;
+                                }else if(alertType === 'multiple choice') {
+                                    if(answearChosen != null) {
+                                        const data = {
+                                            click: true,
+                                            answear: answearChosen.innerHTML,
+                                            timestamp: new Date(),
+                                        }
+                                        await updateDoc(userDoc, data);
+                                        alertBtnTime.hidden = true;
+                                        alertBtnText.innerHTML = '簽到完成';
+                                        alertBtn.classList.add('active');
+
+                                        await delay(2000);
+                                        alertBtn.hidden = true;
+                                        alertBtnTime.hidden = false;
+                                        alertBtnText.innerHTML = '警醒按鈕';
+                                        alertBtn.classList.remove('active');
+
+                                        alertModule.hidden = true;
+                                    }
+                                }
+                            }
+                        });
+
+                        alertBtn.dataset.id = change.doc.id;
+
+                        if (Math.random() < 0.5) {
+                            alertModule.style.left  = `${getRandom(50)}%`;
+                            alertModule.style.right = `initial`;
+                        }
+                        else {
+                            alertModule.style.right = `${getRandom(50)}%`;
+                            alertModule.style.left  = `initial`;
+                        }
+
+                        if (Math.random() < 0.5) {
+                            alertModule.style.top     = `${getRandom(50)}%`;
+                            alertModule.style.bottom  = `initial`;
+                        }
+                        else {
+                            alertModule.style.bottom  = `${getRandom(50)}%`;
+                            alertModule.style.top     = `initial`;
+                        }
+
+                        const countDownInterval = setIntervalImmediately(() => {
+                            const now = new Date();
+
+                            const distance = timestampEnd.getTime() - now.getTime();
+
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                            alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
+                        }, 1000);
+
                         const now = new Date();
+                        setTimeout(() => {
+                            clearInterval(countDownInterval);
+                            alertModule.hidden = true;
+                            alertShow.remove();
+                        }, timestampEnd.getTime() - now.getTime());
+                    }
 
-                        const distance = timestampEnd.getTime() - now.getTime();
-
-                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                        alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
-                    }, 1000);
-
-                    setTimeout(() => {
-                        clearInterval(countDownInterval);
-                        alertBtn.hidden = true;
-                    }, timestampEnd.getTime() - now.getTime());
-                }
+            }else if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == true) {
+                const alertShows = document.querySelectorAll('.alert-show');
+                alertShows.forEach(alertShow => {
+                    alertShow.remove();
+                });
             }
         });
     });
 }
 
 window.onresize = () => {Cam.resizeAll()};
+
+async function addMessageToChat(msgData) {
+    const { user, text, timestamp } = msgData;
+    const date = new Date(timestamp.seconds * 1000);
+    let YY = date.getFullYear();
+    let MM = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth();
+    let DD = date.getDate() < 10 ? "0" + date.getDate() :date.getDate();
+    let hh = date.getHours() < 10 ? "0" + date.getHours() :date.getHours();
+    let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() :date.getMinutes();
+    let YMDhm = YY + "/" + MM + "/" + DD +" " + hh + ":" + mm;
+
+    if (localUserId === user){
+        if(user === userAbove) {
+            const msg = myMsgPrefab.cloneNode(true);
+            const msgText = msg.querySelector('.my-msg__text');
+            const myMsgDate = msg.querySelector('.my-msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }else {
+            const msg = myMsgPrefab.cloneNode(true);
+            const msgUser = msg.querySelector('.my-msg__user');
+            const msgTime = msg.querySelector('.my-msg__timestamp');
+            const msgText = msg.querySelector('.my-msg__text');
+            const myMsgDate = msg.querySelector('.my-msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
+            msgUser.innerHTML = '你';
+            msgTime.innerHTML = hh + ":" + mm;
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }
+    }
+    else {
+        if(user === userAbove) {
+            const msg = msgPrefab.cloneNode(true);
+            const msgText = msg.querySelector('.msg__text');
+            const myMsgDate = msg.querySelector('.msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }else {
+            const { name } = await getUserData(user) || { name: "???" };
+            const msg = msgPrefab.cloneNode(true);
+            const msgUser = msg.querySelector('.msg__user');
+            const msgTime = msg.querySelector('.msg__timestamp');
+            const msgText = msg.querySelector('.msg__text');
+            const myMsgDate = msg.querySelector('.msg__date');
+            myMsgDate.attributes[1].value = YMDhm;
+            msgUser.innerHTML = name;
+            msgTime.innerHTML = hh + ":" + mm;
+            msgText.innerHTML = text;
+            chatRoom.appendChild(msg);
+        }
+    }
+
+    userAbove = user;
+}
+
+function dockListener() {
+    Array.from(icons).forEach((item, index) => {
+        item.addEventListener("mouseenter", (e) => {
+            focus(e.target, index);
+        });
+        item.addEventListener("mouseleave", (e) => {
+            Array.from(icons).forEach((item) => {
+                item.style.transform = "scale(1) translateY(0px)";
+            });
+        });
+    });
+    const focus = (elem, index) => {
+        let previous = index - 1;
+        let next = index + 1;
+
+        if (previous == -1) {
+            console.log("first element");
+            elem.style.transform = "scale(1.5) translateY(-10px)";
+            icons[next].style.transform = "scale(1.2) translateY(-6px)";
+        } else if (next == icons.length) {
+            elem.style.transform = "scale(1.5) translateY(-10px)";
+            icons[previous].style.transform = "scale(1.2) translateY(-6px)";
+            console.log("last element");
+        } else {
+            elem.style.transform = "scale(1.5) translateY(-10px)";
+            icons[previous].style.transform = "scale(1.2) translateY(-6px)";
+            icons[next].style.transform = "scale(1.2) translateY(-6px)";
+        }
+    };
+}
