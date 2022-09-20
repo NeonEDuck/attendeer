@@ -17,7 +17,7 @@ const myMsgPrefab  = prefab.querySelector('.my-msg');
 
 const sidebarRight = document.querySelector(".sidebar-right");
 const icons  = document.querySelectorAll('.ico');
-// const camMenu  = document.querySelector('#cam__menu');
+const camMenu  = document.querySelector('#cam__menu');
 
 const micBtn         = document.querySelector('#mic-btn');
 const webcamBtn      = document.querySelector('#webcam-btn');
@@ -77,7 +77,6 @@ let messages = collection(callDoc, 'messages');
 export let alertDocCurrently;
 
 document.onreadystatechange = async () => {
-    document.getElementById("cam__menu").style.display = "none";
     const user = await getUser();
     let callDocSnapshot;
 
@@ -179,7 +178,6 @@ screenShareBtn.addEventListener('click', async () => {
 })
 
 enterBtn.addEventListener('click', async () => {
-    // camMenu.style.display = "flex";
     body.classList.toggle("dark");
 
     console.log(`join call: ${callId} as ${localUserId}`);
@@ -370,7 +368,7 @@ enterBtn.addEventListener('click', async () => {
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
 
-    // camMenu.hidden = false;
+    document.getElementById("cam__menu").classList.remove('close');
 
     sidebarListener();
 
@@ -571,7 +569,7 @@ export async function setupAlertScheduler() {
 
         }
 
-    }, (interval+duration) * MINUTE + 1000 );
+    }, (interval+duration) * MINUTE + 1500 );
 }
 
 export function setupAlertListener() {
@@ -585,9 +583,7 @@ export function setupAlertListener() {
                 const alertDoc     = doc(alertRecords, change.doc.id);
                 const participants = collection(alertDoc, 'participants');
                 const userDoc      = doc(participants, localUserId);
-                const { alert,multipleChoice } = (await getDoc(callDoc)).data();
-                const { question, answear, alertType } = alert;
-                const { duration, timestamp , interval ,done } = change.doc.data();
+                const { alertType, duration, timestamp, interval, done, answear, question, multipleChoice } = change.doc.data();
                 const timestampStart = new Date(timestamp.toMillis() + interval * MINUTE);
                 const timestampEnd = new Date(timestamp.toMillis() + (interval + duration) * MINUTE);
                 const now = new Date();
@@ -670,7 +666,7 @@ export function setupAlertListener() {
                                     alertBtnText.innerHTML = '簽到完成';
                                     alertBtn.classList.add('active');
 
-                                    await delay(2000);
+                                    await delay(1000);
                                     alertBtn.hidden = true;
                                     alertBtnTime.hidden = false;
                                     alertBtnText.innerHTML = '警醒按鈕';
@@ -689,7 +685,7 @@ export function setupAlertListener() {
                                         alertBtnText.innerHTML = '簽到完成';
                                         alertBtn.classList.add('active');
 
-                                        await delay(2000);
+                                        await delay(1000);
                                         alertBtn.hidden = true;
                                         alertBtnTime.hidden = false;
                                         alertBtnText.innerHTML = '警醒按鈕';

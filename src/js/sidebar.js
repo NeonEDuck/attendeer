@@ -36,14 +36,17 @@ const switchCtn = document.querySelector('#switch-cnt'),
       switchBtn  = switchCtn.querySelectorAll('.switch-btn');
 const floatingAlertA    = document.querySelector('#floating-alert-a'),
       alertInfo         = document.querySelector('.alert-info'),
+      alertInfoErrorText= alertInfo.querySelector('.error-text'),
       alertChoose       = document.querySelector('.alert-choose'),
       alertExchange     = floatingAlertA.querySelector('#alert-exchange'),
       alertReturn       = floatingAlertA.querySelector('#alert-return'),
       alertStepProgress = document.querySelector('.alert-step-progress'),
       buttonSetting = document.querySelector('.button-setting'),
+      btnSettingErrorText = buttonSetting.querySelector('.error-text'),
       alertBtnReturn = document.querySelector('#alert-btn-return'),
       alertBtnFinish = document.querySelector('#alert-btn-finish'),
       multipleChoiceSetting = document.querySelector('.multiple-choice-setting'),
+      errorText = multipleChoiceSetting.querySelectorAll('.error-text'),
       container = multipleChoiceSetting.querySelector('.container'),
       choose1    = floatingAlertA.querySelector('#choose-1'),
       choose2    = floatingAlertA.querySelector('#choose-2'),
@@ -159,11 +162,18 @@ function addOptions(){
 alertBtnReturn.addEventListener('click', () => {
     buttonSetting.classList.toggle("close");
     alertChoose.classList.remove("close");
+
+    const errorText = buttonSetting.querySelector('.error-text');
+    errorText.innerHTML = '';
 });
 
 prev1.addEventListener('click', () => {
     multipleChoiceSetting.classList.toggle("close");
     alertChoose.classList.remove("close");
+    
+    errorText.forEach(errorText => {
+        errorText.innerHTML = '';
+    })
 });
 prev2.addEventListener('click', () => {
     slidePage.style.marginLeft = "0%";
@@ -186,6 +196,11 @@ next1.addEventListener('click', () => {
         progressText[current].classList.add("active");
         progressCheck[current].classList.add("active");
         current += 1;
+        errorText.forEach(errorText => {
+            errorText.innerHTML = '';
+        })
+    }else {
+        errorText[0].innerHTML = '禁止輸入空字串！';
     }
 });
 next2.addEventListener('click', () => {
@@ -209,38 +224,53 @@ next2.addEventListener('click', () => {
         progressText[current].classList.add("active");
         progressCheck[current].classList.add("active");
         current += 1;
+        errorText[1].innerHTML = ''
+    }else if( x != optionInput.length ){
+        errorText[1].innerHTML = '選項禁止為空字串！'
+    }else if( answearChosen === null ) {
+        errorText[1].innerHTML = '請選擇答案選項！'
     }
 });
 
 alertBtnFinish.addEventListener('click', async () => {
+    const errorText = buttonSetting.querySelector('.error-text');
     const alertInterval = document.querySelectorAll(".alert-interval");
     const alertTime     = document.querySelectorAll(".alert-time");
 
     const interval = Number(alertInterval[1].value);
     const time     = Number(alertTime[1].value);
     const alertType = 'click';
+    if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
+    
+        const data = {
+            alert: {
+                interval,
+                time,
+                alertType,
+            },
+        }
+        
+        const callDoc = doc(calls, callId);
+        await updateDoc(callDoc, data);
+    
+        alertInfo.classList.remove("close");
+        alertChoose.classList.toggle("close");
+        fltCntr.classList.remove("show");
+        buttonSetting.classList.toggle("close");
+        alertChoose.classList.toggle("close");
+        Array.from(navBtn).forEach((item) => {
+            item.className = "nav-btn";
+        });
+    
+        AlertReplace();
 
-    const data = {
-        alert: {
-            interval,
-            time,
-            alertType,
-        },
+        errorText.innerHTML = '';
+    }else if( interval < 10 || interval >50 ) {
+        errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+    }else if( time < 1 || time > 3 ) {
+        errorText.innerHTML = '持續時間範圍：1 ~ 3';
     }
     
-    const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, data);
-
-    alertInfo.classList.remove("close");
-    alertChoose.classList.toggle("close");
-    fltCntr.classList.remove("show");
-    buttonSetting.classList.toggle("close");
-    alertChoose.classList.toggle("close");
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
-    });
-
-    AlertReplace();
 });
 
 next3.addEventListener('click', async () => {
@@ -251,73 +281,81 @@ next3.addEventListener('click', async () => {
     const interval = Number(alertInterval[2].value);
     const time     = Number(alertTime[2].value);
     const alertType = 'multiple choice';
-    answearID = answear;
 
-    const optionInput = container.querySelectorAll(".option_input");
-    let multipleChoiceDict = {};
+    if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
+        answearID = answear;
+
+        const optionInput = container.querySelectorAll(".option_input");
+        let multipleChoiceDict = {};
+        
+        for(let i=0; i < optionInput.length; i++){
+            multipleChoiceDict[i] = optionInput[i].value;
+        }
     
-    for(let i=0; i < optionInput.length; i++){
-        multipleChoiceDict[i] = optionInput[i].value;
-    }
-
-    let multipleChoice = Object.values(multipleChoiceDict);
-
-    dataMultipleChoice = {
-        question: question,
-        answear: answearID,
-        multipleChoice: multipleChoice,
-    }
-
-    let dataAlert = {
-        alert: {
-            interval: interval,
-            time: time,
-            alertType: alertType,
-        },
+        let multipleChoice = Object.values(multipleChoiceDict);
+    
+        dataMultipleChoice = {
+            question: question,
+            answear: answearID,
+            multipleChoice: multipleChoice,
+        }
+    
+        let dataAlert = {
+            alert: {
+                interval: interval,
+                time: time,
+                alertType: alertType,
+            },
+        }
+        
+        const callDoc = doc(calls, callId);
+        await updateDoc(callDoc, dataAlert);
+    
+        slidePage.style.marginLeft = "0%";
+        bullet[current - 1].classList.remove("active");
+        progressText[current - 1 ].classList.remove("active");
+        progressCheck[current - 1 ].classList.remove("active");
+        current -= 1;
+        bullet[current - 1 ].classList.remove("active");
+        progressText[current - 1 ].classList.remove("active");
+        progressCheck[current - 1 ].classList.remove("active");
+        current -= 1;
+        qstText.value = "";
+        for(let i=0; i < optionInput.length; i++){
+            optionInput[i].value = "";
+        }
+        container.querySelector(".answear-chosen").classList.remove("answear-chosen");
+        
+        alertInfo.classList.remove("close");
+        alertChoose.classList.toggle("close");
+        fltCntr.classList.remove("show");
+        multipleChoiceSetting.classList.toggle("close");
+        alertChoose.classList.toggle("close");
+        Array.from(navBtn).forEach((item) => {
+            item.className = "nav-btn";
+        });
+    
+        AlertReplace();
+    
+        const option = multipleChoiceSetting.querySelectorAll('.option');
+    
+        option.forEach(option => {
+            option.remove();
+        });
+    
+        optionsTotal = 0;
+    
+        addBtn.style.display = "block";
+    
+        for(let i = 0; i < 2; i++){
+            addOptions();
+        }
+    }else if( interval < 10 || interval >50 ) {
+        errorText[2].innerHTML = '警醒間隔範圍：10 ~ 50';
+    }else if( time < 1 || time > 3 ) {
+        errorText[2].innerHTML = '持續時間範圍：1 ~ 3';
     }
     
-    const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, dataAlert);
-
-    slidePage.style.marginLeft = "0%";
-    bullet[current - 1].classList.remove("active");
-    progressText[current - 1 ].classList.remove("active");
-    progressCheck[current - 1 ].classList.remove("active");
-    current -= 1;
-    bullet[current - 1 ].classList.remove("active");
-    progressText[current - 1 ].classList.remove("active");
-    progressCheck[current - 1 ].classList.remove("active");
-    current -= 1;
-    qstText.value = "";
-    for(let i=0; i < optionInput.length; i++){
-        optionInput[i].value = "";
-    }
-    container.querySelector(".answear-chosen").classList.remove("answear-chosen");
-    
-    alertInfo.classList.remove("close");
-    alertChoose.classList.toggle("close");
-    fltCntr.classList.remove("show");
-    multipleChoiceSetting.classList.toggle("close");
-    alertChoose.classList.toggle("close");
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
-    });
-
-    AlertReplace();
-
-    const option = multipleChoiceSetting.querySelectorAll('.option');
-
-    option.forEach(option => {
-        option.remove();
-    });
-
-    optionsTotal = 0;
-
-    addBtn.style.display = "block";
-
-    for(let i = 0; i < 2; i++){
-        addOptions();
-    }
 });
 choose1.addEventListener('click', () => {
     buttonSetting.classList.remove("close");
@@ -399,6 +437,13 @@ closeFloatingButton.addEventListener('click', () => {
     for(let i = 0; i < 2; i++){
         addOptions();
     }
+    errorText.forEach(errorText => {
+        errorText.innerHTML = '';
+    })
+
+    btnSettingErrorText.innerHTML = '';
+
+    alertInfoErrorText.innerHTML = '';
 });
 
 async function AlertReplace() {
@@ -459,16 +504,16 @@ settingBtn.addEventListener('click', async () => {
     alertInterval.classList.add('Revise');
     alertTime.classList.add('Revise');
 
-    alertInterval.removeAttribute('readOnly');
-    alertTime.removeAttribute('readOnly');
+    alertInterval.removeAttribute('readonly');
+    alertTime.removeAttribute('readonly');
 
     if( globalTpye === 'multiple choice' ) {
 
         let optionsTotal = 0;
 
-        textarea.removeAttribute('readOnly');
+        textarea.removeAttribute('readonly');
         input.forEach(input => {
-            input.removeAttribute('readOnly');
+            input.removeAttribute('readonly');
             optionsTotal +=1;
         });
 
@@ -576,8 +621,17 @@ settingBtn.addEventListener('click', async () => {
                 button.style.display = "none";
             }
         });
-
-
+        let bxX = fieldset.querySelectorAll(".bx-x");
+        Array.from(bxX).forEach((item) => {
+            if(optionsTotal >= 3){
+                item.style.display = "block";
+            }else{
+                item.style.display = "none";
+            }
+        });
+        if(optionsTotal >= 5){
+            button.style.display = "none";
+        }
     }
 
 
@@ -597,54 +651,84 @@ submitSettingBtn.addEventListener('click', async () => {
     const time     = Number(alertTime.value);
     const alertType = globalTpye;
 
-    alertInterval.classList.remove('Revise');
-    alertTime.classList.remove('Revise');
-
-    if (alertType === 'multiple choice') {
-
-        const spanNoAnswear = classModel.querySelector(".answear");
-        if(spanNoAnswear != null) {
-            answear = spanNoAnswear.innerHTML;
-        }
-        const optionInput = classModel.querySelectorAll(".option_Input");
-        let multipleChoiceDict = {};
+    if( interval < 10 || interval > 50 ) {
+        alertInfoErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+    }else if( time < 1 || time > 3) {
+        alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
+    }else {
         
-        for(let i=0; i < optionInput.length; i++){
-            multipleChoiceDict[i] = optionInput[i].value;
+        if (alertType === 'multiple choice') {
+
+            const infoTextarea = classModel.querySelector(".info-textarea");
+            const spanNoAnswear = classModel.querySelector(".answear");
+            const optionInput = classModel.querySelectorAll(".option_Input");
+
+            let x = 0;
+            for(let i = 0; i < optionInput.length; i++){
+                if(optionInput[i].value != ''){
+                    x += 1;
+                }
+            }
+
+            if(infoTextarea.value === '') {
+                alertInfoErrorText.innerHTML = '問題禁止為空字串'; 
+                return;
+            }else if(spanNoAnswear === null) {
+                alertInfoErrorText.innerHTML = '請選擇正確答案';
+                return;
+            }else if( x != optionInput.length ){
+                alertInfoErrorText.innerHTML = '選項禁止為空字串！'
+                return;
+            }else {
+                question = infoTextarea.value;
+
+                answear = spanNoAnswear.innerHTML;
+                
+                let multipleChoiceDict = {};
+                
+                for(let i=0; i < optionInput.length; i++){
+                    multipleChoiceDict[i] = optionInput[i].value;
+                }
+
+                globalmultipleChoice = Object.values(multipleChoiceDict);
+
+                dataMultipleChoice = {
+                    question: question,
+                    answear: answear,
+                    multipleChoice: globalmultipleChoice,
+                }
+            }
+
+            
         }
+        
+        alertInterval.classList.remove('Revise');
+        alertTime.classList.remove('Revise');
 
-        globalmultipleChoice = Object.values(multipleChoiceDict);
-
-        dataMultipleChoice = {
-            question: question,
-            answear: answear,
-            multipleChoice: globalmultipleChoice,
+        const data = {
+            alert: {
+                interval,
+                time,
+                alertType,
+            },
         }
+        const callDoc = doc(calls, callId);
+        await updateDoc(callDoc, data);
+
+        fltCntr.classList.remove("show");
+
+        centerBtns[0].hidden = false;
+        centerBtns[1].hidden = true;
+
+        alertInterval.setAttribute('readonly','true');
+        alertTime.setAttribute('readonly','true');
+
+        Array.from(navBtn).forEach((item) => {
+            item.className = "nav-btn";
+        });
+
+        AlertReplace();
     }
-    
-    const data = {
-        alert: {
-            interval,
-            time,
-            alertType,
-        },
-    }
-    const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, data);
-
-    fltCntr.classList.remove("show");
-
-    centerBtns[0].hidden = false;
-    centerBtns[1].hidden = true;
-
-    alertInterval.setAttribute('readOnly','true');
-    alertTime.setAttribute('readOnly','true');
-
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
-    });
-
-    AlertReplace();
 });
 
 modeSwitch.addEventListener("click", () =>{
@@ -688,8 +772,13 @@ window.addEventListener('load', mainF);
 
 async function closeModalForm() {
 
+    alertInfoErrorText.innerHTML = '';
+
     const Interval = classModel.querySelector("#alert-interval");
     const Time     = classModel.querySelector("#alert-time");
+
+    Interval.setAttribute("readonly", "readonly");
+    Time.setAttribute("readonly", "readonly");
 
     Interval.classList.remove('Revise');
     Time.classList.remove('Revise');
