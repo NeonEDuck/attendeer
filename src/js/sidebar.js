@@ -82,7 +82,7 @@ let globalTpye;
 let globalmultipleChoice;
 let answearID;
 let question, answear;
-export let dataMultipleChoice = {}; 
+export let dataMultipleChoice = {};
 let action;
 let localUserId = null;
 
@@ -125,7 +125,7 @@ function addOptions(){
         let x = 0;
         Array.from(bxX).forEach((item) => {
             spansNo[x].innerHTML = x+1;
-            x += 1; 
+            x += 1;
             if(optionsTotal <= 2){
                 item.style.display = "none";
             }else if(optionsTotal < 5){
@@ -170,7 +170,7 @@ alertBtnReturn.addEventListener('click', () => {
 prev1.addEventListener('click', () => {
     multipleChoiceSetting.classList.toggle("close");
     alertChoose.classList.remove("close");
-    
+
     errorText.forEach(errorText => {
         errorText.innerHTML = '';
     })
@@ -241,7 +241,7 @@ alertBtnFinish.addEventListener('click', async () => {
     const time     = Number(alertTime[1].value);
     const alertType = 'click';
     if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
-    
+
         const data = {
             alert: {
                 interval,
@@ -249,10 +249,10 @@ alertBtnFinish.addEventListener('click', async () => {
                 alertType,
             },
         }
-        
+
         const callDoc = doc(calls, callId);
         await updateDoc(callDoc, data);
-    
+
         alertInfo.classList.remove("close");
         alertChoose.classList.toggle("close");
         fltCntr.classList.remove("show");
@@ -261,7 +261,7 @@ alertBtnFinish.addEventListener('click', async () => {
         Array.from(navBtn).forEach((item) => {
             item.className = "nav-btn";
         });
-    
+
         AlertReplace();
 
         errorText.innerHTML = '';
@@ -270,7 +270,7 @@ alertBtnFinish.addEventListener('click', async () => {
     }else if( time < 1 || time > 3 ) {
         errorText.innerHTML = '持續時間範圍：1 ~ 3';
     }
-    
+
 });
 
 next3.addEventListener('click', async () => {
@@ -287,19 +287,19 @@ next3.addEventListener('click', async () => {
 
         const optionInput = container.querySelectorAll(".option_input");
         let multipleChoiceDict = {};
-        
+
         for(let i=0; i < optionInput.length; i++){
             multipleChoiceDict[i] = optionInput[i].value;
         }
-    
+
         let multipleChoice = Object.values(multipleChoiceDict);
-    
+
         dataMultipleChoice = {
             question: question,
             answear: answearID,
             multipleChoice: multipleChoice,
         }
-    
+
         let dataAlert = {
             alert: {
                 interval: interval,
@@ -307,10 +307,10 @@ next3.addEventListener('click', async () => {
                 alertType: alertType,
             },
         }
-        
+
         const callDoc = doc(calls, callId);
         await updateDoc(callDoc, dataAlert);
-    
+
         slidePage.style.marginLeft = "0%";
         bullet[current - 1].classList.remove("active");
         progressText[current - 1 ].classList.remove("active");
@@ -325,7 +325,7 @@ next3.addEventListener('click', async () => {
             optionInput[i].value = "";
         }
         container.querySelector(".answear-chosen").classList.remove("answear-chosen");
-        
+
         alertInfo.classList.remove("close");
         alertChoose.classList.toggle("close");
         fltCntr.classList.remove("show");
@@ -334,19 +334,19 @@ next3.addEventListener('click', async () => {
         Array.from(navBtn).forEach((item) => {
             item.className = "nav-btn";
         });
-    
+
         AlertReplace();
-    
+
         const option = multipleChoiceSetting.querySelectorAll('.option');
-    
+
         option.forEach(option => {
             option.remove();
         });
-    
+
         optionsTotal = 0;
-    
+
         addBtn.style.display = "block";
-    
+
         for(let i = 0; i < 2; i++){
             addOptions();
         }
@@ -355,7 +355,7 @@ next3.addEventListener('click', async () => {
     }else if( time < 1 || time > 3 ) {
         errorText[2].innerHTML = '持續時間範圍：1 ~ 3';
     }
-    
+
 });
 choose1.addEventListener('click', () => {
     buttonSetting.classList.remove("close");
@@ -383,7 +383,7 @@ alertReturn.addEventListener('click', () => {
 });
 
 closeFloatingButton.addEventListener('click', () => {
-    
+
     fltCntr.classList.remove("show");
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
@@ -413,17 +413,17 @@ closeFloatingButton.addEventListener('click', () => {
         progressCheck[current - 1 ].classList.remove("active");
         current -= 1;
     }
-    
+
     qstText.value = "";
     const optionInput = container.querySelectorAll(".option_input");
     for(let i=0; i < optionInput.length; i++){
         optionInput[i].value = "";
     }
-    
+
     if( container.querySelector(".answear-chosen") != null ) {
         container.querySelector(".answear-chosen").classList.remove("answear-chosen");
     }
-    
+
     const option = multipleChoiceSetting.querySelectorAll('.option');
 
     option.forEach(option => {
@@ -468,7 +468,7 @@ export function sidebarListener() {
 
             fltCntr.classList.add("show");
 
-            if(navText === '警醒資訊') {  
+            if(navText === '警醒資訊') {
 
                 const { alert, host } = (await getDoc(callDoc)).data();
 
@@ -483,7 +483,7 @@ export function sidebarListener() {
                 }
                 else {
                     console.log('不是主辦人只提供個人警醒資訊');
-                }      
+                }
             }
 
         });
@@ -533,10 +533,10 @@ settingBtn.addEventListener('click', async () => {
         const addOption = classModel.querySelector('.addOption');
         const button = document.createElement('button');
         button.classList.add('infoAddBtn');
-        button.type = "button";  
+        button.type = "button";
         button.innerHTML = '新增';
         addOption.appendChild(button);
-        
+
         const field = fieldset.querySelectorAll('.field');
         Array.from(field).forEach((item, index) => {
             const icon = document.createElement('i');
@@ -604,7 +604,7 @@ settingBtn.addEventListener('click', async () => {
                     item.classList.toggle("answear");
                 });
             });
-            
+
             let bxX = fieldset.querySelectorAll(".bx-x");
             let spansNo = fieldset.querySelectorAll(".span_No");
             let x = 0;
@@ -640,7 +640,7 @@ settingBtn.addEventListener('click', async () => {
 cancelSettingBtn.addEventListener('click', async () => {
 
     closeModalForm();
-    
+
 });
 
 submitSettingBtn.addEventListener('click', async () => {
@@ -656,7 +656,7 @@ submitSettingBtn.addEventListener('click', async () => {
     }else if( time < 1 || time > 3) {
         alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
     }else {
-        
+
         if (alertType === 'multiple choice') {
 
             const infoTextarea = classModel.querySelector(".info-textarea");
@@ -671,7 +671,7 @@ submitSettingBtn.addEventListener('click', async () => {
             }
 
             if(infoTextarea.value === '') {
-                alertInfoErrorText.innerHTML = '問題禁止為空字串'; 
+                alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
             }else if(spanNoAnswear === null) {
                 alertInfoErrorText.innerHTML = '請選擇正確答案';
@@ -683,9 +683,9 @@ submitSettingBtn.addEventListener('click', async () => {
                 question = infoTextarea.value;
 
                 answear = spanNoAnswear.innerHTML;
-                
+
                 let multipleChoiceDict = {};
-                
+
                 for(let i=0; i < optionInput.length; i++){
                     multipleChoiceDict[i] = optionInput[i].value;
                 }
@@ -699,9 +699,9 @@ submitSettingBtn.addEventListener('click', async () => {
                 }
             }
 
-            
+
         }
-        
+
         alertInterval.classList.remove('Revise');
         alertTime.classList.remove('Revise');
 
@@ -731,12 +731,22 @@ submitSettingBtn.addEventListener('click', async () => {
     }
 });
 
+if (body.classList.contains("dark")) {
+    modeSwitch.classList.add("open");
+    modeText.innerHTML = "燈光模式";
+}
+
 modeSwitch.addEventListener("click", () =>{
-    body.classList.toggle("dark");
-    
-    if(body.classList.contains("dark")){
+    modeSwitch.classList.toggle("open");
+
+    if (modeSwitch.classList.contains("open")){
+        body.classList.add("dark");
+        localStorage.setItem('color-scheme', 'dark');
         modeText.innerHTML = "燈光模式";
-    }else{
+    }
+    else{
+        body.classList.remove("dark");
+        localStorage.setItem('color-scheme', 'light');
         modeText.innerHTML = "黑暗模式";
     }
 });
@@ -750,11 +760,11 @@ let changeForm = (e) => {
     setTimeout(function () {
       switchCtn.classList.remove('is-gx');
     }, 1500);
-  
+
     switchCtn.classList.toggle('is-txr');
     switchCircle[0].classList.toggle('is-txr');
     switchCircle[1].classList.toggle('is-txr');
-  
+
     switchC1.classList.toggle('is-hidden');
     switchC2.classList.toggle('is-hidden');
     floatingAlertA.classList.toggle('is-txl');
@@ -763,11 +773,11 @@ let changeForm = (e) => {
 
     closeModalForm();
 };
-  
+
 let mainF = (e) => {
     for (let i = 0; i < switchBtn.length; i++) switchBtn[i].addEventListener('click', changeForm);
 };
-  
+
 window.addEventListener('load', mainF);
 
 async function closeModalForm() {
@@ -787,7 +797,7 @@ async function closeModalForm() {
     centerBtns[1].hidden = true;
 
     const { alert } = (await getDoc(callDoc)).data();
-    const { interval, time: duration, alertType:type } = alert;   
+    const { interval, time: duration, alertType:type } = alert;
     const { answear, question, multipleChoice } = (await getDoc(alertDocCurrently)).data();
     globalInterval = interval;
     globalTime = duration;
@@ -797,7 +807,7 @@ async function closeModalForm() {
     floatingAlertB.style.opacity = 1;
     switchCtn.style.opacity = 1;
     classModelTitle.innerHTML = '警醒資訊';
-                    
+
     alertType.innerHTML = type;
     alertInterval[0].value = interval;
     alertTime[0].value     = duration;
@@ -819,7 +829,7 @@ async function closeModalForm() {
             fieldset.remove();
         }
         const fieldset2 = document.createElement('fieldset');
-        fieldset2.classList.add("fieldset");    
+        fieldset2.classList.add("fieldset");
         typeInfo.appendChild(fieldset2);
         const legend = document.createElement('legend');
         legend.innerHTML = '選擇題';

@@ -10,6 +10,7 @@ const MINJS = process.env.MINJS?.toLowerCase() === 'true';
 export default {
     devtool: DEBUG ? 'source-map' : false,
     entry: {
+        base: './src/js/base.js',
         index: './src/js/index.js',
         meeting: './src/js/meeting.js',
         classroom: './src/js/classroom.js',
