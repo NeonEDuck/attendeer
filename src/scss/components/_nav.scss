@@ -1,23 +1,38 @@
 @use '../abstracts' as *;
 
 #navbar {
+    --navbar-height: 5em;
+    --navbar-padding: 0.5em;
     position: sticky;
+    z-index: 100;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: var(--navbar-height);
+    min-height: var(--navbar-height);
+    padding: var(--navbar-padding);
     // top: 0;
     // right: 0;
     // width: 100%;
 
     ul {
+        position: relative;
         display: flex;
         flex-direction: row;
+        flex-grow: 1;
+        height: 100%;
+        margin-inline: 1em;
         gap: 1em;
-        padding: 1em;
         li {
             display: flex;
+            justify-content: center;
+            align-items: center;
 
             &:first-child {
-                margin-inline-start: auto;
+                margin-inline-end: auto;
             }
-            * {
+            > button,
+            > a {
                 text-decoration: none;
                 border: none;
                 font-size: 1em;
@@ -34,8 +49,46 @@
             }
         }
     }
-}
 
-#login-text {
-    min-width: 10em;
+    &-profile {
+        --profile-padding: 0.5em;
+        position: absolute;
+        right: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        padding: var(--profile-padding);
+        border-radius: 1em;
+
+        &__picture {
+            aspect-ratio: 1/1;
+            border-radius: 100%;
+            height: calc( var(--navbar-height) - ( var(--navbar-padding) + var(--profile-padding) ) * 2 );
+            cursor: pointer;
+        }
+
+        &__summary {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            height: max-content;
+            padding: 0;
+            gap: 1em;
+        }
+
+        &__dropdown {
+            display: none;
+        }
+
+        &.open {
+            background-color: white;
+            box-shadow: 0 0 0.25em 0.25em hsla(0 0% 0% / 10%);
+        }
+
+        &.open &__dropdown {
+            display: flex;
+            justify-content: center;
+        }
+    }
 }

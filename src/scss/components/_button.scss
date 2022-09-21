@@ -1,3 +1,5 @@
+@import '../base/base';
+
 @mixin content-color($color) {
     color: $color;
 
@@ -34,21 +36,6 @@ button {
     }
 }
 
-.btn-transparent {
-    background-color: transparent;
-    @include content-color(black);
-}
-
-.btn-red {
-    background-color: red;
-    @include content-color(white);
-}
-
-.btn-primary {
-    background-color: var(--clr-primary-700);
-    @include content-color(white);
-}
-
 .btn-round {
     aspect-ratio: 1 / 1;
     border-radius: 50%;
@@ -67,4 +54,67 @@ button {
             display: none;
         }
     }
+}
+
+.btn-tab {
+    &-top {
+        border-radius: 1em 1em 0 0;
+    }
+
+    &-bottem {
+        border-radius: 0 0 1em 1em;
+    }
+
+    &-right {
+        border-radius: 0 1em 1em 0;
+    }
+
+    &-left {
+        border-radius: 1em 0 0 1em;
+    }
+
+    &-top,
+    &-bottem {
+        height: 2em;
+        min-width: 6em;
+        padding-inline: 1em;
+        background-color: lightgrey;
+        @include content-color(black);
+        &.btn-on {
+            background-color: white;
+        }
+    }
+
+    &-right,
+    &-left {
+        width: 2em;
+        min-height: 6em;
+        padding-block: 1em;
+        background-color: lightgrey;
+        @include content-color(black);
+        &.btn-on {
+            background-color: white;
+        }
+    }
+}
+
+.btn-transparent {
+    background-color: transparent;
+    @include content-color(black);
+}
+
+.btn-link {
+    background-color: transparent;
+    text-decoration: underline;
+    @include content-color(var(--clr-link));
+}
+
+.btn-red {
+    background-color: red;
+    @include content-color(white);
+}
+
+.btn-primary {
+    background-color: var(--clr-primary-700);
+    @include content-color(white);
 }

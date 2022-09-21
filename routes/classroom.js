@@ -2,10 +2,10 @@ import { Router } from 'express';
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/:callId', async (req, res) => {
     let { uid } = req.local.decodedToken;
-
-    res.render('overview', { uid });
+    let { callId } = req.params;
+    res.render('classroom', { uid, callId });
 });
 
 export default router;

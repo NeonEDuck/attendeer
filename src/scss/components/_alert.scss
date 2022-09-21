@@ -25,6 +25,7 @@
             transition: 0.25s ease;
             border-radius: 8px;
             box-shadow: inset -2px -2px 4px var(--floating--color-2), inset 2px 2px 4px var(--floating--color-3);
+            resize: none;
         }
         .field {
             .span_No {

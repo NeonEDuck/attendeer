@@ -17,12 +17,14 @@
 </head>
 <body>
     <div class="content">
+        <div id="prefab" hidden>
+        </div>
         <div class="prefab" hidden>
             {% block prefab %}
             {% endblock prefab %}
         </div>
         {% block navbar %}
-            {% include './navbar.njk' %}
+            {% include 'util/navbar.njk' %}
         {% endblock navbar %}
         {% block content %}
             <main></main>

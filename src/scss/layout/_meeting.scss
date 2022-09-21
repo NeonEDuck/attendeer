@@ -425,7 +425,6 @@ body.dark .switch::before {
             width: 180px;
             height: 50px;
             border-radius: 25px;
-            margin-top: 15px;
             font-weight: 700;
             font-size: 14px;
             letter-spacing: 1.15px;
@@ -437,6 +436,9 @@ body.dark .switch::before {
             margin-inline-start: 0;
             position: relative;
             margin-inline: 25px;
+        }
+        #cancel-setting {
+            background-color: #b01ec2;
         }
     }
 
@@ -509,6 +511,14 @@ body.dark .switch::before {
                     background-color: var(--floating--color-1);
                     right: calc(100% - 1000px);
 
+                    header {
+                        color: var(--text-color);
+                    }
+
+                    .title {
+                        color: var(--text-color);
+                    }
+
                     .span_No {
                         box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--button-color-3);
                         position: relative;
@@ -541,6 +551,7 @@ body.dark .switch::before {
                         h1#class-modal__title {
                             display: flex;
                             justify-content: center;
+                            color: var(--text-color);
                         }
 
                         #close-modal__form {
@@ -549,7 +560,7 @@ body.dark .switch::before {
                             align-items: center;
                             flex-direction: column;
                             width: 100%;
-                            height: 730px;
+                            height: 583px;
                             fieldset {
                                 width: 570px;
                             }
@@ -557,7 +568,7 @@ body.dark .switch::before {
                                 .fieldset {
                                     display: flex;
                                     justify-content: flex-start;
-                                    gap: 0.5em;
+                                    gap: 0.1em;
                                     color: var(--text-color);
                                     width: 570px;
                                     .addOption {
@@ -646,6 +657,7 @@ body.dark .switch::before {
                             transition: 0.25s ease;
                             border-radius: 8px;
                             box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
+                            resize: none;
                         }
 
                     }
@@ -669,6 +681,10 @@ body.dark .switch::before {
                             color: var(--button-icon-color);
                             transition: all 0.5s ease;
 
+                            p {
+                                color: var(--text-color);
+                            }
+
                             &:hover {
                                 color: var(--button-hov-color);
                             }
@@ -688,6 +704,10 @@ body.dark .switch::before {
                                 width: 0;
                                 opacity: 0;
                                 display: none;
+                            }
+                            .error-text {
+                                text-align: center;
+                                color: #f00;
                             }
                         }
 
@@ -713,6 +733,7 @@ body.dark .switch::before {
                                     justify-content: center;
                                     font-weight: bold;
                                     line-height: 2.2;
+                                    color: var(--text-color);
                                 }
                             }
 
@@ -925,6 +946,10 @@ body.dark .switch::before {
                             left: 15px;
                         }
 
+                        .error-text {
+                            color: #f00;
+                        }
+
                         .field {
                             justify-content: center;
                         }
@@ -935,6 +960,8 @@ body.dark .switch::before {
                             opacity: 0;
                             display: none;
                         }
+
+
                     }
 
                     .alert-step-progress {
@@ -951,6 +978,7 @@ body.dark .switch::before {
                             .process-bar {
                                 display: flex;
                                 margin: 40px 0;
+                                color: var(--text-color);
 
                                 .step {
                                     position: relative;
@@ -960,7 +988,6 @@ body.dark .switch::before {
                                     p {
                                         font-size: 18px;
                                         font-weight: 500;
-                                        color: #000;
                                         margin-bottom: 8px;
                                         transition: 0.2s;
 
@@ -981,7 +1008,7 @@ body.dark .switch::before {
                                         position: relative;
                                         height: 25px;
                                         width: 25px;
-                                        border: 2px solid #000;
+                                        border: 2px solid var(--text-color);
                                         display: inline-block;
                                         border-radius: 50%;
                                         transition: 0.2s;
@@ -1003,7 +1030,7 @@ body.dark .switch::before {
                                             right: -135px;
                                             height: 3px;
                                             width: 125px;
-                                            background: #121212;
+                                            background: var(--text-color);
                                         }
 
                                         &.active::after {
@@ -1060,6 +1087,12 @@ body.dark .switch::before {
                                     display: flex;
                                     width: 800%;
 
+                                    .error-text {
+                                        color: #f00;
+                                        position: absolute;
+                                        margin-inline: 168px;
+                                    }
+
                                     .page {
                                         width: 25%;
                                         transition: margin-left 0.3s ease-in-out;
@@ -1072,18 +1105,18 @@ body.dark .switch::before {
                                         }
 
                                         .field {
-                                            height: 55px;
+                                            height: 50px;
                                             width: 500px;
                                             display: flex;
                                             position: relative;
                                             z-index: 2;
 
                                             textarea {
-                                                position: absolute;
-                                                top: 40px;
                                                 width: 100%;
                                                 height: 90px;
                                                 font-size: 20px;
+                                                margin-block-start: 10px;
+                                                resize: none;
                                             }
 
                                             button {
@@ -1136,8 +1169,7 @@ body.dark .switch::before {
                                         }
 
                                         .label {
-                                            position: absolute;
-                                            top: 10px;
+                                            position: relative;
                                             font-weight: 500;
                                         }
 
@@ -1160,19 +1192,16 @@ body.dark .switch::before {
                                                 margin-bottom: -20px !important;
 
                                                 &.prev {
-                                                    margin-right: 3px;
+                                                    margin-block-start: 34px;
                                                     font-size: 17px;
-                                                    position: absolute;
                                                     width: 49%;
-                                                    top: 100px;
                                                 }
 
                                                 &.next {
-                                                    margin-left: 3px;
-                                                    position: absolute;
+                                                    margin-block-start: 34px;
+                                                    font-size: 17px;
                                                     width: 49%;
-                                                    right: 0;
-                                                    top: 100px;
+                                                    margin-inline-start: 3px;
                                                 }
                                             }
                                         }
@@ -1296,7 +1325,7 @@ body.dark .switch::before {
     overflow: hidden;
 }
 
-#video-tray {
+#cam-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -1313,7 +1342,7 @@ body.dark .switch::before {
     }
 }
 
-#confirm-panel__video-tray {
+#confirm-panel__cam-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -1336,6 +1365,10 @@ body.dark .switch::before {
     overflow: hidden;
     transition: var(--tran-05);
 
+    &:hover {
+        background-color: rgb(100 100 100 / 10%)
+    }
+
     &[overflowed] {
         display: none;
     }
@@ -1351,6 +1384,22 @@ body.dark .switch::before {
 
         &:hover {
             opacity: 0.3;
+        }
+    }
+
+    &:hover li {
+        transform: rotate(calc(360deg / 3 * var(--i)));
+        opacity: 1;
+
+    }
+
+    .cam__menu {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &.close {
+            display: none;
         }
     }
 
@@ -1397,17 +1446,7 @@ body.dark .switch::before {
     img {
         z-index: 1;
     }
-
-    .cam__menu {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        &.close {
-            display: none;
-        }
-    }
-
+    
     li {
         position: absolute;
         left: calc(50% - 100px);
@@ -1439,16 +1478,6 @@ body.dark .switch::before {
                 color: #ff1252;
             }
         }
-    }
-
-    &:hover li {
-        transform: rotate(calc(360deg / 3 * var(--i)));
-        opacity: 1;
-
-    }
-
-    &:hover {
-        background-color: rgb(100 100 100 / 10%)
     }
 }
 
