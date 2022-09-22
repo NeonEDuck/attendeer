@@ -494,8 +494,79 @@ async function refreshStream() {
     }
 }
 
+let alertSchedulerVersion = 0;
+
 export async function setupAlertScheduler() {
     console.log('setupAlertScheduler');
+
+    startAlert();
+
+    // intervalID = setIntervalImmediately(async () => {
+
+    //     try {
+
+    //         const { alert } = (await getDoc(callDoc)).data();
+    //         const { interval, time: duration, alertType} = alert;
+
+    //         alertDocCurrently = doc(alertRecords);
+
+    //         let dataNormal = {
+    //             timestamp: new Date(),
+    //             duration: duration, //時長
+    //             alertType: alertType,
+    //             interval: interval,
+    //             started: false,
+    //             done: false,
+    //             outdated: false,
+    //         };
+
+    //         if(alertType === 'multiple choice') {
+    //             dataNormal = Object.assign(dataNormal, dataMultipleChoice );
+    //         }
+
+    //         setDoc(alertDocCurrently, dataNormal);
+
+    //         console.log('add alert');
+
+    //         let alertPrevious = alertDocCurrently;
+
+    //         await delay( interval * MINUTE );
+
+    //         updateDoc(alertPrevious, {started: true});
+
+    //         console.log('alert started');
+
+    //         await delay( duration * MINUTE );
+
+    //         if ((await getDoc(alertPrevious))?.data()?.outdated === true) {
+    //             deleteDoc(alertPrevious);
+    //         }
+    //         else {
+    //             updateDoc(alertPrevious, {done: true});
+    //             console.log('alert done');
+
+    //             let dataAlert = {
+    //                 alert: {
+    //                     interval: interval,
+    //                     time: duration,
+    //                     alertType: 'click',
+    //                 },
+    //             }
+    //             updateDoc(callDoc, dataAlert);
+    //         }
+
+    //     } catch (error) {
+
+    //         //因為重新設定警醒時，舊文件會被刪除，所以導致更新文件會顯示錯誤。
+
+    //     }
+
+    // }, (interval+duration) * MINUTE + 2000 );
+}
+
+async function startAlert() {
+    alertSchedulerVersion++;
+    const currentAlertSchedulerVersion = alertSchedulerVersion;
 
     const q1 = query(alertRecords, where('done', '==', false ));
     const snapshot1 = await getDocs(q1);
@@ -507,8 +578,7 @@ export async function setupAlertScheduler() {
     const { alert } = (await getDoc(callDoc)).data();
     const { interval, time: duration } = alert;
 
-    intervalID = setIntervalImmediately(async () => {
-
+    while (true) {
         try {
 
             const { alert } = (await getDoc(callDoc)).data();
@@ -567,7 +637,11 @@ export async function setupAlertScheduler() {
 
         }
 
-    }, (interval+duration) * MINUTE + 1500 );
+        if (currentAlertSchedulerVersion !== alertSchedulerVersion) {
+            console.log('break');
+            break;
+        }
+    }
 }
 
 export function setupAlertListener() {

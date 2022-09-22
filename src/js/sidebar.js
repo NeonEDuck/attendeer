@@ -427,7 +427,7 @@ closeFloatingButton.addEventListener('click', () => {
 
 async function AlertReplace() {
 
-    clearInterval(intervalID);
+    // clearInterval(intervalID);
     setupAlertScheduler();
 
 }
