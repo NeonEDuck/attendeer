@@ -1,7 +1,7 @@
 .calendar {
     height: max-content;
     width: 100%;
-    background-color: var(--bg-main);
+    background-color: var(--color-component-700);
     border-radius: 1.2em;
     padding: 0.5em;
     position: relative;
@@ -10,7 +10,7 @@
 }
 
 .light .calendar {
-    box-shadow: var(--shadow);
+    filter: var(--shadow);
 }
 
 .calendar-header {
@@ -19,7 +19,7 @@
     align-items: center;
     font-size: 1.25em;
     font-weight: 600;
-    color: var(--color-txt);
+    color: var(--text-color);
     padding: 0.25em;
 }
 
@@ -44,7 +44,7 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0em;
-    color: var(--color-txt);
+    color: var(--text-color);
 }
 
 .calendar-days div {

@@ -3,32 +3,32 @@
 }
 
 .flex-justify {
-    justify-content: center;
+    justify-content: center !important;
 }
 
 .flex-justify-start {
-    justify-content: start;
+    justify-content: start !important;
 }
 
 .flex-justify-end {
-    justify-content: end;
+    justify-content: end !important;
 }
 
 .flex-align {
-    align-items: center;
+    align-items: center !important;
 }
 
 .flex-align-start {
-    align-items: flex-start;
+    align-items: flex-start !important;
 }
 
 .flex-align-end {
-    align-items: flex-end;
+    align-items: flex-end !important;
 }
 
 .flex-center {
-    justify-content: center;
-    align-items: center;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
 .flex-wrap {

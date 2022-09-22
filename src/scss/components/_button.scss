@@ -78,10 +78,10 @@ button {
         height: 2em;
         min-width: 6em;
         padding-inline: 1em;
-        background-color: lightgrey;
-        @include content-color(black);
+        background-color: var(--color-component-500);
+        @include content-color(var(--text-color));
         &.btn-on {
-            background-color: white;
+            background-color: var(--color-component-700);
         }
     }
 
@@ -90,10 +90,10 @@ button {
         width: 2em;
         min-height: 6em;
         padding-block: 1em;
-        background-color: lightgrey;
-        @include content-color(black);
+        background-color: var(--color-component-500);
+        @include content-color(var(--text-color));
         &.btn-on {
-            background-color: white;
+            background-color: var(--color-component-700);
         }
     }
 }

@@ -1,11 +1,16 @@
 import { auth } from "./firebase-config.js";
-import { onAuthStateChanged, signOut, GoogleAuthProvider } from "firebase/auth";
+import { onAuthStateChanged, signInWithRedirect, signOut, GoogleAuthProvider } from "firebase/auth";
 
+const body       = document.querySelector('body');
 const profile    = document.querySelector('#navbar-profile');
 const profilePic = document.querySelector('#navbar-profile__picture');
 const loginText  = document.querySelector('#login-text');
 const signInBtn  = document.querySelector('#sign-in');
 const signOutBtn = document.querySelector('#sign-out');
+const modeText   = document.querySelector('#mode-text');
+const modeSwitch = document.querySelector('#mode-switch');
+
+const provider = new GoogleAuthProvider();
 
 if (document.querySelector('#navbar') !== null) {
     onAuthStateChanged(auth, (user) => {
@@ -22,10 +27,9 @@ if (document.querySelector('#navbar') !== null) {
         }
     })
 
-    const provider = new GoogleAuthProvider();
-
     signInBtn.addEventListener('click', async () => {
-        window.location.href = `/login${window.location.pathname}`;
+        // window.location.href = `/login${window.location.pathname}`;
+        signInWithRedirect(auth, provider);
     });
 
     signOutBtn.addEventListener('click', async () => {
@@ -39,6 +43,26 @@ if (document.querySelector('#navbar') !== null) {
         }
         else {
             profile.classList.add('open');
+        }
+    });
+
+    if (localStorage.getItem('color-scheme') === "dark") {
+        modeSwitch.classList.add("open");
+        modeText.innerHTML = "燈光模式";
+    }
+
+    modeSwitch.addEventListener("click", () =>{
+        modeSwitch.classList.toggle("open");
+
+        if (modeSwitch.classList.contains("open")){
+            body.classList.add("dark");
+            localStorage.setItem('color-scheme', 'dark');
+            modeText.innerHTML = "燈光模式";
+        }
+        else{
+            body.classList.remove("dark");
+            localStorage.setItem('color-scheme', 'light');
+            modeText.innerHTML = "黑暗模式";
         }
     });
 }
