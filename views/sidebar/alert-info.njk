@@ -1,12 +1,10 @@
-<div class="alert">
-    <div class = "floating-alert a" id="floating-alert-a">
+
+    <div class = "floating-alert" id="floating-alert">
         <div class="alert-info">
-            <div id="class-modal" >
-                <h1 id="class-modal__title">警醒資訊</h1>
-                
+            <div class="class-modal" >
                 {# 警醒設定畫面 #}
                 <form id="close-modal__form" class="flex flex-column gap-4">
-                    <div class="error-text"></div>
+                    <h1 class="class-modal__title">警醒資訊</h1>
                     <fieldset>
                         <legend>警醒</legend>
                         <div class="field"  id="alertType">
@@ -15,7 +13,6 @@
                         </div>
                         <label for="alert-interval">警醒間隔:</label>
                         <div class="field">
-                            
                             <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
                             <label for="alert-interval">分鐘</label>
                         </div>
@@ -27,9 +24,11 @@
                     </fieldset>
                     <div class="type-info">
                         <fieldset class="fieldset">
-                            
+
                         </fieldset>
                     </div>
+
+                    <div class="error-text"></div>
 
                     <div class="center-btn">
                         <button type="button" id="setting" class="margin-inline-start-auto btn-primary">修改</button>
@@ -41,46 +40,41 @@
                         <button type="button" id="cancel-setting" class="margin-inline-start-auto btn-primary">取消</button>
                     </div>
                 </form>
-
-                {# ---------------------------------------------------------------------------------- #}
-
             </div>
             <div class="alert_icon_buttons" id="alert-exchange">
                 <i class='bx bx-repost'></i>
             </div>
         </div>
         <div class="alert-choose close">
-            <div class="container">
-                <div class="choose_title">
-                    <div class="alert_icon_buttons" id="alert-return">
-                        <i class='bx bx-arrow-back'></i>
-                    </div>
-                    <p>選擇你想要的警醒類型</p>
-                </div>
+            <div class="alert_icon_buttons" id="alert-return">
+                <i class='bx bx-arrow-back'></i>
+            </div>
+            <div class="class-modal">
+                <h1 class="class-modal__title">選擇你想要的警醒類型</h1>
                 <div class="page-content">
                     <div class="card">
-                        <div class="content">
-                        <h2 class="title">點擊警醒按鈕</h2>
+                        <div class="card__content">
+                        <h2 class="title">警醒按鈕</h2>
                         <p class="copy">會議主辦人可設定警醒按鈕顯示之間隔以及按鈕顯示持續時間，當時間到時並顯示警醒按鈕在參加會議者畫面任意處供點擊簽到。</p>
                         <button class="btn" id="choose-1">選擇</button>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="content">
+                        <div class="card__content">
                         <h2 class="title">選擇題警醒</h2>
                         <p class="copy">搭配警醒按鈕，附加選擇題，從一組選項當中，選出一個作為正確的答案，並完成警醒簽到。</p>
                         <button class="btn" id="choose-2">選擇</button>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="content">
+                        <div class="card__content">
                         <h2 class="title">問答題警醒</h2>
                         <p class="copy">搭配警醒按鈕，附加問答題，讓會議者簡述回答問題，並完成警醒簽到。</p>
                         <button class="btn" id="choose-3">選擇</button>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="content">
+                        <div class="card__content">
                         <h2 class="title">投票式警醒</h2>
                         <p class="copy">搭配警醒按鈕，附加投票，典型的手法讓群體經過討論或辯論後，在特定紙張上標示出投票者的立場，並完成警醒簽到。</p>
                         <button class="btn" id="choose-4">選擇</button>
@@ -95,7 +89,7 @@
                 <i class="bx bx-arrow-back"></i>
             </div>
             <div class="container">
-                <header>警醒按鈕設定</header>
+                <h1 class="class-modal__title">警醒按鈕設定</h1>
                 <fieldset>
                     <legend>警醒</legend>
                     <div class="error-text"></div>
@@ -118,7 +112,7 @@
 
         <div class="alert-step-progress multiple-choice-setting close">
             <div class="container">
-                <header>設定選擇題流程</header>
+                <h1 class="class-modal__title">設定選擇題流程</h1>
                 <div class="process-bar">
                     <div class="step">
                         <p>問題</p>
@@ -166,11 +160,11 @@
                             </div>
 
                             <div class="options">
+                                <div class="field add">
+                                    <button class="add_options">新增選項</button>
+                                </div>
                             </div>
                             
-                            <div class="field add">
-                                <button class="add_options">新增選項</button>
-                            </div>
                             <div class="field btns">
                                 <button class="prev-2 prev">上一步</button>
                                 <button class="next-2 next">下一步</button>
@@ -181,7 +175,7 @@
                             <div class="field">
                                 <div class="error-text"></div>
                             </div>
-                            <div class="field">
+                            <div class="field alert">
                                 <label for="alert-interval">警醒間隔:</label>
                                 <div class="field">
                                     <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" min="10" max="50">
@@ -204,21 +198,3 @@
         </div>
 
     </div>
-
-    <div class = "floating-alert b" id="floating-alert-b">
-        <div id="">
-            
-        </div>
-    </div>
-
-    <div class="switch" id="switch-cnt">
-        <div class="switch__circle"></div>
-        <div class="switch__circle switch__circle--t"></div>
-        <div class="switch__container" id="switch-c1">
-            <button class="switch__button button switch-btn">警醒紀錄</button>
-        </div>
-        <div class="switch__container is-hidden" id="switch-c2">
-            <button class="switch__button button switch-btn">警醒資訊</button>
-        </div>
-    </div>
-</div>

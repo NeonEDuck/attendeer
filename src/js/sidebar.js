@@ -12,35 +12,25 @@ const body       = document.querySelector('body'),
       modeText   = body.querySelector(".mode-text");
 
 const fltCntr             = document.querySelector(".floating-container"),
-      floatingAlert       = fltCntr.querySelector('.floating-alert'),
       closeFloatingButton = fltCntr.querySelector('.close-floating_button');
 
 const navBtn  = document.querySelectorAll('.nav-btn');
 
-const classModel         = document.querySelector('#class-modal'),
-      classModelForm     = document.querySelector('#close-modal__form'),
-      classModelTitle    = document.querySelector('#class-modal__title'),
+const classModel         = document.querySelector('.class-modal'),
       alertType          = document.querySelector('.alert-type'),
       alertInterval      = document.querySelectorAll(".alert-interval"),
       alertTime          = document.querySelectorAll(".alert-time"),
       settingBtn         = document.querySelector('#setting'),
       centerBtns         = document.querySelectorAll('.center-btn'),
       submitSettingBtn   = document.querySelector('#submit-setting'),
-      cancelSettingBtn   = document.querySelector('#cancel-setting'),
-      submitForm         = document.querySelector('#submit-form');
+      cancelSettingBtn   = document.querySelector('#cancel-setting');
 
-const switchCtn = document.querySelector('#switch-cnt'),
-      switchC1  = switchCtn.querySelector('#switch-c1'),
-      switchC2  = switchCtn.querySelector('#switch-c2'),
-      switchCircle  = switchCtn.querySelectorAll('.switch__circle'),
-      switchBtn  = switchCtn.querySelectorAll('.switch-btn');
-const floatingAlertA    = document.querySelector('#floating-alert-a'),
+const floatingAlert     = document.querySelector('#floating-alert'),
       alertInfo         = document.querySelector('.alert-info'),
       alertInfoErrorText= alertInfo.querySelector('.error-text'),
       alertChoose       = document.querySelector('.alert-choose'),
-      alertExchange     = floatingAlertA.querySelector('#alert-exchange'),
-      alertReturn       = floatingAlertA.querySelector('#alert-return'),
-      alertStepProgress = document.querySelector('.alert-step-progress'),
+      alertExchange     = floatingAlert.querySelector('#alert-exchange'),
+      alertReturn       = floatingAlert.querySelector('#alert-return'),
       buttonSetting = document.querySelector('.button-setting'),
       btnSettingErrorText = buttonSetting.querySelector('.error-text'),
       alertBtnReturn = document.querySelector('#alert-btn-return'),
@@ -48,21 +38,16 @@ const floatingAlertA    = document.querySelector('#floating-alert-a'),
       multipleChoiceSetting = document.querySelector('.multiple-choice-setting'),
       errorText = multipleChoiceSetting.querySelectorAll('.error-text'),
       container = multipleChoiceSetting.querySelector('.container'),
-      choose1    = floatingAlertA.querySelector('#choose-1'),
-      choose2    = floatingAlertA.querySelector('#choose-2'),
-      choose3    = floatingAlertA.querySelector('#choose-3'),
-      choose4    = floatingAlertA.querySelector('#choose-4');
-const floatingAlertB  = document.querySelector('#floating-alert-b');
+      choose1    = floatingAlert.querySelector('#choose-1'),
+      choose2    = floatingAlert.querySelector('#choose-2');
 
 const slidePage = container.querySelector(".slidepage");
-let page2 = container.querySelector(".page-2");
 const options = container.querySelector(".options");
-let option = container.querySelectorAll(".option");
 const prev1 = container.querySelector(".prev-1");
 const next1 = container.querySelector(".next-1");
 const addBtn = container.querySelector(".add_options");
+const fieldAdd = container.querySelector(".add");
 let bxX = container.querySelectorAll(".bx-x");
-let divNo = container.querySelectorAll(".div_no");
 const prev2 = container.querySelector(".prev-2");
 const next2 = container.querySelector(".next-2");
 const prev3 = container.querySelector(".prev-3");
@@ -73,7 +58,6 @@ const bullet = container.querySelectorAll(".step .bullet");
 const qstText = container.querySelector(".qst_text");
 
 // Global variable
-let max = 3;
 let current = 0;
 let optionsTotal = 0;
 let globalInterval;
@@ -83,7 +67,6 @@ let globalmultipleChoice;
 let answearID;
 let question, answear;
 export let dataMultipleChoice = {}; 
-let action;
 let localUserId = null;
 
 // Firestore
@@ -103,7 +86,7 @@ function addOptions(){
     optionsTotal += 1;
     const div = document.createElement('div');
     div.classList.add("field", "option");
-    options.appendChild(div);
+    options.insertBefore(div,fieldAdd);
     const divNo = document.createElement('div');
     divNo.classList.add("div_no");
     div.appendChild(divNo);
@@ -389,12 +372,8 @@ closeFloatingButton.addEventListener('click', () => {
         item.className = "nav-btn";
     });
 
-    floatingAlertA.className = "";
-    floatingAlertA.classList.add("floating-alert","a");
-    floatingAlertB.className = "";
-    floatingAlertB.classList.add("floating-alert","b");
-    switchCtn.className = "";
-    switchCtn.classList.add("switch");
+    floatingAlert.className = "";
+    floatingAlert.classList.add("floating-alert","a");
 
     alertInfo.className = "";
     alertInfo.classList.add("alert-info");
@@ -458,9 +437,7 @@ export function sidebarListener() {
         item.addEventListener("click",async (e) => {
             Array.from(navBtn).forEach((item) => {
                 item.className = "nav-btn";
-                floatingAlertA.style.opacity = 0;
-                floatingAlertB.style.opacity = 0;
-                switchCtn.style.opacity = 0;
+                floatingAlert.style.opacity = 0;
             });
             navBtn[index].classList.toggle("open");
 
@@ -745,31 +722,6 @@ toggle.addEventListener("click", () =>{
     sidebar.classList.toggle("close");
 });
 
-let changeForm = (e) => {
-    switchCtn.classList.add('is-gx');
-    setTimeout(function () {
-      switchCtn.classList.remove('is-gx');
-    }, 1500);
-  
-    switchCtn.classList.toggle('is-txr');
-    switchCircle[0].classList.toggle('is-txr');
-    switchCircle[1].classList.toggle('is-txr');
-  
-    switchC1.classList.toggle('is-hidden');
-    switchC2.classList.toggle('is-hidden');
-    floatingAlertA.classList.toggle('is-txl');
-    floatingAlertB.classList.toggle('is-txl');
-    floatingAlertB.classList.toggle('is-z200');
-
-    closeModalForm();
-};
-  
-let mainF = (e) => {
-    for (let i = 0; i < switchBtn.length; i++) switchBtn[i].addEventListener('click', changeForm);
-};
-  
-window.addEventListener('load', mainF);
-
 async function closeModalForm() {
 
     alertInfoErrorText.innerHTML = '';
@@ -793,10 +745,7 @@ async function closeModalForm() {
     globalTime = duration;
     globalTpye = type;
 
-    floatingAlertA.style.opacity = 1;
-    floatingAlertB.style.opacity = 1;
-    switchCtn.style.opacity = 1;
-    classModelTitle.innerHTML = '警醒資訊';
+    floatingAlert.style.opacity = 1;
                     
     alertType.innerHTML = type;
     alertInterval[0].value = interval;
@@ -809,8 +758,6 @@ async function closeModalForm() {
         }
     }else if(type === 'multiple choice') {
 
-        // globalAnswear = answear;
-        // globalQuestion = question;
         globalmultipleChoice = multipleChoice;
 
         const typeInfo = document.querySelector('.type-info');
