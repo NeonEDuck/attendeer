@@ -1,6 +1,5 @@
 import { onSnapshot, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { firestore } from "./firebase-config.js";
-import './base.js'
 import { prefab } from './prefab.js'
 import { ClassModal } from './classModel.js';
 import { generateCallId, getUser } from './util.js';

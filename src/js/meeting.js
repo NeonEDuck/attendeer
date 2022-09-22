@@ -17,7 +17,7 @@ const myMsgPrefab  = prefab.querySelector('.my-msg');
 
 const sidebarRight = document.querySelector(".sidebar-right");
 const icons  = document.querySelectorAll('.ico');
-const camMenu  = document.querySelector('#cam__menu');
+// const camMenu  = document.querySelector('#cam__menu');
 
 const micBtn         = document.querySelector('#mic-btn');
 const webcamBtn      = document.querySelector('#webcam-btn');
@@ -178,8 +178,6 @@ screenShareBtn.addEventListener('click', async () => {
 })
 
 enterBtn.addEventListener('click', async () => {
-    body.classList.toggle("dark");
-
     console.log(`join call: ${callId} as ${localUserId}`);
     socket.emit('join-call', callId, localUserId);
 
@@ -368,7 +366,7 @@ enterBtn.addEventListener('click', async () => {
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
 
-    document.getElementById("cam__menu").classList.remove('close');
+    // document.getElementById("cam__menu").classList.remove('close');
 
     sidebarListener();
 
