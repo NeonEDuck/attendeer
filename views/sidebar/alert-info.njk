@@ -197,4 +197,43 @@
             </div>
         </div>
 
+        <div class="alert-step-progress essay-question close">
+
+            <div class="alert_icon_buttons" id="alert-essay-question-return">
+                <i class="bx bx-arrow-back"></i>
+            </div>
+
+            <div class="container">
+                <h1 class="class-modal__title">設定問答題</h1>
+
+                <div class="error-text"></div>
+
+                <fieldset>
+                    <legend>問答題</legend>
+                    <label for="alert-interval">Question:</label>
+
+                    <div class="field">
+                        <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>警醒</legend>
+                    <label for="alert-interval">警醒間隔:</label>
+                    <div class="field">
+                        <input id="essay-question__alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                        <label for="alert-interval">分鐘</label>
+                    </div>
+                    <label for="alert-time">警醒持續時間:</label>
+                    <div class="field">
+                        <input id="essay-question__alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                        <label for="alert-time">分鐘</label>
+                    </div>
+                </fieldset>
+                <div class="center-btn">
+                    <button type="button" id="essay-question-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
+                </div>
+            </div>
+        </div>
+
     </div>

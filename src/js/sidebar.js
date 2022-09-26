@@ -7,16 +7,17 @@ import { setupAlertScheduler, setupAlertListener, intervalID, alertDocCurrently 
 // HTML elements
 const body       = document.querySelector('body'),
       sidebar    = body.querySelector(".sidebar"),
-      toggle     = body.querySelector(".toggle"),
-      modeSwitch = body.querySelector(".toggle-switch"),
-      modeText   = body.querySelector(".mode-text");
+      toggle     = sidebar.querySelector(".toggle"),
+      modeSwitch = sidebar.querySelector(".toggle-switch"),
+      modeText   = sidebar.querySelector(".mode-text"),
+      navBtn     = sidebar.querySelectorAll('.nav-btn');
 
 const fltCntr             = document.querySelector(".floating-container"),
       closeFloatingButton = fltCntr.querySelector('.close-floating_button');
 
-const navBtn  = document.querySelectorAll('.nav-btn');
-
-const classModel         = document.querySelector('.class-modal'),
+const floatingAlert      = fltCntr.querySelector('#floating-alert'),
+      alertInfo          = floatingAlert.querySelector('.alert-info'),
+      classModel         = alertInfo.querySelector('.class-modal'),
       alertType          = document.querySelector('.alert-type'),
       alertInterval      = document.querySelectorAll(".alert-interval"),
       alertTime          = document.querySelectorAll(".alert-time"),
@@ -25,37 +26,41 @@ const classModel         = document.querySelector('.class-modal'),
       submitSettingBtn   = document.querySelector('#submit-setting'),
       cancelSettingBtn   = document.querySelector('#cancel-setting');
 
-const floatingAlert     = document.querySelector('#floating-alert'),
-      alertInfo         = document.querySelector('.alert-info'),
-      alertInfoErrorText= alertInfo.querySelector('.error-text'),
+const alertInfoErrorText= alertInfo.querySelector('.error-text'),
       alertChoose       = document.querySelector('.alert-choose'),
       alertExchange     = floatingAlert.querySelector('#alert-exchange'),
-      alertReturn       = floatingAlert.querySelector('#alert-return'),
-      buttonSetting = document.querySelector('.button-setting'),
-      btnSettingErrorText = buttonSetting.querySelector('.error-text'),
-      alertBtnReturn = document.querySelector('#alert-btn-return'),
+      alertReturn              = floatingAlert.querySelector('#alert-return'),
+      alertBtnReturn           = floatingAlert.querySelector('#alert-btn-return'),
+      alertEssayQuestionReturn = floatingAlert.querySelector('#alert-essay-question-return'),
       alertBtnFinish = document.querySelector('#alert-btn-finish'),
+      alertStepProgress = document.querySelectorAll('.alert-step-progress'),
+      buttonSetting = document.querySelector('.button-setting'),
       multipleChoiceSetting = document.querySelector('.multiple-choice-setting'),
-      errorText = multipleChoiceSetting.querySelectorAll('.error-text'),
-      container = multipleChoiceSetting.querySelector('.container'),
+      essayQuestion = document.querySelector('.essay-question'),
+      essayQuestionFinish = essayQuestion.querySelector('#essay-question-finish'),
+      btnSettingErrorText = buttonSetting.querySelector('.error-text'),
+      errorText = alertStepProgress[1].querySelectorAll('.error-text'),
+      container = floatingAlert.querySelectorAll('.container'),
       choose1    = floatingAlert.querySelector('#choose-1'),
-      choose2    = floatingAlert.querySelector('#choose-2');
+      choose2    = floatingAlert.querySelector('#choose-2'),
+      choose3    = floatingAlert.querySelector('#choose-3');
 
-const slidePage = container.querySelector(".slidepage");
-const options = container.querySelector(".options");
-const prev1 = container.querySelector(".prev-1");
-const next1 = container.querySelector(".next-1");
-const addBtn = container.querySelector(".add_options");
-const fieldAdd = container.querySelector(".add");
-let bxX = container.querySelectorAll(".bx-x");
-const prev2 = container.querySelector(".prev-2");
-const next2 = container.querySelector(".next-2");
-const prev3 = container.querySelector(".prev-3");
-const next3 = container.querySelector(".next-3");
-const progressText = container.querySelectorAll(".step p");
-const progressCheck = container.querySelectorAll(".step .check");
-const bullet = container.querySelectorAll(".step .bullet");
-const qstText = container.querySelector(".qst_text");
+const slidePage = container[1].querySelector(".slidepage");
+const options = container[1].querySelector(".options");
+const prev1 = container[1].querySelector(".prev-1");
+const next1 = container[1].querySelector(".next-1");
+const addBtn = container[1].querySelector(".add_options");
+const fieldAdd = container[1].querySelector(".add");
+let bxX = container[1].querySelectorAll(".bx-x");
+const prev2 = container[1].querySelector(".prev-2");
+const next2 = container[1].querySelector(".next-2");
+const prev3 = container[1].querySelector(".prev-3");
+const next3 = container[1].querySelector(".next-3");
+const progressText = container[1].querySelectorAll(".step p");
+const progressCheck = container[1].querySelectorAll(".step .check");
+const bullet = container[1].querySelectorAll(".step .bullet");
+const qstText = container[1].querySelectorAll(".qst_text");
+const qstText3 = container[2].querySelector(".qst_text");
 
 // Global variable
 let current = 0;
@@ -103,8 +108,8 @@ function addOptions(){
     icon.addEventListener('click', () => {
         div.remove();
         optionsTotal -= 1;
-        bxX = container.querySelectorAll(".bx-x");
-        let spansNo = container.querySelectorAll(".span_no");
+        bxX = container[1].querySelectorAll(".bx-x");
+        let spansNo = container[1].querySelectorAll(".span_no");
         let x = 0;
         Array.from(bxX).forEach((item) => {
             spansNo[x].innerHTML = x+1;
@@ -119,14 +124,14 @@ function addOptions(){
         });
     });
     divNo.addEventListener('click', () => {
-        let no = container.querySelectorAll(".div_no");
+        let no = container[1].querySelectorAll(".div_no");
         Array.from(no).forEach((item) => {
             item.classList.remove("answear-chosen");
         });
         divNo.classList.toggle("answear-chosen");
     });
-    bxX = container.querySelectorAll(".bx-x");
-    let spansNo = container.querySelectorAll(".span_no");
+    bxX = container[1].querySelectorAll(".bx-x");
+    let spansNo = container[1].querySelectorAll(".span_no");
     let x = 0;
     Array.from(bxX).forEach((item) => {
         spansNo[x].innerHTML = x+1;
@@ -148,6 +153,15 @@ alertBtnReturn.addEventListener('click', () => {
 
     const errorText = buttonSetting.querySelector('.error-text');
     errorText.innerHTML = '';
+});
+
+alertEssayQuestionReturn.addEventListener('click', () => {
+    essayQuestion.classList.toggle("close");
+    alertChoose.classList.remove("close");
+
+    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
+    essayQuestionErrorText.innerHTML = '';
+    qstText3.value = '';
 });
 
 prev1.addEventListener('click', () => {
@@ -173,7 +187,7 @@ prev3.addEventListener('click', () => {
     current -= 1;
 });
 next1.addEventListener('click', () => {
-    if(qstText.value != ''){
+    if(qstText[0].value != ''){
         slidePage.style.marginLeft = "-25%";
         bullet[current].classList.add("active");
         progressText[current].classList.add("active");
@@ -185,9 +199,11 @@ next1.addEventListener('click', () => {
     }else {
         errorText[0].innerHTML = '禁止輸入空字串！';
     }
+
+    
 });
 next2.addEventListener('click', () => {
-    let optionInput = container.querySelectorAll('.option_input');
+    let optionInput = container[1].querySelectorAll('.option_input');
     let x = 0;
     for(let i = 0; i < optionInput.length; i++){
         if(optionInput[i].value != ''){
@@ -195,7 +211,7 @@ next2.addEventListener('click', () => {
         }
     }
 
-    const answearChosen = container.querySelector(".answear-chosen");
+    const answearChosen = container[1].querySelector(".answear-chosen");
 
     if(answearChosen != null) {
         answear = answearChosen.children[0].innerHTML;
@@ -260,7 +276,7 @@ next3.addEventListener('click', async () => {
 
     const alertInterval = document.querySelectorAll(".alert-interval");
     const alertTime     = document.querySelectorAll(".alert-time");
-    question = qstText.value;
+    question = qstText[0].value;
     const interval = Number(alertInterval[2].value);
     const time     = Number(alertTime[2].value);
     const alertType = 'multiple choice';
@@ -268,7 +284,7 @@ next3.addEventListener('click', async () => {
     if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
         answearID = answear;
 
-        const optionInput = container.querySelectorAll(".option_input");
+        const optionInput = container[1].querySelectorAll(".option_input");
         let multipleChoiceDict = {};
 
         for(let i=0; i < optionInput.length; i++){
@@ -303,11 +319,11 @@ next3.addEventListener('click', async () => {
         progressText[current - 1 ].classList.remove("active");
         progressCheck[current - 1 ].classList.remove("active");
         current -= 1;
-        qstText.value = "";
+        qstText[0].value = "";
         for(let i=0; i < optionInput.length; i++){
             optionInput[i].value = "";
         }
-        container.querySelector(".answear-chosen").classList.remove("answear-chosen");
+        container[1].querySelector(".answear-chosen").classList.remove("answear-chosen");
 
         alertInfo.classList.remove("close");
         alertChoose.classList.toggle("close");
@@ -354,6 +370,13 @@ choose2.addEventListener('click', () => {
     alertTime[2].value     = globalTime;
 });
 
+choose3.addEventListener('click', () => {
+    essayQuestion.classList.remove("close");
+    alertChoose.classList.toggle("close");
+    alertInterval[3].value = globalInterval;
+    alertTime[3].value     = globalTime;
+});
+
 alertExchange.addEventListener('click', () => {
     alertInfo.classList.toggle("close");
     alertChoose.classList.remove("close");
@@ -383,7 +406,8 @@ closeFloatingButton.addEventListener('click', () => {
     buttonSetting.classList.add("alert-step-progress","button-setting","close");
     multipleChoiceSetting.className = "";
     multipleChoiceSetting.classList.add("alert-step-progress","multiple-choice-setting","close");
-
+    essayQuestion.className = "";
+    essayQuestion.classList.add("alert-step-progress","essay-question","close");
     slidePage.style.marginLeft = "0%";
     let progressLength = current;
     for (let i = 0; i < progressLength; i++) {
@@ -393,14 +417,14 @@ closeFloatingButton.addEventListener('click', () => {
         current -= 1;
     }
 
-    qstText.value = "";
-    const optionInput = container.querySelectorAll(".option_input");
+    qstText[0].value = "";
+    const optionInput = container[1].querySelectorAll(".option_input");
     for(let i=0; i < optionInput.length; i++){
         optionInput[i].value = "";
     }
 
-    if( container.querySelector(".answear-chosen") != null ) {
-        container.querySelector(".answear-chosen").classList.remove("answear-chosen");
+    if( container[1].querySelector(".answear-chosen") != null ) {
+        container[1].querySelector(".answear-chosen").classList.remove("answear-chosen");
     }
 
     const option = multipleChoiceSetting.querySelectorAll('.option');
@@ -609,6 +633,8 @@ settingBtn.addEventListener('click', async () => {
         if(optionsTotal >= 5){
             button.style.display = "none";
         }
+    }else if( globalTpye === 'essay question' ) {
+        textarea.removeAttribute('readonly');
     }
 
 
@@ -677,6 +703,18 @@ submitSettingBtn.addEventListener('click', async () => {
             }
 
 
+        }else if(alertType === 'essay question') {
+            const infoTextarea = classModel.querySelector(".info-textarea");
+            if(infoTextarea.value === '') {
+                alertInfoErrorText.innerHTML = '問題禁止為空字串';
+                return;
+            }else {
+                question = infoTextarea.value;
+
+                dataMultipleChoice = {
+                    question: question,
+                }
+            }
         }
 
         alertInterval.classList.remove('Revise');
@@ -706,6 +744,55 @@ submitSettingBtn.addEventListener('click', async () => {
 
         AlertReplace();
     }
+});
+
+essayQuestionFinish.addEventListener("click", async () =>{
+
+    const alertInterval = essayQuestion.querySelector("#essay-question__alert-interval");
+    const alertTime     = essayQuestion.querySelector("#essay-question__alert-time");
+    const interval = Number(alertInterval.value);
+    const time     = Number(alertTime.value);
+    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
+    if( qstText3.value === '' ) {
+        essayQuestionErrorText.innerHTML = '問題禁止為空字串';
+        return;
+    }else if( interval < 10 || interval > 50 ) {
+        essayQuestionErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+        return;
+    }else if( time < 1 || time > 3) {
+        essayQuestionErrorText.innerHTML = '持續時間範圍：1 ~ 3';
+        return;
+    }
+    question = qstText3.value;
+    const alertType = 'essay question';
+
+    dataMultipleChoice = {
+        question: question,
+    }
+
+    let dataAlert = {
+        alert: {
+            interval: interval,
+            time: time,
+            alertType: alertType,
+        },
+    }
+    const callDoc = doc(calls, callId);
+    await updateDoc(callDoc, dataAlert);
+
+    alertInfo.classList.remove("close");
+    alertChoose.classList.toggle("close");
+    fltCntr.classList.remove("show");
+    essayQuestion.classList.toggle("close");
+    alertChoose.classList.toggle("close");
+    Array.from(navBtn).forEach((item) => {
+        item.className = "nav-btn";
+    });
+
+    essayQuestionErrorText.innerHTML = '';
+    qstText3.value = '';
+
+    AlertReplace();
 });
 
 if (body.classList.contains("dark")) {
@@ -761,12 +848,12 @@ async function closeModalForm() {
     alertInterval[0].value = interval;
     alertTime[0].value     = duration;
 
-    if(type === 'click') {
-        const fieldset = document.querySelector('.fieldset');
-        if(fieldset != null){
-            fieldset.remove();
-        }
-    }else if(type === 'multiple choice') {
+    const fieldset = document.querySelector('.fieldset');
+    if(fieldset != null){
+        fieldset.remove();
+    }
+
+    if(type === 'multiple choice') {
 
         globalmultipleChoice = multipleChoice;
 
@@ -810,6 +897,22 @@ async function closeModalForm() {
                 span.classList.toggle('answear');
             }
         }
+    }else if(type === 'essay question') {
+        const typeInfo = document.querySelector('.type-info');
+        const fieldset2 = document.createElement('fieldset');
+        fieldset2.classList.add("fieldset");
+        typeInfo.appendChild(fieldset2);
+        const legend = document.createElement('legend');
+        legend.innerHTML = '問答題';
+        fieldset2.appendChild(legend);
+        const label = document.createElement('label');
+        label.innerHTML = '問題:';
+        fieldset2.appendChild(label);
+        const textarea = document.createElement('textarea');
+        textarea.classList.add("info-textarea");
+        textarea.setAttribute("readonly", "readonly");
+        textarea.innerHTML = question;
+        fieldset2.appendChild(textarea);
     }
 
 }

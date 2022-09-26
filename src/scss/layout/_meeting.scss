@@ -502,6 +502,7 @@ body.dark {
                             .type-info {
                                 .fieldset {
                                     display: flex;
+                                    width: 25em;
                                     justify-content: flex-start;
                                     gap: 0.1em;
                                     color: var(--text-color);
@@ -520,6 +521,7 @@ body.dark {
                                     }
                                     textarea {
                                         width: 100%;
+                                        height: 5em;
                                         font-size: 20px;
                                         color: var(--text-color);
                                         border: none;
@@ -768,10 +770,7 @@ body.dark {
                     header {
                         color: var(--text-color);
                     }
-
-                    .title {
-                        color: var(--text-color);
-                    }     
+  
                     .alert_icon_buttons {
                         width: 3.5rem;
                         height: 3.5rem;
@@ -1038,6 +1037,26 @@ body.dark {
                         }
                     }
                     
+                }
+
+                .essay-question {
+                    &.close {
+                        opacity: 0;
+                        display: none;
+                    }
+
+                    .qst_text {
+                        width: 100%;
+                        height: 100%;
+                        font-size: 30px;
+                        color: var(--text-color);
+                        border: none;
+                        outline: none;
+                        font-family: "Montserrat", "sans-serif";
+                        transition: 0.25s ease;
+                        border-radius: 8px;
+                        resize: none;
+                    }
                 }
             }
         }

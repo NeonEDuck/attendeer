@@ -575,9 +575,6 @@ async function startAlert() {
         await updateDoc(alertDoc, {outdated: true});
     });
 
-    const { alert } = (await getDoc(callDoc)).data();
-    const { interval, time: duration } = alert;
-
     while (true) {
         try {
 
@@ -596,7 +593,7 @@ async function startAlert() {
                 outdated: false,
             };
 
-            if(alertType === 'multiple choice') {
+            if(alertType === 'multiple choice' || alertType === 'essay question') {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
@@ -702,6 +699,15 @@ export function setupAlertListener() {
                                     span.classList.toggle("chosen");
                                 });
                             }
+                        }else if(alertType === 'essay question') {
+                            const textarea = document.createElement('textarea');
+                            textarea.setAttribute("readonly", "readonly");
+                            textarea.classList.add('qst_show')
+                            textarea.innerHTML = question;
+                            alertShow.appendChild(textarea);
+                            const textarea1 = document.createElement('textarea');
+                            textarea1.classList.add('qst_show_answear')
+                            alertShow.appendChild(textarea1);
                         }
 
                         const alertBtnDiv = document.createElement('div');
@@ -727,6 +733,7 @@ export function setupAlertListener() {
                                 const participants = collection(alertDoc, 'participants');
                                 const userDoc      = doc(participants, localUserId);
                                 const answearChosen = document.querySelector(".chosen");
+                                const qstShowAnswear = document.querySelector(".qst_show_answear");
 
                                 if(alertType === 'click') {
                                     const data = {
@@ -750,6 +757,26 @@ export function setupAlertListener() {
                                         const data = {
                                             click: true,
                                             answear: answearChosen.innerHTML,
+                                            timestamp: new Date(),
+                                        }
+                                        await updateDoc(userDoc, data);
+                                        alertBtnTime.hidden = true;
+                                        alertBtnText.innerHTML = '簽到完成';
+                                        alertBtn.classList.add('active');
+
+                                        await delay(1000);
+                                        alertBtn.hidden = true;
+                                        alertBtnTime.hidden = false;
+                                        alertBtnText.innerHTML = '警醒按鈕';
+                                        alertBtn.classList.remove('active');
+
+                                        alertModule.hidden = true;
+                                    }
+                                }else if(alertType === 'essay question') {
+                                    if(qstShowAnswear.value != null) {
+                                        const data = {
+                                            click: true,
+                                            answear: qstShowAnswear.value,
                                             timestamp: new Date(),
                                         }
                                         await updateDoc(userDoc, data);
@@ -867,7 +894,13 @@ async function addMessageToChat(msgData) {
             const msgText = msg.querySelector('.msg__text');
             const myMsgDate = msg.querySelector('.msg__date');
             myMsgDate.attributes[1].value = YMDhm;
-            msgUser.innerHTML = name;
+            const { host } = ( await getDoc(callDoc)).data();
+            if ( user === host ) {
+                msgUser.innerHTML = name + '老師';
+                msgUser.classList.add('host');
+            }else {
+                msgUser.innerHTML = '匿名者';
+            }
             msgTime.innerHTML = hh + ":" + mm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
