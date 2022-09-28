@@ -12,39 +12,44 @@ const body       = document.querySelector('body'),
       modeText   = sidebar.querySelector(".mode-text"),
       navBtn     = sidebar.querySelectorAll('.nav-btn');
 
-const fltCntr             = document.querySelector(".floating-container"),
+const fltCntr             = body.querySelector(".floating-container"),
       closeFloatingButton = fltCntr.querySelector('.close-floating_button');
 
 const floatingAlert      = fltCntr.querySelector('#floating-alert'),
       alertInfo          = floatingAlert.querySelector('.alert-info'),
       classModel         = alertInfo.querySelector('.class-modal'),
-      alertType          = document.querySelector('.alert-type'),
-      alertInterval      = document.querySelectorAll(".alert-interval"),
-      alertTime          = document.querySelectorAll(".alert-time"),
-      settingBtn         = document.querySelector('#setting'),
-      centerBtns         = document.querySelectorAll('.center-btn'),
-      submitSettingBtn   = document.querySelector('#submit-setting'),
-      cancelSettingBtn   = document.querySelector('#cancel-setting');
+      alertType          = alertInfo.querySelector('.alert-type'),
+      alertInterval      = floatingAlert.querySelectorAll(".alert-interval"),
+      alertTime          = floatingAlert.querySelectorAll(".alert-time"),
+      centerBtns         = floatingAlert.querySelectorAll('.center-btn'),
+      settingBtn         = classModel.querySelector('#setting'),
+      submitSettingBtn   = classModel.querySelector('#submit-setting'),
+      cancelSettingBtn   = classModel.querySelector('#cancel-setting');
 
 const alertInfoErrorText= alertInfo.querySelector('.error-text'),
-      alertChoose       = document.querySelector('.alert-choose'),
+      alertChoose       = floatingAlert.querySelector('.alert-choose'),
       alertExchange     = floatingAlert.querySelector('#alert-exchange'),
       alertReturn              = floatingAlert.querySelector('#alert-return'),
       alertBtnReturn           = floatingAlert.querySelector('#alert-btn-return'),
       alertEssayQuestionReturn = floatingAlert.querySelector('#alert-essay-question-return'),
-      alertBtnFinish = document.querySelector('#alert-btn-finish'),
-      alertStepProgress = document.querySelectorAll('.alert-step-progress'),
-      buttonSetting = document.querySelector('.button-setting'),
-      multipleChoiceSetting = document.querySelector('.multiple-choice-setting'),
-      essayQuestion = document.querySelector('.essay-question'),
+      voteSettingReturn = floatingAlert.querySelector('#vote-setting-return'),
+      alertStepProgress = floatingAlert.querySelectorAll('.alert-step-progress'),
+      buttonSetting = floatingAlert.querySelector('.button-setting'),
+      multipleChoiceSetting = floatingAlert.querySelector('.multiple-choice-setting'),
+      essayQuestion = floatingAlert.querySelector('.essay-question'),
+      voteSetting = floatingAlert.querySelector('.vote-setting'),
+      alertBtnFinish = buttonSetting.querySelector('#alert-btn-finish'),
       essayQuestionFinish = essayQuestion.querySelector('#essay-question-finish'),
+      voteSettingFinish = voteSetting.querySelector('#vote-setting-finish'),
       btnSettingErrorText = buttonSetting.querySelector('.error-text'),
       errorText = alertStepProgress[1].querySelectorAll('.error-text'),
       container = floatingAlert.querySelectorAll('.container'),
       choose1    = floatingAlert.querySelector('#choose-1'),
       choose2    = floatingAlert.querySelector('#choose-2'),
-      choose3    = floatingAlert.querySelector('#choose-3');
+      choose3    = floatingAlert.querySelector('#choose-3'),
+      choose4    = floatingAlert.querySelector('#choose-4');
 
+//multiple choice
 const slidePage = container[1].querySelector(".slidepage");
 const options = container[1].querySelector(".options");
 const prev1 = container[1].querySelector(".prev-1");
@@ -60,7 +65,13 @@ const progressText = container[1].querySelectorAll(".step p");
 const progressCheck = container[1].querySelectorAll(".step .check");
 const bullet = container[1].querySelectorAll(".step .bullet");
 const qstText = container[1].querySelectorAll(".qst_text");
+
+//essay-question
 const qstText3 = container[2].querySelector(".qst_text");
+
+//vote-settig
+const optionSelected = container[3].querySelector("#option-selected");
+
 
 // Global variable
 let current = 0;
@@ -78,6 +89,29 @@ let localUserId = null;
 const calls = collection(firestore, 'calls');
 const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 const callDoc = doc(calls, callId);
+
+optionSelected.addEventListener("change",Selected);
+
+function Selected(event){
+    console.log(event.target.value);
+
+    const fieldOptions = container[3].querySelector(".options");
+    const optionInput = fieldOptions.querySelectorAll(".option_input");
+
+    optionInput.forEach( optionInput => {
+        optionInput.remove();
+    })
+
+    if(event.target.value != '') {
+
+        for(let i = 0; i < parseInt(event.target.value); i++) {
+            const input = document.createElement('input');
+            input.setAttribute("type", "text");
+            input.classList.add("option_input");
+            fieldOptions.appendChild(input);
+        }
+    }
+}
 
 for(let i = 0; i < 2; i++){
     addOptions();
@@ -162,6 +196,23 @@ alertEssayQuestionReturn.addEventListener('click', () => {
     const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
     essayQuestionErrorText.innerHTML = '';
     qstText3.value = '';
+});
+
+voteSettingReturn.addEventListener('click', () => {
+    voteSetting.classList.toggle("close");
+    alertChoose.classList.remove("close");
+
+    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
+    voteSettingErrorText.innerHTML = '';
+    
+    const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
+    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
+
+    voteQst.value = '';
+    optionSelected.value = '';
+    optionInput.forEach( optionInput => {
+        optionInput.remove();
+    })
 });
 
 prev1.addEventListener('click', () => {
@@ -377,6 +428,13 @@ choose3.addEventListener('click', () => {
     alertTime[3].value     = globalTime;
 });
 
+choose4.addEventListener('click', () => {
+    voteSetting.classList.remove("close");
+    alertChoose.classList.toggle("close");
+    alertInterval[4].value = globalInterval;
+    alertTime[4].value     = globalTime;
+});
+
 alertExchange.addEventListener('click', () => {
     alertInfo.classList.toggle("close");
     alertChoose.classList.remove("close");
@@ -397,7 +455,6 @@ closeFloatingButton.addEventListener('click', () => {
 
     floatingAlert.className = "";
     floatingAlert.classList.add("floating-alert","a");
-
     alertInfo.className = "";
     alertInfo.classList.add("alert-info");
     alertChoose.className = "";
@@ -408,6 +465,8 @@ closeFloatingButton.addEventListener('click', () => {
     multipleChoiceSetting.classList.add("alert-step-progress","multiple-choice-setting","close");
     essayQuestion.className = "";
     essayQuestion.classList.add("alert-step-progress","essay-question","close");
+    voteSetting.className = "";
+    voteSetting.classList.add("alert-step-progress","vote-setting","close");
     slidePage.style.marginLeft = "0%";
     let progressLength = current;
     for (let i = 0; i < progressLength; i++) {
@@ -443,10 +502,25 @@ closeFloatingButton.addEventListener('click', () => {
     errorText.forEach(errorText => {
         errorText.innerHTML = '';
     })
+    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
+    essayQuestionErrorText.innerHTML = '';
+    qstText3.value = '';
 
     btnSettingErrorText.innerHTML = '';
 
     alertInfoErrorText.innerHTML = '';
+
+    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
+    voteSettingErrorText.innerHTML = '';
+    
+    const voteOptionInput = alertStepProgress[3].querySelectorAll(".option_input");
+    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
+
+    voteQst.value = '';
+    optionSelected.value = '';
+    voteOptionInput.forEach( optionInput => {
+        optionInput.remove();
+    })
 });
 
 async function AlertReplace() {
@@ -635,10 +709,53 @@ settingBtn.addEventListener('click', async () => {
         }
     }else if( globalTpye === 'essay question' ) {
         textarea.removeAttribute('readonly');
+    }else if( globalTpye === 'vote' ) {
+        textarea.removeAttribute('readonly');
+        let i = 0;
+        input.forEach(input => {
+            input.removeAttribute('readonly');
+            i++;
+        });
+        const selectOptions = classModel.querySelector('.select');
+        const select = document.createElement('select');
+        select.setAttribute('id','option-selected');
+        selectOptions.appendChild(select);
+        let id = new Array(2,3,4);
+        let value = new Array('2','3','4');
+        select.length = 1;
+        for( let x = 0; x < id.length ; x++ ) {
+            let option = document.createElement('option');
+            option.setAttribute('value',id[x]);
+            option.appendChild(document.createTextNode(value[x]));
+            select.appendChild(option);
+        }
+        select.options[i - 1].selected = true;
+
+        select.addEventListener("change",alertInfoSelected);
     }
 
 
 });
+
+function alertInfoSelected(event){
+    console.log(event.target.value);
+
+    const fieldOptions = classModel.querySelector(".voteOptions");
+    const optionInput = fieldOptions.querySelectorAll(".option_Input");
+
+    optionInput.forEach( optionInput => {
+        optionInput.remove();
+    })
+
+    if(event.target.value != '') {
+        for(let i = 0; i < parseInt(event.target.value); i++) {
+            const input = document.createElement('input');
+            input.setAttribute("type", "text");
+            input.classList.add("option_Input");
+            fieldOptions.appendChild(input);
+        }
+    }
+}
 
 cancelSettingBtn.addEventListener('click', async () => {
 
@@ -654,6 +771,10 @@ submitSettingBtn.addEventListener('click', async () => {
     const time     = Number(alertTime.value);
     const alertType = globalTpye;
 
+    const infoTextarea = classModel.querySelector(".info-textarea");
+    const spanNoAnswear = classModel.querySelector(".answear");
+    const optionInput = classModel.querySelectorAll(".option_Input");
+
     if( interval < 10 || interval > 50 ) {
         alertInfoErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
     }else if( time < 1 || time > 3) {
@@ -661,10 +782,6 @@ submitSettingBtn.addEventListener('click', async () => {
     }else {
 
         if (alertType === 'multiple choice') {
-
-            const infoTextarea = classModel.querySelector(".info-textarea");
-            const spanNoAnswear = classModel.querySelector(".answear");
-            const optionInput = classModel.querySelectorAll(".option_Input");
 
             let x = 0;
             for(let i = 0; i < optionInput.length; i++){
@@ -704,7 +821,7 @@ submitSettingBtn.addEventListener('click', async () => {
 
 
         }else if(alertType === 'essay question') {
-            const infoTextarea = classModel.querySelector(".info-textarea");
+        
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
@@ -714,6 +831,41 @@ submitSettingBtn.addEventListener('click', async () => {
                 dataMultipleChoice = {
                     question: question,
                 }
+            }
+        }else if(alertType === 'vote') {
+            const optionSelected = classModel.querySelector("#option-selected");
+            if(infoTextarea.value === '') {
+                alertInfoErrorText.innerHTML = '問題禁止為空字串';
+                return;
+            }else if( optionSelected.value === '' ){
+                alertInfoErrorText.innerHTML = '請選擇投票選項數量';
+                return;
+            }
+            const optionInput = classModel.querySelectorAll(".option_Input");
+
+            let i = 0;
+            optionInput.forEach( optionInput => {
+                if( optionInput.value === '' ) {
+                    alertInfoErrorText.innerHTML = '選項必須有值';
+                    i++;
+                }
+            })
+            if( i > 0 ) {
+                return;
+            }
+            question = infoTextarea.value;
+
+            let multipleChoiceDict = {};
+
+            for(let i=0; i < optionInput.length; i++){
+                multipleChoiceDict[i] = optionInput[i].value;
+            }
+
+            globalmultipleChoice = Object.values(multipleChoiceDict);
+
+            dataMultipleChoice = {
+                question: question,
+                multipleChoice: globalmultipleChoice,
             }
         }
 
@@ -781,16 +933,100 @@ essayQuestionFinish.addEventListener("click", async () =>{
     await updateDoc(callDoc, dataAlert);
 
     alertInfo.classList.remove("close");
-    alertChoose.classList.toggle("close");
     fltCntr.classList.remove("show");
     essayQuestion.classList.toggle("close");
-    alertChoose.classList.toggle("close");
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
     });
 
     essayQuestionErrorText.innerHTML = '';
     qstText3.value = '';
+
+    AlertReplace();
+});
+
+voteSettingFinish.addEventListener("click", async () =>{
+    const alertInterval = voteSetting.querySelector("#vote-setting__alert-interval");
+    const alertTime     = voteSetting.querySelector("#vote-setting__alert-time");
+    const interval = Number(alertInterval.value);
+    const time     = Number(alertTime.value);
+    const voteErrorText = alertStepProgress[3].querySelector('.error-text');
+    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
+    if( voteQst.value === '' ) {
+        voteErrorText.innerHTML = '問題禁止為空字串';
+        return;
+    }else if( optionSelected.value === '' ) {
+        voteErrorText.innerHTML = '請選擇投票選項數量';
+        return;
+    }
+    
+    const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
+    
+    let i = 0;
+    optionInput.forEach( optionInput => {
+        if( optionInput.value === '' ) {
+            voteErrorText.innerHTML = '選項必須有值';
+            i++;
+        }
+    })
+    
+    if( i > 0 ) {
+        return;
+    }
+
+    if( interval < 10 || interval > 50 ) {
+        voteErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+        return;
+    }else if( time < 1 || time > 3) {
+        voteErrorText.innerHTML = '持續時間範圍：1 ~ 3';
+        return;
+    }
+
+    question = voteQst.value;
+
+    let multipleChoiceDict = {};
+
+    for(let i=0; i < optionInput.length; i++){
+        multipleChoiceDict[i] = optionInput[i].value;
+    }
+
+    globalmultipleChoice = Object.values(multipleChoiceDict);
+
+    dataMultipleChoice = {
+        question: question,
+        multipleChoice: globalmultipleChoice,
+    }
+    const alertType = 'vote';
+
+    let dataAlert = {
+        alert: {
+            interval: interval,
+            time: time,
+            alertType: alertType,
+        },
+    }
+
+    const callDoc = doc(calls, callId);
+    await updateDoc(callDoc, dataAlert);
+
+    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
+    voteSettingErrorText.innerHTML = '';
+    
+    const voteOptionInput = alertStepProgress[3].querySelectorAll(".option_input");
+
+    voteQst.value = '';
+    optionSelected.value = '';
+    voteOptionInput.forEach( optionInput => {
+        optionInput.remove();
+    })
+
+    fltCntr.classList.remove("show");
+    voteSetting.classList.toggle("close");
+    alertInfo.classList.remove("close");
+    
+    Array.from(navBtn).forEach((item) => {
+        item.className = "nav-btn";
+    });
 
     AlertReplace();
 });
@@ -855,8 +1091,6 @@ async function closeModalForm() {
 
     if(type === 'multiple choice') {
 
-        globalmultipleChoice = multipleChoice;
-
         const typeInfo = document.querySelector('.type-info');
         const fieldset = document.querySelector('.fieldset');
         if(fieldset != null){
@@ -913,6 +1147,44 @@ async function closeModalForm() {
         textarea.setAttribute("readonly", "readonly");
         textarea.innerHTML = question;
         fieldset2.appendChild(textarea);
+    }else if(type === 'vote') {
+
+        const typeInfo = document.querySelector('.type-info');
+        const fieldset = document.querySelector('.fieldset');
+        if(fieldset != null){
+            fieldset.remove();
+        }
+        const fieldset2 = document.createElement('fieldset');
+        fieldset2.classList.add("fieldset");
+        typeInfo.appendChild(fieldset2);
+        const legend = document.createElement('legend');
+        legend.innerHTML = '投票';
+        fieldset2.appendChild(legend);
+        const label = document.createElement('label');
+        label.innerHTML = '投票題目:';
+        fieldset2.appendChild(label);
+        const textarea = document.createElement('textarea');
+        textarea.classList.add("info-textarea");
+        textarea.setAttribute("readonly", "readonly");
+        textarea.innerHTML = question;
+        fieldset2.appendChild(textarea);
+        const div = document.createElement('div');
+        div.classList.add('field','select');
+        fieldset2.appendChild(div);
+        const label2 = document.createElement('label');
+        label2.innerHTML = '投票選項:';
+        div.appendChild(label2);
+        const div2 = document.createElement('div');
+        div2.classList.add('field','voteOptions');
+        fieldset2.appendChild(div2);
+        for (let i = 0; i < multipleChoice.length; i++) {
+            const input = document.createElement('input');
+            input.classList.add("option_Input");
+            input.setAttribute("type", "text");
+            input.setAttribute("readonly", "readonly");
+            input.value = multipleChoice[i];
+            div2.appendChild(input);
+        }
     }
 
 }

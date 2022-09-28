@@ -593,7 +593,7 @@ async function startAlert() {
                 outdated: false,
             };
 
-            if(alertType === 'multiple choice' || alertType === 'essay question') {
+            if(alertType === 'multiple choice' || alertType === 'essay question' || alertType === 'vote') {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
@@ -708,6 +708,30 @@ export function setupAlertListener() {
                             const textarea1 = document.createElement('textarea');
                             textarea1.classList.add('qst_show_answear')
                             alertShow.appendChild(textarea1);
+                        }else if(alertType === 'vote') {
+                            const textarea = document.createElement('textarea');
+                            textarea.setAttribute("readonly", "readonly");
+                            textarea.classList.add('qst_show')
+                            textarea.innerHTML = question;
+                            alertShow.appendChild(textarea);
+                            const divRadios = document.createElement('div');
+                            divRadios.classList.add('radios')
+                            alertShow.appendChild(divRadios);
+                            for (let i = 0; i < multipleChoice.length; i++) {
+                                const divRadio = document.createElement('div');
+                                divRadio.classList.add('radio')
+                                divRadios.appendChild(divRadio);
+                                const input = document.createElement('input');
+                                input.setAttribute("id", "radio" + (i+1) );
+                                input.setAttribute("type", "radio");
+                                input.setAttribute("name", "radio");
+                                input.setAttribute("value", i+1 );
+                                divRadio.appendChild(input);
+                                const label = document.createElement('label');
+                                label.setAttribute("for", "radio" + (i+1) );
+                                divRadio.appendChild(label);
+                                label.innerHTML = multipleChoice[i];
+                            }
                         }
 
                         const alertBtnDiv = document.createElement('div');
@@ -791,6 +815,29 @@ export function setupAlertListener() {
                                         alertBtn.classList.remove('active');
 
                                         alertModule.hidden = true;
+                                    }
+                                }else if(alertType === 'vote') {
+                                    const radio = document.querySelector(".radios").querySelectorAll('input');
+                                    for (let x = 0; x < radio.length; x ++) {
+                                        if (radio[x].checked) {
+                                            const data = {
+                                                click: true,
+                                                answear: radio[x].value,
+                                                timestamp: new Date(),
+                                            }
+                                            await updateDoc(userDoc, data);
+                                            alertBtnTime.hidden = true;
+                                            alertBtnText.innerHTML = '簽到完成';
+                                            alertBtn.classList.add('active');
+    
+                                            await delay(1000);
+                                            alertBtn.hidden = true;
+                                            alertBtnTime.hidden = false;
+                                            alertBtnText.innerHTML = '警醒按鈕';
+                                            alertBtn.classList.remove('active');
+    
+                                            alertModule.hidden = true;
+                                        }
                                     }
                                 }
                             }

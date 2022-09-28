@@ -236,4 +236,58 @@
             </div>
         </div>
 
+        <div class="alert-step-progress vote-setting close">
+
+            <div class="alert_icon_buttons" id="vote-setting-return">
+                <i class="bx bx-arrow-back"></i>
+            </div>
+
+            <div class="container">
+            
+                <h1 class="class-modal__title">設定投票警醒</h1>
+                <div class="error-text"></div>
+
+                <fieldset>
+                    <legend>投票</legend>
+                    <label for="alert-interval">輸入投票題目:</label>
+
+                    <div class="field">
+                        <textarea id="vote__qst" cols="25" rows="5" maxlength="50"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label for="alert-interval">輸入投票回答:</label>
+                        <select name="options" id="option-selected">
+                            <option value="" selected >請選擇投票數量</option>
+                            <option value="2" >2</option>
+                            <option value="3" >3</option>
+                            <option value="4" >4</option>
+                        </select>                        
+                    </div>
+
+                    <div class="field options"></div>
+
+                </fieldset>
+
+                <fieldset>
+                    <legend>警醒</legend>
+                    <label for="alert-interval">警醒間隔:</label>
+                    <div class="field">
+                        <input id="vote-setting__alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                        <label for="alert-interval">分鐘</label>
+                    </div>
+                    <label for="alert-time">警醒持續時間:</label>
+                    <div class="field">
+                        <input id="vote-setting__alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                        <label for="alert-time">分鐘</label>
+                    </div>
+                </fieldset>
+
+                <div class="center-btn">
+                    <button type="button" id="vote-setting-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
+                </div>
+
+            </div>
+
+        </div>
     </div>
