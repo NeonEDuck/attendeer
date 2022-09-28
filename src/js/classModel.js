@@ -1,7 +1,7 @@
 import { collection, doc, getDoc, setDoc, updateDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { firestore } from "./firebase-config.js";
 import { prefab } from './prefab.js'
-import { generateCallId, getUser } from './util.js';
+import { generateCallId, htmlToElement, fetchData, getUser } from './util.js';
 
 const attendeeRowPrefab = prefab.querySelector('.attendee-row');
 
@@ -9,10 +9,11 @@ const classModal         = document.querySelector('#class-modal');
 const classModalForm     = document.querySelector('#close-modal__form');
 const classModalTitle    = classModal.querySelector('#class-modal__title');
 
-const classId            = document.querySelector("#class-modal__class-id");
-const className          = document.querySelector("#class-modal__class-name");
-const alertInterval      = document.querySelector("#class-modal__alert-interval");
-const alertTime          = document.querySelector("#class-modal__alert-time");
+const classId            = document.querySelector('#class-modal__class-id');
+const className          = document.querySelector('#class-modal__class-name');
+const schoolSelect       = document.querySelector('#class-modal__school-select');
+const alertInterval      = document.querySelector('#class-modal__alert-interval');
+const alertTime          = document.querySelector('#class-modal__alert-time');
 
 const attendeeInput      = document.querySelector('#attendee-input');
 const addAttendeeBtn     = document.querySelector('#add-attendee-btn');
@@ -31,6 +32,16 @@ export class ClassModal {
     action = '';
     attendeeDict = {};
     constructor() {
+        fetchData('/school_time_table.json')
+            .then((data) => {
+                for (const s of data) {
+                    schoolSelect.appendChild(htmlToElement(`
+                        <option value="${s.id}">
+                            ${s.name}
+                        </option>
+                    `));
+                }
+            });
         closeModalBtn.addEventListener('click', (e) => {
             this._closeModal(e);
         });
@@ -72,10 +83,11 @@ export class ClassModal {
 
     async openModifyModal(callId) {
         const callDoc = await getDoc(doc(calls, callId));
-        const { name, alert, attendees } = callDoc.data();
+        const { name, school, alert, attendees } = callDoc.data();
 
         classId.value       = callDoc.id;
         className.value     = name;
+        schoolSelect.value  = school;
         alertInterval.value = alert.interval;
         alertTime.value     = alert.time;
         attendeeInput.value = '';
@@ -127,9 +139,15 @@ export class ClassModal {
         e.preventDefault()
 
         const name     = className.value.trim();
+        const school   = schoolSelect.value;
         const interval = Number(alertInterval.value);
         const time     = Number(alertTime.value);
         const notifies = false;
+
+        if (school === '') {
+            console.log('no');
+            return;
+        }
 
         const { uid } = await getUser();
         console.log(this.attendeeDict);
@@ -139,6 +157,7 @@ export class ClassModal {
         }
         const data = {
             name,
+            school,
             alert: {
                 interval,
                 time,
@@ -158,6 +177,7 @@ export class ClassModal {
         }
 
         classModal.close();
+        return true;
     }
 
     async _addAttendee(e) {

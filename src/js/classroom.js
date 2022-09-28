@@ -2,7 +2,7 @@ import { onSnapshot, collection, doc, addDoc, getDoc, setDoc, updateDoc, deleteD
 import { firestore } from "./firebase-config.js";
 import { prefab } from './prefab.js';
 import { ClassModal } from './classModel.js';
-import { getUser, getUserData, delay } from './util.js';
+import { htmlToElement, fetchData, getUser, getUserData, delay } from './util.js';
 
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
@@ -58,7 +58,7 @@ document.onreadystatechange = async () => {
     const user = await getUser();
 
     const callDoc = await getDoc(doc(calls, callId));
-    const { name, host, schedule } = callDoc.data();
+    const { name, school, host, schedule } = callDoc.data();
     if (user.uid === host){
         settingBtn.hidden = false;
         calendarEditBtn.hidden = false;
@@ -89,6 +89,27 @@ document.onreadystatechange = async () => {
 
         await delay(100);
     });
+
+    const tbody = document.querySelector('#class-schedule__tbody');
+    const timeTables = await fetchData('/school_time_table.json')
+    const timeTable = timeTables.find(x => x.id === school).data
+
+    for (let i = 0; i < timeTable.length; i++) {
+        const startTime = `${Math.floor(timeTable[i].start / 60)}:` + (timeTable[i].start % 60).toString().padStart(2, '0');
+        const endTime = `${Math.floor(timeTable[i].end / 60)}:` + (timeTable[i].end % 60).toString().padStart(2, '0')
+        tbody.appendChild(htmlToElement(`
+            <tr>
+                <td data-tooltip="${startTime}-${endTime}">${timeTable[i].name}</td>
+                <td data-repr="1${i.toString().padStart(2, '0')}"></td>
+                <td data-repr="2${i.toString().padStart(2, '0')}"></td>
+                <td data-repr="3${i.toString().padStart(2, '0')}"></td>
+                <td data-repr="4${i.toString().padStart(2, '0')}"></td>
+                <td data-repr="5${i.toString().padStart(2, '0')}"></td>
+                <td data-repr="6${i.toString().padStart(2, '0')}"></td>
+                <td data-repr="7${i.toString().padStart(2, '0')}"></td>
+            </tr>
+        `));
+    }
 
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
     for (const row of rows) {
@@ -128,8 +149,9 @@ settingBtn.addEventListener('click', async (e) => {
 
 classModal.oldSubmitForm = classModal._submitForm;
 classModal._submitForm = async (e) => {
-    await classModal.oldSubmitForm(e);
-    window.location.reload();
+    if (await classModal.oldSubmitForm(e)) {
+        window.location.reload();
+    }
 }
 
 callBtn.addEventListener('click', () => {
@@ -475,6 +497,7 @@ function getFebDays(year) {
 async function generateCalendar(month, year) {
     const calendar_days = calendar.querySelector('.calendar-days')
     const calendar_header_year = calendar.querySelector('#year')
+    const calendar_header_month = calendar.querySelector('#month')
 
     const days_of_month = [31, getFebDays(year), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
@@ -491,11 +514,9 @@ async function generateCalendar(month, year) {
         const { date, text } = eventDoc.data();
         calendarEvents[date] = text;
     }
-    console.log(calendarEvents)
-
 
     const curr_month = `${month_names[month]}`
-    month_picker.innerHTML = curr_month
+    calendar_header_month.innerHTML = curr_month
     calendar_header_year.innerHTML = year
 
     // get first day of month
@@ -546,8 +567,13 @@ async function generateCalendar(month, year) {
 const month_list = calendar.querySelector('.month-list')
 
 month_names.forEach((e, index) => {
-    const month = document.createElement('div')
-    month.innerHTML = `<div data-month="${index}">${e}</div>`
+    const month = htmlToElement(`
+        <div>
+            <div data-month="${index}">
+                ${e}
+            </div>
+        </div>
+    `);
     month.querySelector('div').onclick = () => {
         month_list.classList.remove('show')
         curr_month.value = index
@@ -556,11 +582,11 @@ month_names.forEach((e, index) => {
     month_list.appendChild(month)
 })
 
-const month_picker = calendar.querySelector('#month-picker')
+// const month_picker = calendar.querySelector('#month-picker')
 
-month_picker.onclick = () => {
-    month_list.classList.add('show')
-}
+// month_picker.onclick = () => {
+//     month_list.classList.add('show')
+// }
 
 const currDate = new Date()
 
@@ -576,5 +602,23 @@ document.querySelector('#prev-year').onclick = () => {
 
 document.querySelector('#next-year').onclick = () => {
     ++curr_year.value
+    generateCalendar(curr_month.value, curr_year.value)
+}
+
+document.querySelector('#prev-month').onclick = () => {
+    --curr_month.value
+    if (curr_month.value < 0) {
+        curr_month.value = 11;
+        curr_year.value--;
+    }
+    generateCalendar(curr_month.value, curr_year.value)
+}
+
+document.querySelector('#next-month').onclick = () => {
+    ++curr_month.value;
+    if (curr_month.value >= 12) {
+        curr_month.value = 0;
+        curr_year.value++;
+    }
     generateCalendar(curr_month.value, curr_year.value)
 }

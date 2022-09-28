@@ -29,6 +29,30 @@ export function replaceAll(str, find, replace) {
     return str.replace(find, replace);
 }
 
+export function htmlToElement(html) {
+    let template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.firstElementChild;
+}
+
+const fetchedData = {}
+
+export async function fetchData(path) {
+    if (path in fetchedData) {
+        return new Promise((res, rej) => {
+            return fetchedData[path];
+        });
+    }
+    const response = await fetch(path, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+    })
+
+    return response.json();
+}
+
 export function setIntervalImmediately(callback, ms) {
     callback();
     return setInterval(callback, ms);

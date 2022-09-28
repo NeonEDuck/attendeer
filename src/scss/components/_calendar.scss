@@ -108,32 +108,34 @@
     display: none;
 }
 
-.month-picker {
-    padding: 0.25em 0.5em;
-    border-radius: 0.5em;
-    cursor: pointer;
-}
+// .month-picker {
+//     padding: 0.25em 0.5em;
+//     border-radius: 0.5em;
+//     cursor: pointer;
+// }
 
-.month-picker:hover {
-    background-color: var(--color-hover);
-}
+// .month-picker:hover {
+//     background-color: var(--color-hover);
+// }
 
+.month-picker,
 .year-picker {
     display: flex;
     align-items: center;
 }
 
+.month-change,
 .year-change {
     aspect-ratio: 1 / 1;
     border-radius: 50%;
     display: grid;
     place-items: center;
-    margin-inline: 0.5em;
+    margin-inline: 0.25em;
     cursor: pointer;
-}
 
-.year-change:hover {
-    background-color: var(--color-hover);
+    &:hover {
+        background-color: var(--color-hover);
+    }
 }
 
 .calendar-footer {
