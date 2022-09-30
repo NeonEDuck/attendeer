@@ -76,6 +76,25 @@
     </p>
     <p class="msg__text"></p>
 </li>
+
+<table>
+    <tr class="alert">
+        <td class="alert__type"></td>
+        <td class="alert__interval"></td>
+        <td class="alert__duration"></td>
+        <td class="alert__timestamp"></td>
+    </tr>
+</table>
+
+<table>
+    <tr class="ptcp">
+        <td class="ptcp__name"></td>
+        <td class="ptcp__click"></td>
+        <td class="ptcp__ans"></td>
+        <td class="ptcp__timestamp"></td>
+    </tr>
+</table>
+
 {% endblock prefab %}
 
 {% block content %}
@@ -149,6 +168,38 @@
                         </div>
 
                         <div data-catagory="alert" hidden>
+                            <div class="flex flex-column gap-4">
+                                <h1>警醒紀錄</h1>
+
+                                <input type="text" id="alert__Search" class="search" onkeyup="myFunction()" placeholder="Search for the keyword..">
+                                <div id="list">
+                                    <table class='list__alert'>
+                                        <thead>
+                                            <tr class="alert">
+                                                <th>警醒類型</th>
+                                                <th>警醒間隔</th>
+                                                <th>持續時間</th>
+                                                <th>建立時間</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="alert-log">
+                                        </tbody>
+                                    </table>
+                                    <table class='list__ptcp close'>
+                                        <thead>
+                                            <tr class="ptcp">
+                                                <th>姓名</th>
+                                                <th>點擊狀態</th>
+                                                <th>回答</th>
+                                                <th>完成時間</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="ptcp-log">
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
                         </div>
 
                         <div data-catagory="entire" hidden>

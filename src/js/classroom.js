@@ -7,6 +7,8 @@ import { getUser, getUserData, delay } from './util.js';
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
 const msgPrefab         = prefab.querySelector('.msg');
+const alertPrefab       = prefab.querySelector('.alert');
+const ptcpPrefab       = prefab.querySelector('.ptcp');
 const postreplyPrefab   = prefab.querySelector('.post-reply');
 const className         = document.querySelector('#class-name');
 const settingBtn        = document.querySelector('#setting-btn');
@@ -41,6 +43,12 @@ const writeSubmitBtn    = document.querySelector('#write-submit-btn');
 const chatLog           = document.querySelector('#chat-log');
 const downloadChatBtn   = document.querySelector('#download-chat-btn');
 
+const alertSearch       = document.querySelector('#alert__Search');
+const listAlert       = document.querySelector('.list__alert');
+const listPtcp       = document.querySelector('.list__ptcp');
+const alertLog          = document.querySelector('#alert-log');
+const ptcpLog           = document.querySelector('#ptcp-log');
+
 const callId = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
 const calls    = collection(firestore, 'calls');
@@ -49,6 +57,8 @@ const users    = collection(firestore, 'users');
 const posts    = collection(callDoc, 'posts');
 const messages = collection(callDoc, 'messages');
 const events   = collection(callDoc, 'events');
+const alertRecords = collection(callDoc, 'alertRecords');
+
 
 const classModal = new ClassModal();
 let prevSchedule = [];
@@ -90,6 +100,29 @@ document.onreadystatechange = async () => {
         await delay(100);
     });
 
+    let alertInit = true;
+    onSnapshot(alertRecords, async (snapshot) => {
+        if (alertInit) {
+            alertInit = false;
+            const q = query(alertRecords, orderBy('timestamp', 'asc'));
+            const alertDocs = await getDocs(q);
+            for (const alertDoc of alertDocs.docs) {
+                await addAlertToLog(alertDoc);
+            }
+        }
+        else {
+            snapshot.docChanges().forEach( async (change) => {
+                if (change.type === 'modified') {
+                    await addAlertToLog(change.doc);
+                }
+            });
+        }
+
+        await delay(100);
+    });
+
+
+
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
     for (const row of rows) {
         const cells = row.querySelectorAll('td');
@@ -120,6 +153,100 @@ async function addMessageToLog(msgData) {
     msgText.innerHTML = text;
     // chatLog.insert(msg, chatLog.firstChild);
     chatLog.appendChild(msg);
+}
+
+async function addAlertToLog(alertData) {
+    const { alertType:type,interval,duration,timestamp, done } = alertData.data();
+
+    if( done === true ) {
+        const timeString = timestamp.toDate().toLocaleString();
+        const alert = alertPrefab.cloneNode(true);
+        const alertType = alert.querySelector('.alert__type');
+        const alertInterval = alert.querySelector('.alert__interval');
+        const alertDuration = alert.querySelector('.alert__duration');
+        const alertTime = alert.querySelector('.alert__timestamp');
+        alertType.innerHTML = type;
+        alertInterval.innerHTML = interval;
+        alertDuration.innerHTML = duration;
+        alertTime.innerHTML = timeString;
+        alertLog.insertBefore(alert, alertLog.children[0]);
+    
+        alert.addEventListener('click', async (e) => {
+    
+            ptcpLog.hidden = true;
+
+            while (ptcpLog.lastChild) {
+                ptcpLog.removeChild(ptcpLog.lastChild);
+            }
+            
+            const alertDoc      = doc(alertRecords, alertData.id);
+            const participants  = collection(alertDoc, 'participants');
+            const querySnapshot = await getDocs(participants);
+            const { attendees } = (await getDoc(callDoc)).data();
+            const { host } = ( await getDoc(callDoc)).data();
+            for (const userId of attendees) {
+                if( userId != host ) {
+                    let clickfield = '未加入會議';
+                    let answearfield = '-';
+                    let timeStringfield = '-';
+                    const user = doc(users, userId);
+                    const data = (await getDoc(user)).data();
+                    querySnapshot.forEach( async (docc) => {
+                        if( userId === docc.id) {
+                            console.log(userId ," ", docc.id);
+                            const { answear,click,timestamp } = docc.data();
+                            if( timestamp != undefined ) {
+                                timeStringfield = timestamp.toDate().toLocaleString();
+                            }
+                            if( click === true ) {
+                                clickfield = '完成';
+                            }else if(click === false){
+                                clickfield = '未完成';
+                            }
+                            if( answear != undefined ) {
+                                answearfield = answear;
+                            }
+                        }
+                    });
+                    const ptcp = ptcpPrefab.cloneNode(true);
+                    const ptcpName = ptcp.querySelector('.ptcp__name');
+                    const ptcpClick = ptcp.querySelector('.ptcp__click');
+                    const ptcpAns = ptcp.querySelector('.ptcp__ans');
+                    const ptcpTimestamp = ptcp.querySelector('.ptcp__timestamp');
+                
+                    ptcpName.innerHTML = data.name;
+                    ptcpClick.innerHTML = clickfield;
+                    ptcpAns.innerHTML = answearfield;
+                    ptcpTimestamp.innerHTML = timeStringfield;
+                    ptcpLog.insertBefore(ptcp, ptcpLog.children[0]);
+                }
+            }
+            ptcpLog.hidden = false;
+            listAlert.classList.toggle("close");
+            listPtcp.classList.toggle("close");
+        });
+    }
+
+}
+alertSearch.onkeyup = function() {myFunction()};
+function myFunction() {
+
+  let filter, tr, td1, td2, td3, td4, i, txtValue;
+  filter = alertSearch.value.toUpperCase();
+  tr = alertLog.getElementsByTagName('tr');
+
+  for (i = 0; i < tr.length; i++) {
+    td1 = tr[i].getElementsByTagName("td")[0];
+    td2 = tr[i].getElementsByTagName("td")[1];
+    td3 = tr[i].getElementsByTagName("td")[2];
+    td4 = tr[i].getElementsByTagName("td")[3];
+    txtValue = (td1.textContent || td1.innerText) + (td2.textContent || td2.innerText) + (td3.textContent || td3.innerText) + (td4.textContent || td4.innerText);
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+    } else {
+        tr[i].style.display = "none";
+    }
+  }
 }
 
 settingBtn.addEventListener('click', async (e) => {
@@ -255,7 +382,7 @@ for (const tab of catagoryTabs) {
                 targetPage = page;
             }
         }
-        if (catagory !== 'write' && catagory !== 'chat') {
+        if (catagory !== 'write' && catagory !== 'chat' && catagory !== 'alert') {
             targetPage.innerHTML = '';
             let q = query(posts, orderBy('timestamp', 'desc'));
             if (catagory !== 'entire') {
