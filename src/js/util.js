@@ -29,6 +29,30 @@ export function replaceAll(str, find, replace) {
     return str.replace(find, replace);
 }
 
+export function htmlToElement(html) {
+    let template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.firstElementChild;
+}
+
+const fetchedData = {}
+
+export async function fetchData(path) {
+    if (path in fetchedData) {
+        return new Promise((res, rej) => {
+            return fetchedData[path];
+        });
+    }
+    const response = await fetch(path, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+    })
+
+    return response.json();
+}
+
 export function setIntervalImmediately(callback, ms) {
     callback();
     return setInterval(callback, ms);
@@ -45,12 +69,12 @@ export function debounce(cb, delay=1000) {
     }
 }
 
+const users = collection(firestore, 'users');
 let _user = null;
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         _user = user
-        const users = collection(firestore, 'users');
         const userDoc = doc(users, user.uid);
         const userSnapshot = await getDoc(userDoc);
 
@@ -81,4 +105,17 @@ export function getUser() {
         }
         resolve(_user);
     });
+}
+
+const userDict = {};
+
+export async function getUserData(userId) {
+    if (!userDict[userId]) {
+        const userDoc = doc(users, userId);
+
+        const userSnapshot = await getDoc(userDoc)
+        userDict[userId] = userSnapshot.data();
+    }
+
+    return userDict[userId];
 }

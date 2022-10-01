@@ -74,13 +74,13 @@ app.all('*', async (req, res, next) => {
 // router
 import index from './routes/index.js';
 import meeting from './routes/meeting.js';
-import overview from './routes/overview.js';
 import login from './routes/login.js';
+import classroom from './routes/classroom.js';
 
-app.use('/', index);
-app.use('/meeting', meeting);
-app.use('/overview', overview);
-app.use('/login', login);
+app.use(index);
+app.use(meeting);
+app.use(login);
+app.use(classroom);
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -96,9 +96,14 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
+import { Server as socketServer } from 'socket.io';
+import socketSetup from './sockets.js';
 
 if (process.env.DEBUG?.toLowerCase() === 'true') {
-    http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
+    const httpServer = http.createServer(app);
+    const io = new socketServer(httpServer);
+    socketSetup(io);
+    httpServer.listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
 }
 else {
     try {
@@ -107,7 +112,10 @@ else {
             cert: fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'certificate.crt') , 'utf-8'),
             ca:   fs.readFileSync( path.join(process.env.CERT_DIR_PATH || 'certs', 'ca_bundle.crt') , 'utf-8'),
         };
-        https.createServer(options, app).listen(HTTPS_PORT, () => {console.log(`> Listening on port ${HTTPS_PORT}`)});
+        const httpsServer = https.createServer(options, app);
+        const io = new socketServer(httpsServer);
+        socketSetup(io);
+        httpsServer.listen(HTTPS_PORT, () => {console.log(`> Listening on port ${HTTPS_PORT}`)});
         http.createServer((req, res) => {
             res.writeHead(302, { "Location": "https://" + req.headers.host + req.url });
             res.end();
@@ -124,6 +132,9 @@ else {
             console.error(err);
         }
         console.log('Fallback to http server.')
-        http.createServer(app).listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
+        const httpServer = http.createServer(app);
+        const io = new socketServer(httpServer);
+        socketSetup(io);
+        httpServer.listen(HTTP_PORT, () => {console.log(`> Listening on port ${HTTP_PORT}`)});
     }
 }

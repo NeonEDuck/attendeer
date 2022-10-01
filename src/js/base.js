@@ -8,3 +8,5 @@ for (const textarea of textareas) {
         e.target.style.height = (e.target.scrollHeight) + "px";
     });
 }
+
+document.querySelector('body').classList.add(localStorage.getItem('color-scheme') || '')

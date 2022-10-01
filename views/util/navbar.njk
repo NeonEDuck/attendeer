@@ -4,12 +4,18 @@
         <li>
             <div id="navbar-profile">
                 <div id="navbar-profile__summary">
-                    <p id='login-text'></p>
-                    <img id='navbar-profile__picture' src="/imgs/dummy_profile.png" alt="">
+                    <p id="login-text"></p>
+                    <img id="navbar-profile__picture" class="profile-picture" src="/imgs/dummy_profile.png" alt="">
                 </div>
                 <div id="navbar-profile__dropdown">
-                    <button id="sign-in" class="btn-primary">登入</button>
-                    <button id="sign-out" class="btn-primary" hidden>登出</button>
+                    <div class="row">
+                        <p id="mode-text">黑暗模式</p>
+                        <button id="mode-switch" class="toggle-switch"></button>
+                    </div>
+                    <div class="row flex-center">
+                        <button id="sign-in" class="btn-primary">登入</button>
+                        <button id="sign-out" class="btn-primary" hidden>登出</button>
+                    </div>
                 </div>
             </div>
         </li>

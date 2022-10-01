@@ -1,6 +1,10 @@
 html, body {
     height: 100%;
-    background-color: var(--clr-gray-300);
+}
+
+body {
+    background-color: var(--body-color);
+    color: var(--text-color);
 }
 
 html, body, input, button, textarea {
@@ -23,6 +27,7 @@ fieldset {
 legend {
     vertical-align: super;
     margin-inline-start: 0.5em;
+    color: var(--text-color);
 }
 
 .field {
@@ -30,13 +35,14 @@ legend {
     justify-content: flex-start;
     align-items: center;
     gap: 0.5em;
+    color: var(--text-color);
 }
 
 .content {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    width: 100vw;
+    min-height: 100vh;
+    width: 100%;
 }
 
 main {
@@ -64,6 +70,7 @@ h2 {
 
 h3 {
     font-size: 1.5rem;
+    color: var(--text-color);
 }
 
 h1, h2, h3, h4, h5, h6, p, span {
@@ -73,4 +80,8 @@ h1, h2, h3, h4, h5, h6, p, span {
 
 a {
     color: blue;
+}
+
+label {
+    color: var(--text-color);
 }

@@ -57,6 +57,14 @@ button {
 }
 
 .btn-tab {
+    &-top {
+        border-radius: 1em 1em 0 0;
+    }
+
+    &-bottem {
+        border-radius: 0 0 1em 1em;
+    }
+
     &-right {
         border-radius: 0 1em 1em 0;
     }
@@ -64,15 +72,28 @@ button {
     &-left {
         border-radius: 1em 0 0 1em;
     }
+
+    &-top,
+    &-bottem {
+        height: 2em;
+        min-width: 6em;
+        padding-inline: 1em;
+        background-color: var(--color-component-500);
+        @include content-color(var(--text-color));
+        &.btn-on {
+            background-color: var(--color-component-700);
+        }
+    }
+
     &-right,
     &-left {
         width: 2em;
         min-height: 6em;
         padding-block: 1em;
-        background-color: lightgrey;
-        @include content-color(black);
+        background-color: var(--color-component-500);
+        @include content-color(var(--text-color));
         &.btn-on {
-            background-color: white;
+            background-color: var(--color-component-700);
         }
     }
 }
@@ -84,6 +105,7 @@ button {
 
 .btn-link {
     background-color: transparent;
+    text-decoration: underline;
     @include content-color(var(--clr-link));
 }
 
