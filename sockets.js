@@ -20,6 +20,21 @@ export default function(io) {
                 socket.to(socketId).emit('catch-candidate', data);
             });
 
+            socket.on('throw-notify-dismiss', (data) => {
+                console.log(`throw-notify-dismiss ${data}`)
+                socket.broadcast.to(callId).emit('catch-notify-dismiss', data);
+            });
+
+            socket.on('throw-disable-notify-dismiss', () => {
+                console.log(`throw-disable-notify-dismiss`)
+                socket.broadcast.to(callId).emit('catch-disable-notify-dismiss');
+            });
+
+            socket.on('throw-enable-notify-dismiss', () => {
+                console.log(`throw-enable-notify-dismiss`)
+                socket.broadcast.to(callId).emit('catch-enable-notify-dismiss');
+            });
+
             socket.on('disconnect', () => {
                 socket.broadcast.to(callId).emit('user-disconnected', userId);
             });

@@ -3,7 +3,7 @@ import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getUser, getUserData, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, htmlToElement } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
@@ -14,18 +14,20 @@ const body = document.querySelector('body');
 const camPrefab    = prefab.querySelector('.cam');
 const msgPrefab    = prefab.querySelector('.msg');
 const myMsgPrefab  = prefab.querySelector('.my-msg');
+const notificationPrefab  = prefab.querySelector('.notification');
 
 const sidebarRight = document.querySelector(".sidebar-right");
 const icons  = document.querySelectorAll('.ico');
 // const camMenu  = document.querySelector('#cam__menu');
 
-const micBtn         = document.querySelector('#mic-btn');
-const webcamBtn      = document.querySelector('#webcam-btn');
-const enterBtn       = document.querySelector('#enter-btn');
-const screenShareBtn = document.querySelector('#screen-share-btn');
-const hangUpBtn      = document.querySelector('#hang-up-btn');
-const messageBtn     = document.querySelector('#message-btn');
-const sendMsgBtn     = document.querySelector('#send-msg-btn');
+const micBtn            = document.querySelector('#mic-btn');
+const webcamBtn         = document.querySelector('#webcam-btn');
+const enterBtn          = document.querySelector('#enter-btn');
+const screenShareBtn    = document.querySelector('#screen-share-btn');
+const notifyDismissBtn  = document.querySelector('#notify-dismiss-btn');
+const hangUpBtn         = document.querySelector('#hang-up-btn');
+const messageBtn        = document.querySelector('#message-btn');
+const sendMsgBtn        = document.querySelector('#send-msg-btn');
 // const alertBtn       = document.querySelector('#alert-btn');
 // const alertBtnTime   = document.querySelector('#alert-btn__time');
 const alertModule = document.querySelector('#alert');
@@ -33,14 +35,15 @@ const alertModule = document.querySelector('#alert');
 const confirmPanel   = document.querySelector('#confirm-panel');
 const meetingPanel   = document.querySelector('#meeting-panel');
 
-const cpCamContainer = document.querySelector('#confirm-panel__cam-container');
-const camContainer   = document.querySelector('#cam-container');
-const camArea        = document.querySelector('#cam-area');
-const toolbar        = document.querySelector('#toolbar');
-const chat           = document.querySelector('#chat');
-const chatRoom       = document.querySelector('#chat__room')
-const msgInput       = document.querySelector('#msg-input');
-const callId         = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+const cpCamContainer        = document.querySelector('#confirm-panel__cam-container');
+const camContainer          = document.querySelector('#cam-container');
+const camArea               = document.querySelector('#cam-area');
+const notificationContainer = document.querySelector('#notification-container');
+const toolbar               = document.querySelector('#toolbar');
+const chat                  = document.querySelector('#chat');
+const chatRoom              = document.querySelector('#chat__room')
+const msgInput              = document.querySelector('#msg-input');
+const callId                = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
 // Global variable
 let localUserId = null;
@@ -58,6 +61,9 @@ const localCams = {
     'webcam': new Cam('local', 'webcam', cpCamContainer),
     'screenShare': new Cam('local', 'screen-share', cpCamContainer),
 }
+let notifyDismissCoolDownTimeInMinute = 1;
+let inNotifyDismissCoolDown = false;
+let disableNotifyDismissCoolDown;
 
 // Default state
 webcamBtn.disabled = true;
@@ -97,6 +103,7 @@ document.onreadystatechange = async () => {
     micBtn.disabled = false;
     webcamBtn.disabled = false;
     screenShareBtn.disabled = false;
+    notifyDismissBtn.disabled = false;
     enterBtn.disabled = false;
     await requestStreamPermission();
     await refreshStream();
@@ -177,7 +184,21 @@ screenShareBtn.addEventListener('click', async () => {
     }
 })
 
+notifyDismissBtn.addEventListener('click', async () => {
+    socket.emit('throw-notify-dismiss', {localUserId});
+    notifyDismissBtn.disabled = true;
+    notifyDismissBtn.dataset.tooltip = '老師已收到下課鈴';
+});
+
 enterBtn.addEventListener('click', async () => {
+    const { alert, host, school } = (await getDoc(callDoc)).data();
+    const { interval, time: duration, alertType } = alert;
+    const data = await fetchData('/school_time_table.json');
+    console.log(data);
+    console.log(school);
+    const schoolData = data.find(item => item.id === school);
+    console.log(schoolData);
+
     console.log(`join call: ${callId} as ${localUserId}`);
     socket.emit('join-call', callId, localUserId);
 
@@ -283,6 +304,65 @@ enterBtn.addEventListener('click', async () => {
         }
     });
 
+    socket.on('catch-disable-notify-dismiss', async () => {
+        console.log(`catch disable notify dismiss cooldown`);
+        notifyDismissBtn.disabled = true;
+        notifyDismissBtn.dataset.tooltip = '老師已收到下課鈴';
+    });
+
+    socket.on('catch-enable-notify-dismiss', async () => {
+        console.log(`catch enable notify dismiss cooldown`);
+        notifyDismissBtn.disabled = false;
+        delete notifyDismissBtn.dataset.tooltip;
+    });
+
+    if (localUserId === host) {
+        socket.on('catch-notify-dismiss', async (data) => {
+            console.log(`catch notify dismiss`);
+            const { userId } = data;
+
+            const now = new Date();
+            const minuteOfToday = now.getHours() * 60 + now.getMinutes();
+            let inClass = false;
+
+            for (const classTime of schoolData.data) {
+                const startTime = classTime.start.hour * 60 + classTime.start.minute;
+                const endTime = classTime.end.hour * 60 + classTime.end.minute;
+                if (minuteOfToday >= startTime && minuteOfToday < endTime) {
+                    console.log(`現在是第${classTime.name}節課`);
+                    inClass = true;
+                    break;
+                }
+            }
+
+            if (!inClass) {
+                if (!inNotifyDismissCoolDown) {
+                    inNotifyDismissCoolDown = true
+                    console.log(`現在是下課時間`);
+                    const notification = notificationPrefab.cloneNode(true);
+                    const closeBtn = notification.querySelector('.notification__close-btn');
+                    notificationContainer.appendChild(notification);
+                    notification.style.height = `${notification.scrollHeight}px`;
+                    notification.style.opacity = '1';
+                    closeBtn.addEventListener('click', () => {
+                        notification.style.height = '';
+                        notification.style.paddingBlock = '0px';
+                        notification.style.opacity = '';
+                        notification.addEventListener('transitionend', () => {
+                            notification.remove();
+                        })
+                    });
+                    socket.emit('throw-disable-notify-dismiss');
+
+                    setTimeout(() => {
+                        inNotifyDismissCoolDown = false
+                        socket.emit('throw-enable-notify-dismiss');
+                    }, notifyDismissCoolDownTimeInMinute * MINUTE);
+                }
+            }
+        });
+    }
+
     let chatInit = true;
 
     // async function addMessageToChat(msgData) {
@@ -322,9 +402,7 @@ enterBtn.addEventListener('click', async () => {
         chatRoom.scrollTop = chatRoom.scrollHeight;
     });
 
-    const { alert, host } = (await getDoc(callDoc)).data();
-    const { interval, time: duration, alertType} = alert;
-    if (localUserId === host){
+    if (localUserId === host) {
         console.log('您是會議主辦人');
 
         const q1 = query(alertRecords, where('done', '==', false ));

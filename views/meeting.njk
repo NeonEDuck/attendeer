@@ -44,6 +44,18 @@
             <p class="my-msg__text" ></p>
         </div>
     </li>
+    <li class="notification">
+        <header>
+            {% include 'svg/bell.svg' %}
+        </header>
+        <div class="flex-item-1">
+            <h3>下課提醒</h3>
+            <p>現在是下課時間</p>
+        </div>
+        <footer>
+            <button class="notification__close-btn btn-red">{% include 'svg/cross.svg' %}</button>
+        </footer>
+    </li>
 {% endblock prefab %}
 
 {% block content %}
@@ -131,6 +143,9 @@
             </div>
         </div>
 
+        <ul id="notification-container">
+        </ul>
+
         <div id="meeting-panel__left">
             <div id="cam-area">
                 <div id="cam-container">
@@ -161,7 +176,7 @@
                         </li>
                         <li class="li-4">
                             <div class="name">下課鈴</div>
-                            <div class="ico" id="ico"><button id="dismiss-notify-btn" class="btn-primary btn-round" disabled>{% include './svg/bell.svg' %}</button></div>
+                            <div class="ico" id="ico"><button id="notify-dismiss-btn" class="btn-primary btn-round" disabled>{% include './svg/bell.svg' %}</button></div>
                         </li>
                         <li class="li-bin li-5">
                             <div class="name">退出會議</div>
