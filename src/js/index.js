@@ -9,9 +9,6 @@ const addClassBtn        = document.querySelector('#add-class-btn');
 const classList          = document.querySelector('.class-list');
 const classCardPrefab    = prefab.querySelector('.class-card');
 
-const confirmModel       = document.querySelector('#confirm-modal');
-const confirmModelTitle  = document.querySelector('#confirm-modal__title');
-
 const calls = collection(firestore, 'calls');
 
 const classModal = new ClassModal();
@@ -30,7 +27,6 @@ document.onreadystatechange = async () => {
                 const classCard        = classCardPrefab.cloneNode(true);
                 const classCardName    = classCard.querySelector('.class-card__name');
                 const classCardId      = classCard.querySelector('.class-card__id');
-                const classCardRemove  = classCard.querySelector('.class-card__remove');
                 const classCardLink    = classCard.querySelector('.class-card__link');
                 classCardName.innerHTML = data.name || 'Unnamed';
                 classCardId.innerHTML = change.doc.id;
@@ -43,51 +39,6 @@ document.onreadystatechange = async () => {
 
                 classCardLink.addEventListener('click', () => {
                     window.location.href = `/${classCard.dataset.id}`;
-                });
-
-                if (user.uid === data.host) {
-                    classCardRemove.hidden = false;
-                }
-
-                classCardRemove.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    confirmModelTitle.querySelector('span').innerHTML = classCard.dataset.name;
-                    const confirmBtn = confirmModel.querySelector('#modal-confirm-btn');
-                    const cancelBtn  = confirmModel.querySelector('#modal-cancel-btn');
-                    confirmBtn.addEventListener('click', async () => {
-                        const callDoc = doc(calls, classCard.dataset.id);
-
-                        const participants = collection(callDoc, 'participants');
-                        const userDocs = await getDocs(participants);
-                        userDocs.forEach(async (userDoc) => {
-                            const clients = collection(userDoc.ref, 'clients');
-                            const clientDocs = await getDocs(clients);
-                            clientDocs.forEach(async (clientDoc) => {
-                                const candidates = collection(clientDoc.ref, 'candidates');
-                                const candidateDocs = await getDocs(candidates);
-                                candidateDocs.forEach(async (c) => {
-                                    deleteDoc(c.ref);
-                                });
-                                deleteDoc(clientDoc.ref);
-                            });
-                            deleteDoc(userDoc.ref);
-                        });
-
-                        const messages = collection(callDoc, 'messages');
-                        const messageDocs = await getDocs(messages);
-                        messageDocs.forEach((msg) => {
-                            deleteDoc(msg.ref);
-                        });
-
-                        //! 警醒加進來後要更新
-
-                        deleteDoc(callDoc);
-                        confirmModel.close();
-                    });
-                    cancelBtn.addEventListener('click', () => {
-                        confirmModel.close();
-                    });
-                    confirmModel.showModal();
                 });
 
                 classList.insertBefore(classCard, addClassTemplate);

@@ -35,7 +35,7 @@
             </div>
             <div class="flex flex-row flex-align-start gap-2">
                 <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
-                <button class="btn-primary">送出</button>
+                <button class="btn-primary" data-tooltip="送出">{% include 'svg/airplane.svg' %}</button>
             </div>
         </div>
     </div>
@@ -87,7 +87,7 @@
                 <div class="flex flex-row flex-align flex-wrap">
                     <p style="text-wrap: no-wrap;">{{ callId }}</p>
                     <div class="flex flex-row margin-inline-start-auto gap-2">
-                        <button id="setting-btn" class="btn-transparent" hidden>{% include 'svg/setting.svg' %}</button>
+                        <button id="setting-btn" class="btn-transparent btn-round btn-round" data-tooltip="設定" hidden>{% include 'svg/setting.svg' %}</button>
                         <button id="call-btn" class="btn-primary">進入會議</button>
                     </div>
                 </div>

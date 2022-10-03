@@ -8,10 +8,11 @@
 </div>
 
 <dialog id="class-modal">
+    <span id="modal-error-message">message</span>
     <div class="flex flex-column gap-4">
         <h1 id="class-modal__title">設定</h1>
 
-        <button id="close-modal-btn" class="btn-round btn-red">{% include 'svg/cross.svg' %}</button>
+        <button id="close-modal-btn" class="btn-round btn-red" data-tooltip="取消" data-tooltip-bottom>{% include 'svg/cross.svg' %}</button>
         <form id="close-modal__form" class="flex flex-column gap-4">
             <input id="class-modal__class-id" name="class-id" type="text" hidden>
 
@@ -58,7 +59,18 @@
             </fieldset>
             <input type="submit" id="submit-form" hidden disabled/>
         </form>
-        <button type="button" id="submit-class" class="margin-inline-start-auto btn-primary">建立課程</button>
-        <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+        <div class="flex flex-row gap-2 flex-justify-end">
+            <button type="button" id="submit-class" class="btn-primary">建立課程</button>
+            <button type="button" id="submit-delete" class="btn-red" data-tooltip="刪除">{% include 'svg/trashcan.svg' %}</button>
+            <button type="button" id="submit-setting" class="btn-primary" data-tooltip="儲存">{% include 'svg/save.svg' %}</button>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="confirm-delete-modal">
+    <h1>你確定要刪除此課程?</h1>
+    <div class="flex flex-row gap-2 flex-justify-end">
+        <button type="button" id="close-confirm-delete-modal-btn" class="btn-round btn-red" data-tooltip="取消">{% include 'svg/cross.svg' %}</button>
+        <button type="button" id="confirm-delete" class="btn-red" data-tooltip="刪除">{% include 'svg/trashcan.svg' %}</button>
     </div>
 </dialog>

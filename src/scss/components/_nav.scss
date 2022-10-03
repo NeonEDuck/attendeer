@@ -43,7 +43,7 @@
 
                 &:where(a) {
                     // background: var(--clr-primary-700);
-                    color: var(--text-color);
+                    color: var(--clr-text-500);
                     cursor: pointer;
                 }
             }
@@ -94,8 +94,8 @@
         }
 
         &.open {
-            background-color: var(--body-color);
-            box-shadow: 0 0 0.25em 0.25em hsla(0 0% 0% / 10%);
+            background-color: var(--clr-component-500);
+            box-shadow: var(--box-shadow-500);
         }
 
         &.open &__dropdown {
