@@ -66,6 +66,10 @@ button {
     &[data-tooltip-bottom]:hover::after {
         animation: to-bottom 0.25s forwards;
     }
+
+    &:disabled {
+        background-color: var(--clr-component-700) !important;
+    }
 }
 
 .btn-round {
