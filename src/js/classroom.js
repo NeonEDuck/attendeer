@@ -9,6 +9,9 @@ const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]'
 const msgPrefab         = prefab.querySelector('.msg');
 const alertPrefab       = prefab.querySelector('.alert');
 const ptcpPrefab       = prefab.querySelector('.ptcp');
+const alertBox1       = prefab.querySelector('.box1');
+const alertBox2       = prefab.querySelector('.box2');
+const alertBox3       = prefab.querySelector('.box3');
 const postreplyPrefab   = prefab.querySelector('.post-reply');
 const className         = document.querySelector('#class-name');
 const settingBtn        = document.querySelector('#setting-btn');
@@ -44,10 +47,11 @@ const chatLog           = document.querySelector('#chat-log');
 const downloadChatBtn   = document.querySelector('#download-chat-btn');
 
 const alertSearch       = document.querySelector('#alert__Search');
-const listAlert       = document.querySelector('.list__alert');
-const listPtcp       = document.querySelector('.list__ptcp');
+const listAlert         = document.querySelector('.list__alert');
+const listPtcp          = document.querySelector('.list__ptcp');
 const alertLog          = document.querySelector('#alert-log');
 const ptcpLog           = document.querySelector('#ptcp-log');
+const wrapper           = document.querySelector('#wrapper');
 
 const callId = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
@@ -159,12 +163,23 @@ async function addAlertToLog(alertData) {
     const { alertType:type,interval,duration,timestamp, done } = alertData.data();
 
     if( done === true ) {
+
         const timeString = timestamp.toDate().toLocaleString();
+
         const alert = alertPrefab.cloneNode(true);
         const alertType = alert.querySelector('.alert__type');
         const alertInterval = alert.querySelector('.alert__interval');
         const alertDuration = alert.querySelector('.alert__duration');
         const alertTime = alert.querySelector('.alert__timestamp');
+        const alertQst = alert.querySelector('.alert__question');
+        
+        if( type != 'click' ) {
+            const { question } = alertData.data();
+            alertQst.innerHTML = question;
+        }else {
+            alertQst.innerHTML = '-';
+        }
+
         alertType.innerHTML = type;
         alertInterval.innerHTML = interval;
         alertDuration.innerHTML = duration;
@@ -179,14 +194,75 @@ async function addAlertToLog(alertData) {
                 ptcpLog.removeChild(ptcpLog.lastChild);
             }
             
+            const { question, multipleChoice, answear } = alertData.data();
             const alertDoc      = doc(alertRecords, alertData.id);
             const participants  = collection(alertDoc, 'participants');
             const querySnapshot = await getDocs(participants);
             const { attendees } = (await getDoc(callDoc)).data();
             const { host } = ( await getDoc(callDoc)).data();
+
+            const Box1 = alertBox1.cloneNode(true);
+            const alertType = Box1.querySelector('#alert-type');
+            const alertInterval = Box1.querySelector('#alert-interval');
+            const alertTime = Box1.querySelector('#alert-time');
+            const timeStart = Box1.querySelector('#time-start');
+            const returnAlertList = Box1.querySelector('#return-alert-list');
+
+            alertType.innerHTML = '警醒類型：' + type;
+            alertInterval.innerHTML = "警醒間隔：" + interval;
+            alertTime.innerHTML = '警醒持續時間：' + duration;
+            timeStart.innerHTML = '建立時間：' + timeString;
+            returnAlertList.addEventListener('click', async (e) => {
+                ptcpLog.hidden = true;
+                listAlert.classList.toggle("close");
+                listPtcp.classList.toggle("close");
+                alertSearch.hidden = false;
+                wrapper.hidden = true;
+                while (wrapper.lastChild) {
+                    wrapper.removeChild(wrapper.lastChild);
+                }
+            });
+            wrapper.appendChild(Box1);
+
+
+
+            if( type != 'click' ){
+                const Box2 = alertBox2.cloneNode(true);
+                const alertQuestion = Box2.querySelector('#alert-question');
+                alertQuestion.innerHTML = '題目： ' + question + ' ?';
+                wrapper.appendChild(Box2);
+                if( type === 'multiple choice' || type === 'vote' ){
+                    const Box3 = alertBox3.cloneNode(true);
+                    let i = 1;
+                    for (const option of multipleChoice) {
+                        const alertOptions = document.createElement('div');
+                        alertOptions.classList.add('alert-options','nested');
+                        alertOptions.innerHTML = '( ' + i + ' ) ' + option;
+                        Box3.appendChild(alertOptions);
+                        if( answear != undefined ) {
+                            if( answear === i.toString() ) {
+                                alertOptions.classList.add("answear");
+                            }
+                        }
+                        const q = query(participants, where('answear', '==', i.toString() ));
+                        const snapshot1 = await getDocs(q);
+                        let total = 0;
+                        snapshot1.forEach(async () => {;
+                            total++;
+                        });
+                        console.log(attendees.length);
+                        console.log(total);
+                        alertOptions.innerHTML += '  |  ' + total + '人  |  ' + total/(attendees.length - 1) * 100 + '%'; 
+                        i++;
+                    }
+                    wrapper.appendChild(Box3);
+                }
+            }
+
             for (const userId of attendees) {
                 if( userId != host ) {
                     let clickfield = '未加入會議';
+                    let clickColor = 'var(--text-color)';
                     let answearfield = '-';
                     let timeStringfield = '-';
                     const user = doc(users, userId);
@@ -200,8 +276,10 @@ async function addAlertToLog(alertData) {
                             }
                             if( click === true ) {
                                 clickfield = '完成';
-                            }else if(click === false){
+                                clickColor = '#7CFC00'
+                            }else if(click === false ){
                                 clickfield = '未完成';
+                                clickColor = '#ff0000'
                             }
                             if( answear != undefined ) {
                                 answearfield = answear;
@@ -216,22 +294,27 @@ async function addAlertToLog(alertData) {
                 
                     ptcpName.innerHTML = data.name;
                     ptcpClick.innerHTML = clickfield;
+                    ptcpClick.style.color = clickColor;
                     ptcpAns.innerHTML = answearfield;
                     ptcpTimestamp.innerHTML = timeStringfield;
                     ptcpLog.insertBefore(ptcp, ptcpLog.children[0]);
                 }
             }
+
             ptcpLog.hidden = false;
             listAlert.classList.toggle("close");
             listPtcp.classList.toggle("close");
+            alertSearch.hidden = true;
+            wrapper.hidden = false;
         });
     }
 
 }
+
 alertSearch.onkeyup = function() {myFunction()};
 function myFunction() {
 
-  let filter, tr, td1, td2, td3, td4, i, txtValue;
+  let filter, tr, td1, td2, td3, td4, td5, i, txtValue;
   filter = alertSearch.value.toUpperCase();
   tr = alertLog.getElementsByTagName('tr');
 
@@ -240,7 +323,8 @@ function myFunction() {
     td2 = tr[i].getElementsByTagName("td")[1];
     td3 = tr[i].getElementsByTagName("td")[2];
     td4 = tr[i].getElementsByTagName("td")[3];
-    txtValue = (td1.textContent || td1.innerText) + (td2.textContent || td2.innerText) + (td3.textContent || td3.innerText) + (td4.textContent || td4.innerText);
+    td5 = tr[i].getElementsByTagName("td")[4];
+    txtValue = (td1.textContent || td1.innerText) + (td2.textContent || td2.innerText) + (td3.textContent || td3.innerText) + (td4.textContent || td4.innerText) + (td5.textContent || td5.innerText);
     if (txtValue.toUpperCase().indexOf(filter) > -1) {
         tr[i].style.display = "";
     } else {

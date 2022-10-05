@@ -83,6 +83,7 @@
         <td class="alert__interval"></td>
         <td class="alert__duration"></td>
         <td class="alert__timestamp"></td>
+        <td class="alert__question"></td>
     </tr>
 </table>
 
@@ -94,6 +95,20 @@
         <td class="ptcp__timestamp"></td>
     </tr>
 </table>
+
+<div class="box box1">
+    <button id="return-alert-list">返回</button>
+    <div id="alert-type" class="nested"></div>
+    <div id="alert-interval" class="nested"></div>
+    <div id="alert-time" class="nested"></div>
+    <div id="time-start" class="nested"></div>
+</div>
+<div class="box box2">
+    <div id="alert-question" class="nested"></div>
+</div>
+<div class="box box3">
+</div>
+
 
 {% endblock prefab %}
 
@@ -172,6 +187,9 @@
                                 <h1>警醒紀錄</h1>
 
                                 <input type="text" id="alert__Search" class="search" onkeyup="myFunction()" placeholder="Search for the keyword..">
+
+                                <div id="wrapper" hidden></div>
+
                                 <div id="list">
                                     <table class='list__alert'>
                                         <thead>
@@ -180,11 +198,13 @@
                                                 <th>警醒間隔</th>
                                                 <th>持續時間</th>
                                                 <th>建立時間</th>
+                                                <th>問題內容</th>
                                             </tr>
                                         </thead>
                                         <tbody id="alert-log">
                                         </tbody>
                                     </table>
+
                                     <table class='list__ptcp close'>
                                         <thead>
                                             <tr class="ptcp">
