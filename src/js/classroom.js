@@ -45,6 +45,7 @@ const writeSubmitBtn    = document.querySelector('#write-submit-btn');
 
 const chatLog           = document.querySelector('#chat-log');
 const downloadChatBtn   = document.querySelector('#download-chat-btn');
+const downloadAlertBtn   = document.querySelector('#download-alert-btn');
 
 const alertSearch       = document.querySelector('#alert__Search');
 const listAlert         = document.querySelector('.list__alert');
@@ -534,6 +535,94 @@ async function getChatLog() {
                 + timeString + '\n'
                 + text + '\n';
     }
+    return log;
+}
+
+downloadAlertBtn.addEventListener('click', async () => {
+    const element = document.createElement('a');
+    const alertLogString = await getAlertLog();
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(alertLogString));
+    element.setAttribute('download', 'alertLog.csv');
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+});
+
+async function getAlertLog() {
+    const alertDocs = await getDocs(alertRecords);
+    console.log(alertDocs);
+    let log = '';
+    for (const alert of alertDocs.docs) {
+        const { alertType:type,interval,duration,timestamp, done } = alert.data();
+        console.log(alert);
+        const alertDoc      = doc(alertRecords, alert.id);
+        const participants  = collection( alertDoc,'participants' );
+        const querySnapshot = await getDocs(participants);
+        const { attendees } = (await getDoc(callDoc)).data();
+        const { host } = ( await getDoc(callDoc)).data();
+        if( done === true ) {
+            const timeString = timestamp.toDate().toLocaleString();
+
+            log += '警醒類型,警醒間隔,持續時間,建立時間' + '\n';
+            log += type + ',' + interval + ',' + duration + ',' + timeString + '\n';
+
+            if( type != 'click' ) {
+                const { question } = alert.data();
+                log += '問題,' + question + '\n';
+                if( type === 'multiple choice' || type === 'vote' ){
+                    const { multipleChoice, answear } = alert.data();
+                    let i = 1;
+                    for (const option of multipleChoice) {
+                        log += '選項' + i + ',' + option + ',';
+                        const q = query(participants, where('answear', '==', i.toString() ));
+                        const snapshot1 = await getDocs(q);
+                        let total = 0;
+                        snapshot1.forEach(async () => {;
+                            total++;
+                        });
+                        log += total + '人,' + total/(attendees.length - 1) * 100 + '%' + '\n';
+                        i++;
+                    }
+                    if( answear != undefined ) {
+                        if( answear === i.toString() ) {
+                            log += '答案,' + answear + '\n';
+                        }
+                    }
+                }
+            }
+            log += '姓名,點擊狀態,回答,完成時間\n'
+            for (const userId of attendees) {
+                if( userId != host ) {
+                    let clickfield = '未加入會議';
+                    let answearfield = '-';
+                    let timeStringfield = '-';
+                    const user = doc(users, userId);
+                    const data = (await getDoc(user)).data();
+                    querySnapshot.forEach( async (docc) => {
+                        if( userId === docc.id) {
+                            const { answear,click,timestamp } = docc.data();
+                            if( timestamp != undefined ) {
+                                timeStringfield = timestamp.toDate().toLocaleString();
+                            }
+                            if( click === true ) {
+                                clickfield = '完成';
+                            }else if(click === false ){
+                                clickfield = '未完成';
+                            }
+                            if( answear != undefined ) {
+                                answearfield = answear;
+                            }
+                        }
+                    });
+                    
+                    log +=  data.name + ',' + clickfield + ',' + answearfield + ',' + timeStringfield + '\n';
+                }
+            }
+        }
+    }
+    
     return log;
 }
 
