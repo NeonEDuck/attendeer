@@ -41,6 +41,9 @@ const chat           = document.querySelector('#chat');
 const chatRoom       = document.querySelector('#chat__room')
 const msgInput       = document.querySelector('#msg-input');
 const callId         = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+const profession     = document.querySelector('.profession');
+const callName     = document.querySelector('.name');
+
 
 // Global variable
 let localUserId = null;
@@ -180,6 +183,9 @@ screenShareBtn.addEventListener('click', async () => {
 enterBtn.addEventListener('click', async () => {
     console.log(`join call: ${callId} as ${localUserId}`);
     socket.emit('join-call', callId, localUserId);
+    const { name } = (await getDoc(callDoc)).data();
+    profession.innerHTML = callId;
+    callName.innerHTML = name;
 
     socket.on('user-connected', async (socketId, userId) => {
         console.log(`user connected: ${userId}`);
@@ -705,9 +711,11 @@ export function setupAlertListener() {
                             textarea.classList.add('qst_show')
                             textarea.innerHTML = question;
                             alertShow.appendChild(textarea);
+                            const div = document.createElement('div');
+                            alertShow.appendChild(div);
                             const textarea1 = document.createElement('textarea');
                             textarea1.classList.add('qst_show_answear')
-                            alertShow.appendChild(textarea1);
+                            div.appendChild(textarea1);
                         }else if(alertType === 'vote') {
                             const textarea = document.createElement('textarea');
                             textarea.setAttribute("readonly", "readonly");
@@ -797,7 +805,7 @@ export function setupAlertListener() {
                                         alertModule.hidden = true;
                                     }
                                 }else if(alertType === 'essay question') {
-                                    if(qstShowAnswear.value != null) {
+                                    if(qstShowAnswear.value != '') {
                                         const data = {
                                             click: true,
                                             answear: qstShowAnswear.value,

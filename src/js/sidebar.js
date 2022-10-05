@@ -558,6 +558,9 @@ export function sidebarListener() {
                 }
                 else {
                     console.log('不是主辦人只提供個人警醒資訊');
+                    const test = body.querySelector("#test");
+                    test.hidden = false;
+                    floatingAlert.hidden = true;
                 }
             }
 

@@ -22,7 +22,7 @@
     --gray: #888;
     --dark-gray: #666;
 
-    --shadow: drop-shadow(0px 0.5em 1em hsla(240 5% 41% / 20%));
+
 
     --font-family: cursive;
 
@@ -59,6 +59,39 @@
     --tran-03: all 0.3s ease;
     --tran-04: all 0.4s ease;
     --tran-05: all 0.5s ease;
+
+    --clr-body: hsl(215 46% 93%);
+
+    --clr-component-300: rgb(235, 247, 255);
+    --clr-component-500: hsl(206 23% 94%);
+    --clr-component-700: hsl(0 0% 68%);
+
+    --clr-primary-300: hsl(265 90% 65%);
+    --clr-primary-500: hsl(245 99% 68%);
+    --clr-primary-700: hsl(243 56% 46%);
+
+    --clr-text-300: hsl(0 0% 44%);
+    --clr-text-500: hsl(0 0% 15%);
+    --clr-text-700: hsl(0 0% 0%);
+
+    --clr-text-white: hsl(0 0% 100%);
+    --clr-text-black: hsl(0 0% 15%);
+
+    --clr-cancel: hsl(14 90% 50%);
+
+    --clr-bubble-self: hsl(203 52% 71%);
+    --clr-bubble-other: hsl(218 13% 50%);
+
+    --clr-shadow-300: hsla(240 5% 41% / 20%);
+    --clr-shadow-500: hsl(225, 39%, 85%);
+    --clr-shadow-700: hsl(224, 41%, 82%);
+
+    --box-shadow-300: 0.1rem 0.1rem 0.25rem var(--clr-shadow-700), -0.1rem -0.1rem 0.25rem var(--clr-shadow-500);
+    --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
+
+    --transition-timing: 250ms ease;
+    --transition-color: color var(--transition-timing), background-color var(--transition-timing);
+    --transition-inset: inset var(--transition-timing);
 }
 
 .dark {
@@ -71,7 +104,7 @@
         --color-hover: #323048;
         --color-txt: #f8fbff;
 
-        --shadow: drop-shadow(0px 0.5em 1em hsla(240 100% 0% / 100%));
+
 
         --body-color: #18191a;
         --body-color-2: #29282ce0;
@@ -99,5 +132,33 @@
         --floating--color-33: #adadad;
         --color-component-700: var(--floating--color-1);
         --color-component-500: hsl(0 0% 11% / 100%);
+
+        --clr-body: hsl(210, 4%, 10%);
+
+        --clr-component-300: hsl(210 5% 30%);
+        --clr-component-500: hsl(210 6% 16%);
+        --clr-component-700: hsl(210 4% 12%);
+
+        --clr-primary-300: hsl(194 80% 43%);
+        --clr-primary-500: hsl(210 73% 44%);
+        --clr-primary-700: hsl(219 88% 39%);
+
+        --clr-text-300: hsl(0 0% 58%);
+        --clr-text-500: hsl(0 0% 80%);
+        --clr-text-700: hsl(0 0% 100%);
+
+        --clr-text-white: #fff;
+        --clr-text-black: #0f0f0f;
+
+        --clr-cancel: hsl(9 95% 45%);
+
+        --clr-bubble-self: hsl(202 31% 53%);
+        --clr-bubble-other: hsl(216 18% 31%);
+
+        --clr-shadow-300: hsl(240 5% 41% / 20%);
+        --clr-shadow-500: hsl(0 5% 20% / 80%);
+        --clr-shadow-700: hsl(0 0% 0%);
+
+        --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
     }
 }
