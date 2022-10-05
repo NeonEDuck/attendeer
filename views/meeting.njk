@@ -12,17 +12,9 @@
     <div class="cam">
         <video class="cam__video" autoplay playsinline control=false></video>
         <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
-        {# <div id="cam__menu" class="cam__menu close">
-            <li class="cam__li" style="--i:0;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:1;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:2;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-        </div> #}
+        <div class="cam__menu">
+            <button class="cam__pin-btn" data-tooltip="釘選"><i class='bx bx-pin'></i></button>
+        </div>
         <span class="cam__name"></span>
         <span class="cam__warning" hidden>!</span>
     </div>
@@ -148,10 +140,12 @@
 
         <div id="meeting-panel__left">
             <div id="cam-area">
+                <div id="pinned-cam-container">
+
+                </div>
                 <div id="cam-container">
 
                 </div>
-
                 <div id='alert' hidden>
 
                 </div>

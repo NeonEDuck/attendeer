@@ -58,7 +58,7 @@
     cursor: pointer;
     animation: to-top 0.5s forwards;
     border-radius: 50%;
-    transition: background-color var(--transition-color);
+    transition: var(--transition-color);
 }
 
 .calendar-days div:hover {

@@ -16,9 +16,8 @@ const msgPrefab    = prefab.querySelector('.msg');
 const myMsgPrefab  = prefab.querySelector('.my-msg');
 const notificationPrefab  = prefab.querySelector('.notification');
 
-const sidebarRight = document.querySelector(".sidebar-right");
-const icons  = document.querySelectorAll('.ico');
-// const camMenu  = document.querySelector('#cam__menu');
+const sidebarRight      = document.querySelector(".sidebar-right");
+const icons             = document.querySelectorAll('.ico');
 
 const micBtn            = document.querySelector('#mic-btn');
 const webcamBtn         = document.querySelector('#webcam-btn');
@@ -37,6 +36,7 @@ const meetingPanel   = document.querySelector('#meeting-panel');
 
 const cpCamContainer        = document.querySelector('#confirm-panel__cam-container');
 const camContainer          = document.querySelector('#cam-container');
+const pinnedCamContainer    = document.querySelector('#pinned-cam-container');
 const camArea               = document.querySelector('#cam-area');
 const notificationContainer = document.querySelector('#notification-container');
 const toolbar               = document.querySelector('#toolbar');
@@ -54,7 +54,7 @@ const localStreams = {
     'screenShare': null,
     'audio': null,
 };
-Cam.init(camArea, camContainer);
+Cam.init(camArea, camContainer, pinnedCamContainer);
 Peer.init(localStreams, socket);
 let unmute = true;
 let webcamOn = false;
@@ -71,6 +71,7 @@ let dismissedClasses = [];
 // Default state
 webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
+localCams.webcam.node.querySelector('.cam__menu').hidden = true;
 localCams.screenShare.node.hidden = true;
 
 let userAbove = '';
@@ -110,6 +111,16 @@ document.onreadystatechange = async () => {
     await requestStreamPermission();
     await refreshStream();
 }
+
+plusTestBtn.addEventListener('click', () => {
+    const cam = camPrefab.cloneNode(true);
+
+    camContainer.appendChild(cam);
+});
+
+minusTestBtn.addEventListener('click', () => {
+    camContainer.lastChild.remove();
+});
 
 micBtn.addEventListener('click', async () => {
     try {
@@ -507,7 +518,7 @@ enterBtn.addEventListener('click', async () => {
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
 
-    // document.getElementById("cam__menu").classList.remove('close');
+    localCams.webcam.node.querySelector('.cam__menu').hidden = false;
 
     sidebarListener();
 
@@ -695,13 +706,13 @@ function getDismissTime() {
             const percentage = (minuteOfToday - startTime) / (endTime - startTime);
             if (percentage < 0.5) {
                 if (minuteOfToday - startTime < dismissTimePadding) {
-                    console.log(`現在下課會是第${prevName}節下課`);
+                    // console.log(`現在下課會是第${prevName}節下課`);
                     return [prevName, startTime - prevEndTime];
                 }
             }
             else {
                 if (endTime - minuteOfToday < dismissTimePadding) {
-                    console.log(`現在下課會是第${classTime.name}節下課`);
+                    // console.log(`現在下課會是第${classTime.name}節下課`);
                     if (i < schoolData.data.length - 1) {
                         const nextStartTime = timeToMinutes(schoolData.data[i+1].start);
                         return [classTime.name, nextStartTime - endTime];
@@ -709,19 +720,22 @@ function getDismissTime() {
                     return [classTime.name, 24 * 60 - endTime];
                 }
             }
-            console.log(`現在是第${classTime.name}節上課`);
+            // console.log(`現在是第${classTime.name}節上課`);
             return [null, 0];
         }
         else {
             if (startTime > minuteOfToday) {
-                console.log(`現在是第${prevName}節下課`);
-                console.log(`${startTime - prevEndTime}`);
+                // console.log(`現在是第${prevName}節下課`);
+                // console.log(`${startTime - prevEndTime}`);
                 return [prevName, startTime - prevEndTime];
             }
         }
         prevEndTime = endTime;
         prevName = classTime.name;
     }
+
+    // console.log(`現在放學了`);
+    return [null, 0];
 }
 
 function spawnNotification() {
