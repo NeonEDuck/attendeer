@@ -8,11 +8,12 @@ const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]'
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
 const msgPrefab         = prefab.querySelector('.msg');
 const alertPrefab       = prefab.querySelector('.alert');
-const ptcpPrefab       = prefab.querySelector('.ptcp');
-const alertBox1       = prefab.querySelector('.box1');
-const alertBox2       = prefab.querySelector('.box2');
-const alertBox3       = prefab.querySelector('.box3');
+const ptcpPrefab        = prefab.querySelector('.ptcp');
+const alertBox1         = prefab.querySelector('.box1');
+const alertBox2         = prefab.querySelector('.box2');
+const alertBox3         = prefab.querySelector('.box3');
 const postreplyPrefab   = prefab.querySelector('.post-reply');
+const loading           = document.querySelector('.loading');
 const className         = document.querySelector('#class-name');
 const settingBtn        = document.querySelector('#setting-btn');
 const callBtn           = document.querySelector('#call-btn');
@@ -45,7 +46,7 @@ const writeSubmitBtn    = document.querySelector('#write-submit-btn');
 
 const chatLog           = document.querySelector('#chat-log');
 const downloadChatBtn   = document.querySelector('#download-chat-btn');
-const downloadAlertBtn   = document.querySelector('#download-alert-btn');
+const downloadAlertBtn  = document.querySelector('#download-alert-btn');
 
 const alertSearch       = document.querySelector('#alert__Search');
 const listAlert         = document.querySelector('.list__alert');
@@ -186,9 +187,12 @@ async function addAlertToLog(alertData) {
         alertDuration.innerHTML = duration;
         alertTime.innerHTML = timeString;
         alertLog.insertBefore(alert, alertLog.children[0]);
-    
+        
         alert.addEventListener('click', async (e) => {
-    
+            
+            listAlert.classList.toggle("close");
+            alertSearch.hidden = true;
+            loading.style.display = 'block';
             ptcpLog.hidden = true;
 
             while (ptcpLog.lastChild) {
@@ -214,6 +218,7 @@ async function addAlertToLog(alertData) {
             alertTime.innerHTML = '警醒持續時間：' + duration;
             timeStart.innerHTML = '建立時間：' + timeString;
             returnAlertList.addEventListener('click', async (e) => {
+                alertSearch.hidden = false;
                 ptcpLog.hidden = true;
                 listAlert.classList.toggle("close");
                 listPtcp.classList.toggle("close");
@@ -238,8 +243,10 @@ async function addAlertToLog(alertData) {
                     for (const option of multipleChoice) {
                         const alertOptions = document.createElement('div');
                         alertOptions.classList.add('alert-options','nested');
-                        alertOptions.innerHTML = '( ' + i + ' ) ' + option;
                         Box3.appendChild(alertOptions);
+                        const p1 = document.createElement('p');
+                        p1.innerHTML = '( ' + i + ' ) ' + option;
+                        alertOptions.appendChild(p1);
                         if( answear != undefined ) {
                             if( answear === i.toString() ) {
                                 alertOptions.classList.add("answear");
@@ -247,13 +254,23 @@ async function addAlertToLog(alertData) {
                         }
                         const q = query(participants, where('answear', '==', i.toString() ));
                         const snapshot1 = await getDocs(q);
-                        let total = 0;
-                        snapshot1.forEach(async () => {;
-                            total++;
+                        let amount = 0;
+                        snapshot1.forEach(async () => {
+                            amount++;
                         });
-                        console.log(attendees.length);
-                        console.log(total);
-                        alertOptions.innerHTML += '  |  ' + total + '人  |  ' + total/(attendees.length - 1) * 100 + '%'; 
+                        const p2 = document.createElement('p');
+                        p2.innerHTML = amount + '人';
+                        alertOptions.appendChild(p2);
+                        let total = 0;
+                        querySnapshot.forEach( async (docc) => {
+                            const { answear } = docc.data();
+                            if( answear != undefined ) {
+                                total++;
+                            }
+                        });
+                        const p3 = document.createElement('p');
+                        p3.innerHTML = amount/total*100 + '%';
+                        alertOptions.appendChild(p3);
                         i++;
                     }
                     wrapper.appendChild(Box3);
@@ -302,8 +319,8 @@ async function addAlertToLog(alertData) {
                 }
             }
 
+            loading.style.display = 'none';
             ptcpLog.hidden = false;
-            listAlert.classList.toggle("close");
             listPtcp.classList.toggle("close");
             alertSearch.hidden = true;
             wrapper.hidden = false;
@@ -511,6 +528,8 @@ writeSubmitBtn.addEventListener('click', async () => {
 });
 
 downloadChatBtn.addEventListener('click', async () => {
+    downloadChatBtn.disabled = true;
+    downloadChatBtn.innerHTML = '載入中';
     const element = document.createElement('a');
     const chatLogString = await getChatLog();
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(chatLogString));
@@ -520,6 +539,8 @@ downloadChatBtn.addEventListener('click', async () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    downloadChatBtn.disabled = false;
+    downloadChatBtn.innerHTML = '下載';
 });
 
 async function getChatLog() {
@@ -539,6 +560,8 @@ async function getChatLog() {
 }
 
 downloadAlertBtn.addEventListener('click', async () => {
+    downloadAlertBtn.disabled = true;
+    downloadAlertBtn.innerHTML = '載入中';
     const element = document.createElement('a');
     const alertLogString = await getAlertLog();
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(alertLogString));
@@ -548,6 +571,8 @@ downloadAlertBtn.addEventListener('click', async () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    downloadAlertBtn.disabled = false;
+    downloadAlertBtn.innerHTML = '下載';
 });
 
 async function getAlertLog() {
@@ -578,11 +603,18 @@ async function getAlertLog() {
                         log += '選項' + i + ',' + option + ',';
                         const q = query(participants, where('answear', '==', i.toString() ));
                         const snapshot1 = await getDocs(q);
-                        let total = 0;
+                        let amount = 0;
                         snapshot1.forEach(async () => {;
-                            total++;
+                            amount++;
                         });
-                        log += total + '人,' + total/(attendees.length - 1) * 100 + '%' + '\n';
+                        let total = 0;
+                        querySnapshot.forEach( async (docc) => {
+                            const { answear } = docc.data();
+                            if( answear != undefined ) {
+                                total++;
+                            }
+                        });
+                        log += amount + '人,' + amount/total*100 + '%' + '\n';
                         i++;
                     }
                     if( answear != undefined ) {

@@ -95,6 +95,10 @@ $post-gap: 4em;
                     color: #ff0000;
                 }
             }
+            .nested {
+                display: grid;
+                grid-template-columns: 15fr 1fr 1fr;
+            }
         }
     }
     
