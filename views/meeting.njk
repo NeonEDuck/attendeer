@@ -44,13 +44,13 @@
             <p class="my-msg__text" ></p>
         </div>
     </li>
-    <li class="notification">
+    <li class="notification" data-type="generic">
         <header>
             {% include 'svg/bell.svg' %}
         </header>
         <div class="flex-item-1">
-            <h3>下課提醒</h3>
-            <p>現在是下課時間</p>
+            <h3 class="notification__title">下課提醒</h3>
+            <p class="notification__text">現在是下課時間</p>
         </div>
         <footer>
             <button class="notification__close-btn btn-red">{% include 'svg/cross.svg' %}</button>
