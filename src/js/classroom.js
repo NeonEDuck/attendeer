@@ -230,8 +230,6 @@ async function addAlertToLog(alertData) {
             });
             wrapper.appendChild(Box1);
 
-
-
             if( type != 'click' ){
                 const Box2 = alertBox2.cloneNode(true);
                 const alertQuestion = Box2.querySelector('#alert-question');
@@ -269,7 +267,11 @@ async function addAlertToLog(alertData) {
                             }
                         });
                         const p3 = document.createElement('p');
-                        p3.innerHTML = amount/total*100 + '%';
+                        if(total!=0) {
+                            p3.innerHTML = amount/total*100 + '%';
+                        }else {
+                            p3.innerHTML = '0%';
+                        }
                         alertOptions.appendChild(p3);
                         i++;
                     }
@@ -277,46 +279,15 @@ async function addAlertToLog(alertData) {
                 }
             }
 
-            for (const userId of attendees) {
-                if( userId != host ) {
-                    let clickfield = '未加入會議';
-                    let clickColor = 'var(--text-color)';
-                    let answearfield = '-';
-                    let timeStringfield = '-';
-                    const user = doc(users, userId);
-                    const data = (await getDoc(user)).data();
-                    querySnapshot.forEach( async (docc) => {
-                        if( userId === docc.id) {
-                            console.log(userId ," ", docc.id);
-                            const { answear,click,timestamp } = docc.data();
-                            if( timestamp != undefined ) {
-                                timeStringfield = timestamp.toDate().toLocaleString();
-                            }
-                            if( click === true ) {
-                                clickfield = '完成';
-                                clickColor = '#7CFC00'
-                            }else if(click === false ){
-                                clickfield = '未完成';
-                                clickColor = '#ff0000'
-                            }
-                            if( answear != undefined ) {
-                                answearfield = answear;
-                            }
-                        }
-                    });
-                    const ptcp = ptcpPrefab.cloneNode(true);
-                    const ptcpName = ptcp.querySelector('.ptcp__name');
-                    const ptcpClick = ptcp.querySelector('.ptcp__click');
-                    const ptcpAns = ptcp.querySelector('.ptcp__ans');
-                    const ptcpTimestamp = ptcp.querySelector('.ptcp__timestamp');
-                
-                    ptcpName.innerHTML = data.name;
-                    ptcpClick.innerHTML = clickfield;
-                    ptcpClick.style.color = clickColor;
-                    ptcpAns.innerHTML = answearfield;
-                    ptcpTimestamp.innerHTML = timeStringfield;
-                    ptcpLog.insertBefore(ptcp, ptcpLog.children[0]);
+            const user = await getUser();
+            let localUserId = user.uid;
+
+            if( localUserId === host ) {
+                for (const userId of attendees) {
+                    ptcpLogFunction(userId, alertData);
                 }
+            }else {
+                ptcpLogFunction(localUserId, alertData);
             }
 
             loading.style.display = 'none';
@@ -327,6 +298,51 @@ async function addAlertToLog(alertData) {
         });
     }
 
+}
+
+async function ptcpLogFunction(userId ,alertData) {
+    const alertDoc      = doc(alertRecords, alertData.id);
+    const participants  = collection(alertDoc, 'participants');
+    const querySnapshot = await getDocs(participants);
+    const { host } = ( await getDoc(callDoc)).data();
+    if( userId != host ) {
+        let clickfield = '未加入會議';
+        let clickColor = 'var(--text-color)';
+        let answearfield = '-';
+        let timeStringfield = '-';
+        const user = doc(users, userId);
+        const data = (await getDoc(user)).data();
+        querySnapshot.forEach( async (docc) => {
+            if( userId === docc.id) {
+                const { answear,click,timestamp } = docc.data();
+                if( timestamp != undefined ) {
+                    timeStringfield = timestamp.toDate().toLocaleString();
+                }
+                if( click === true ) {
+                    clickfield = '完成';
+                    clickColor = '#7CFC00'
+                }else if(click === false ){
+                    clickfield = '未完成';
+                    clickColor = '#ff0000'
+                }
+                if( answear != undefined ) {
+                    answearfield = answear;
+                }
+            }
+        });
+        const ptcp = ptcpPrefab.cloneNode(true);
+        const ptcpName = ptcp.querySelector('.ptcp__name');
+        const ptcpClick = ptcp.querySelector('.ptcp__click');
+        const ptcpAns = ptcp.querySelector('.ptcp__ans');
+        const ptcpTimestamp = ptcp.querySelector('.ptcp__timestamp');
+    
+        ptcpName.innerHTML = data.name;
+        ptcpClick.innerHTML = clickfield;
+        ptcpClick.style.color = clickColor;
+        ptcpAns.innerHTML = answearfield;
+        ptcpTimestamp.innerHTML = timeStringfield;
+        ptcpLog.insertBefore(ptcp, ptcpLog.children[0]);
+    }
 }
 
 alertSearch.onkeyup = function() {myFunction()};
@@ -577,11 +593,9 @@ downloadAlertBtn.addEventListener('click', async () => {
 
 async function getAlertLog() {
     const alertDocs = await getDocs(alertRecords);
-    console.log(alertDocs);
     let log = '';
     for (const alert of alertDocs.docs) {
         const { alertType:type,interval,duration,timestamp, done } = alert.data();
-        console.log(alert);
         const alertDoc      = doc(alertRecords, alert.id);
         const participants  = collection( alertDoc,'participants' );
         const querySnapshot = await getDocs(participants);
@@ -614,7 +628,11 @@ async function getAlertLog() {
                                 total++;
                             }
                         });
-                        log += amount + '人,' + amount/total*100 + '%' + '\n';
+                        if(total!=0) {
+                            log += amount + '人,' + amount/total*100 + '%' + '\n';
+                        }else {
+                            log += amount + '人,0%' + '\n';
+                        }
                         i++;
                     }
                     if( answear != undefined ) {
@@ -624,37 +642,55 @@ async function getAlertLog() {
                     }
                 }
             }
-            log += '姓名,點擊狀態,回答,完成時間\n'
-            for (const userId of attendees) {
-                if( userId != host ) {
-                    let clickfield = '未加入會議';
-                    let answearfield = '-';
-                    let timeStringfield = '-';
-                    const user = doc(users, userId);
-                    const data = (await getDoc(user)).data();
-                    querySnapshot.forEach( async (docc) => {
-                        if( userId === docc.id) {
-                            const { answear,click,timestamp } = docc.data();
-                            if( timestamp != undefined ) {
-                                timeStringfield = timestamp.toDate().toLocaleString();
-                            }
-                            if( click === true ) {
-                                clickfield = '完成';
-                            }else if(click === false ){
-                                clickfield = '未完成';
-                            }
-                            if( answear != undefined ) {
-                                answearfield = answear;
-                            }
-                        }
-                    });
-                    
-                    log +=  data.name + ',' + clickfield + ',' + answearfield + ',' + timeStringfield + '\n';
+            log += '姓名,點擊狀態,回答,完成時間\n';
+
+            const user = await getUser();
+            let localUserId = user.uid;
+
+            if( localUserId === host ) {
+                for (const userId of attendees) {
+                    log = await downloadAlert(userId, log, alert);
                 }
+            }else {
+                log = await downloadAlert(localUserId, log, alert);
             }
         }
     }
     
+    return log;
+}
+
+async function downloadAlert(userId, log, alert) {
+    const alertDoc      = doc(alertRecords, alert.id);
+    const participants  = collection( alertDoc,'participants' );
+    const querySnapshot = await getDocs(participants);
+    const { host } = ( await getDoc(callDoc)).data();
+    if( userId != host ) {
+        let clickfield = '未加入會議';
+        let answearfield = '-';
+        let timeStringfield = '-';
+        const user = doc(users, userId);
+        const data = (await getDoc(user)).data();
+        querySnapshot.forEach( async (docc) => {
+            if( userId === docc.id) {
+                const { answear,click,timestamp } = docc.data();
+                if( timestamp != undefined ) {
+                    timeStringfield = timestamp.toDate().toLocaleString();
+                }
+                if( click === true ) {
+                    clickfield = '完成';
+                }else if(click === false ){
+                    clickfield = '未完成';
+                }
+                if( answear != undefined ) {
+                    answearfield = answear;
+                }
+            }
+        });
+        
+        log +=  data.name + ',' + clickfield + ',' + answearfield + ',' + timeStringfield + '\n';
+    }
+
     return log;
 }
 
