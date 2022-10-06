@@ -90,11 +90,13 @@ export let alertDocCurrently;
 
 document.onreadystatechange = async () => {
     const user = await getUser();
-    let callDocSnapshot;
 
     console.log('checking permission');
     try {
-        callDocSnapshot = await getDoc(callDoc);
+        const callDocSnapshot = await getDoc(callDoc);
+        const { name } = callDocSnapshot.data();
+        document.querySelector('.sidebar__class-name').innerHTML = name;
+        document.querySelector('.sidebar__class-id').innerHTML = callId;
     }
     catch (err) {
         console.log('no permission');

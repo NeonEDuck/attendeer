@@ -172,16 +172,17 @@
             .header-text {
                 display: flex;
                 flex-direction: column;
-
-                .name {
-                    font-weight: 600;
-                }
-
-                .profession {
-                    margin-top: -2px;
-                }
             }
         }
+    }
+
+
+    &__class-name {
+        font-weight: 600;
+    }
+
+    &__class-id {
+        margin-top: -2px;
     }
 
     .toggle {
