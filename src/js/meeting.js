@@ -47,6 +47,9 @@ const chatRoom              = document.querySelector('#chat__room')
 const msgInput              = document.querySelector('#msg-input');
 const callId                = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
+// Audio
+const notificationSound = new Audio('/audio/notification_sound.wav');
+
 // Global variable
 let isHost = false;
 let localUserId = null;
@@ -734,8 +737,10 @@ function getDismissTime() {
     return [null, 0];
 }
 
+
 function spawnNotification() {
     const notification = notificationPrefab.cloneNode(true);
+    notificationSound.play();
     const closeBtn = notification.querySelector('.notification__close-btn');
     notificationContainer.appendChild(notification);
     notification.dataset.type = 'dismiss-class';
