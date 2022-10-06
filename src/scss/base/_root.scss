@@ -58,11 +58,15 @@
     --tran-04: all 0.4s ease;
     --tran-05: all 0.5s ease;
 
+    /* ====== here ====== */
     --clr-body: hsl(215 46% 93%);
 
     --clr-component-300: rgb(235, 247, 255);
     --clr-component-500: hsl(206 23% 94%);
     --clr-component-700: hsl(0 0% 68%);
+    --clr-component-300-reverse: hsl(210 5% 30%);
+    --clr-component-500-reverse: hsl(210 6% 16%);
+    --clr-component-700-reverse: hsl(210 4% 12%);
 
     --clr-primary-300: hsl(265 90% 65%);
     --clr-primary-500: hsl(245 99% 68%);
@@ -71,6 +75,9 @@
     --clr-text-300: hsl(0 0% 44%);
     --clr-text-500: hsl(0 0% 15%);
     --clr-text-700: hsl(0 0% 0%);
+    --clr-text-300-reverse: hsl(0 0% 58%);
+    --clr-text-500-reverse: hsl(0 0% 80%);
+    --clr-text-700-reverse: hsl(0 0% 100%);
 
     --clr-text-white: hsl(0 0% 100%);
     --clr-text-black: hsl(0 0% 15%);
@@ -86,6 +93,7 @@
 
     --box-shadow-300: 0.1rem 0.1rem 0.25rem var(--clr-shadow-700), -0.1rem -0.1rem 0.25rem var(--clr-shadow-500);
     --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
+    --box-shadow-700: 0.3rem 0.3rem 1rem var(--clr-shadow-700), -0.3rem -0.3rem 1rem var(--clr-shadow-700);
 
     --transition-timing: 250ms ease;
     --transition-color: color var(--transition-timing), background-color var(--transition-timing);
@@ -134,6 +142,9 @@
         --clr-component-300: hsl(210 5% 30%);
         --clr-component-500: hsl(210 6% 16%);
         --clr-component-700: hsl(210 4% 12%);
+        --clr-component-300-reverse: rgb(235, 247, 255);
+        --clr-component-500-reverse: hsl(206 23% 94%);
+        --clr-component-700-reverse: hsl(0 0% 68%);
 
         --clr-primary-300: hsl(194 80% 43%);
         --clr-primary-500: hsl(210 73% 44%);
@@ -142,6 +153,9 @@
         --clr-text-300: hsl(0 0% 58%);
         --clr-text-500: hsl(0 0% 80%);
         --clr-text-700: hsl(0 0% 100%);
+        --clr-text-300-reverse: hsl(0 0% 44%);
+        --clr-text-500-reverse: hsl(0 0% 15%);
+        --clr-text-700-reverse: hsl(0 0% 0%);
 
         --clr-text-white: #fff;
         --clr-text-black: #0f0f0f;
@@ -156,5 +170,6 @@
         --clr-shadow-700: hsl(0 0% 0%);
 
         --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
+        --box-shadow-700: 0.3rem 0.3rem 1rem var(--clr-shadow-700), -0.3rem -0.3rem 1rem var(--clr-shadow-700);
     }
 }
