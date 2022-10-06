@@ -21,6 +21,7 @@ button {
     padding: 0.5em;
     border-radius: 1000000px;
     min-height: 1.5em;
+    transition: var(--transition-color);
 
     @extend .btn-primary;
     cursor: pointer;
@@ -30,10 +31,6 @@ button {
         height: 1em;
         margin: 0;
         padding: 0;
-    }
-
-    &:hover {
-        animation: bounce 500ms ease-in-out;
     }
 
     &[data-tooltip]::after {
@@ -93,12 +90,6 @@ button {
 }
 
 .btn-tab {
-    &-top, &-bottem, &-right, &-left {
-        &:hover {
-            animation: none;
-        }
-    }
-
     &-top {
         border-radius: 1em 1em 0 0;
     }
@@ -120,11 +111,6 @@ button {
         height: 2em;
         min-width: 6em;
         padding-inline: 1em;
-        background-color: var(--clr-component-700);
-        @include content-color(var(--clr-text-500));
-        &.btn-on {
-            background-color: var(--clr-component-500);
-        }
     }
 
     &-right,
@@ -132,8 +118,14 @@ button {
         width: 2em;
         min-height: 6em;
         padding-block: 1em;
+    }
+
+    &-top, &-bottem, &-right, &-left {
         background-color: var(--clr-component-700);
         @include content-color(var(--clr-text-500));
+        &:hover {
+            background-color: var(--clr-component-500);
+        }
         &.btn-on {
             background-color: var(--clr-component-500);
         }
@@ -143,22 +135,38 @@ button {
 .btn-transparent {
     background-color: transparent;
     @include content-color(var(--clr-text-500));
+
+    &:hover {
+        background-color: var(--clr-transparennt-500);
+    }
 }
 
 .btn-link {
     background-color: transparent;
     text-decoration: underline;
     @include content-color(var(--clr-primary-500));
+
+    &:hover {
+        background-color: initial;
+    }
 }
 
 .btn-red {
-    background-color: var(--clr-cancel);
+    background-color: var(--clr-cancel-500);
     @include content-color(white);
+
+    &:hover {
+        background-color: var(--clr-cancel-700);
+    }
 }
 
 .btn-primary {
     background-color: var(--clr-primary-500);
     @include content-color(white);
+
+    &:hover {
+        background-color: var(--clr-primary-700);
+    }
 }
 
 @keyframes to-top {
@@ -180,29 +188,5 @@ button {
     100% {
         transform: translateY(0);
         opacity: 1;
-    }
-}
-
-@keyframes bounce {
-    0% {
-        transform: translateY(0%);
-    }
-    25% {
-        transform: translateY(-10%);
-    }
-    50% {
-        transform: translateY(0%);
-    }
-    75% {
-        transform: translateY(-5%);
-    }
-    90% {
-        transform: translateY(0%);
-    }
-    95% {
-        transform: translateY(-2.5%);
-    }
-    100% {
-        transform: translateY(0);
     }
 }
