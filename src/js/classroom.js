@@ -7,7 +7,13 @@ import { htmlToElement, fetchData, getUser, getUserData, delay } from './util.js
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
 const msgPrefab         = prefab.querySelector('.msg');
+const alertPrefab       = prefab.querySelector('.alert');
+const ptcpPrefab        = prefab.querySelector('.ptcp');
+const alertBox1         = prefab.querySelector('.box1');
+const alertBox2         = prefab.querySelector('.box2');
+const alertBox3         = prefab.querySelector('.box3');
 const postreplyPrefab   = prefab.querySelector('.post-reply');
+const loading           = document.querySelector('.loading');
 const className         = document.querySelector('#class-name');
 const settingBtn        = document.querySelector('#setting-btn');
 const callBtn           = document.querySelector('#call-btn');
@@ -40,6 +46,14 @@ const writeSubmitBtn    = document.querySelector('#write-submit-btn');
 
 const chatLog           = document.querySelector('#chat-log');
 const downloadChatBtn   = document.querySelector('#download-chat-btn');
+const downloadAlertBtn  = document.querySelector('#download-alert-btn');
+
+const alertSearch       = document.querySelector('#alert__Search');
+const listAlert         = document.querySelector('.list__alert');
+const listPtcp          = document.querySelector('.list__ptcp');
+const alertLog          = document.querySelector('#alert-log');
+const ptcpLog           = document.querySelector('#ptcp-log');
+const wrapper           = document.querySelector('#wrapper');
 
 const callId = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
@@ -49,6 +63,8 @@ const users    = collection(firestore, 'users');
 const posts    = collection(callDoc, 'posts');
 const messages = collection(callDoc, 'messages');
 const events   = collection(callDoc, 'events');
+const alertRecords = collection(callDoc, 'alertRecords');
+
 
 const classModal = new ClassModal();
 let prevSchedule = [];
@@ -111,6 +127,28 @@ document.onreadystatechange = async () => {
         `));
     }
 
+    let alertInit = true;
+    onSnapshot(alertRecords, async (snapshot) => {
+        if (alertInit) {
+            alertInit = false;
+            const q = query(alertRecords, orderBy('timestamp', 'asc'));
+            const alertDocs = await getDocs(q);
+            for (const alertDoc of alertDocs.docs) {
+                await addAlertToLog(alertDoc);
+            }
+        }
+        else {
+            snapshot.docChanges().forEach( async (change) => {
+                if (change.type === 'modified') {
+                    await addAlertToLog(change.doc);
+                }
+            });
+        }
+
+        await delay(100);
+    });
+
+
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
     for (const row of rows) {
         const cells = row.querySelectorAll('td');
@@ -141,6 +179,212 @@ async function addMessageToLog(msgData) {
     msgText.innerHTML = text;
     // chatLog.insert(msg, chatLog.firstChild);
     chatLog.appendChild(msg);
+}
+
+async function addAlertToLog(alertData) {
+    const { alertType:type,interval,duration,timestamp, done } = alertData.data();
+
+    if( done === true ) {
+
+        const timeString = timestamp.toDate().toLocaleString();
+
+        const alert = alertPrefab.cloneNode(true);
+        const alertType = alert.querySelector('.alert__type');
+        const alertInterval = alert.querySelector('.alert__interval');
+        const alertDuration = alert.querySelector('.alert__duration');
+        const alertTime = alert.querySelector('.alert__timestamp');
+        const alertQst = alert.querySelector('.alert__question');
+
+        if( type != 'click' ) {
+            const { question } = alertData.data();
+            alertQst.innerHTML = question;
+        }else {
+            alertQst.innerHTML = '-';
+        }
+
+        alertType.innerHTML = type;
+        alertInterval.innerHTML = interval;
+        alertDuration.innerHTML = duration;
+        alertTime.innerHTML = timeString;
+        alertLog.insertBefore(alert, alertLog.children[0]);
+
+        alert.addEventListener('click', async (e) => {
+
+            listAlert.classList.toggle("close");
+            alertSearch.hidden = true;
+            loading.style.display = 'block';
+            ptcpLog.hidden = true;
+
+            while (ptcpLog.lastChild) {
+                ptcpLog.removeChild(ptcpLog.lastChild);
+            }
+
+            const { question, multipleChoice, answear } = alertData.data();
+            const alertDoc      = doc(alertRecords, alertData.id);
+            const participants  = collection(alertDoc, 'participants');
+            const querySnapshot = await getDocs(participants);
+            const { attendees } = (await getDoc(callDoc)).data();
+            const { host } = ( await getDoc(callDoc)).data();
+
+            const Box1 = alertBox1.cloneNode(true);
+            const alertType = Box1.querySelector('#alert-type');
+            const alertInterval = Box1.querySelector('#alert-interval');
+            const alertTime = Box1.querySelector('#alert-time');
+            const timeStart = Box1.querySelector('#time-start');
+            const returnAlertList = Box1.querySelector('#return-alert-list');
+
+            alertType.innerHTML = '警醒類型：' + type;
+            alertInterval.innerHTML = "警醒間隔：" + interval;
+            alertTime.innerHTML = '警醒持續時間：' + duration;
+            timeStart.innerHTML = '建立時間：' + timeString;
+            returnAlertList.addEventListener('click', async (e) => {
+                alertSearch.hidden = false;
+                ptcpLog.hidden = true;
+                listAlert.classList.toggle("close");
+                listPtcp.classList.toggle("close");
+                alertSearch.hidden = false;
+                wrapper.hidden = true;
+                while (wrapper.lastChild) {
+                    wrapper.removeChild(wrapper.lastChild);
+                }
+            });
+            wrapper.appendChild(Box1);
+
+            if( type != 'click' ){
+                const Box2 = alertBox2.cloneNode(true);
+                const alertQuestion = Box2.querySelector('#alert-question');
+                alertQuestion.innerHTML = '題目： ' + question + ' ?';
+                wrapper.appendChild(Box2);
+                if( type === 'multiple choice' || type === 'vote' ){
+                    const Box3 = alertBox3.cloneNode(true);
+                    let i = 1;
+                    for (const option of multipleChoice) {
+                        const alertOptions = document.createElement('div');
+                        alertOptions.classList.add('alert-options','nested');
+                        Box3.appendChild(alertOptions);
+                        const p1 = document.createElement('p');
+                        p1.innerHTML = '( ' + i + ' ) ' + option;
+                        alertOptions.appendChild(p1);
+                        if( answear != undefined ) {
+                            if( answear === i.toString() ) {
+                                alertOptions.classList.add("answear");
+                            }
+                        }
+                        const q = query(participants, where('answear', '==', i.toString() ));
+                        const snapshot1 = await getDocs(q);
+                        let amount = 0;
+                        snapshot1.forEach(async () => {
+                            amount++;
+                        });
+                        const p2 = document.createElement('p');
+                        p2.innerHTML = amount + '人';
+                        alertOptions.appendChild(p2);
+                        let total = 0;
+                        querySnapshot.forEach( async (docc) => {
+                            const { answear } = docc.data();
+                            if( answear != undefined ) {
+                                total++;
+                            }
+                        });
+                        const p3 = document.createElement('p');
+                        if(total!=0) {
+                            p3.innerHTML = amount/total*100 + '%';
+                        }else {
+                            p3.innerHTML = '0%';
+                        }
+                        alertOptions.appendChild(p3);
+                        i++;
+                    }
+                    wrapper.appendChild(Box3);
+                }
+            }
+
+            const user = await getUser();
+            let localUserId = user.uid;
+
+            if( localUserId === host ) {
+                for (const userId of attendees) {
+                    ptcpLogFunction(userId, alertData);
+                }
+            }else {
+                ptcpLogFunction(localUserId, alertData);
+            }
+
+            loading.style.display = 'none';
+            ptcpLog.hidden = false;
+            listPtcp.classList.toggle("close");
+            alertSearch.hidden = true;
+            wrapper.hidden = false;
+        });
+    }
+
+}
+
+async function ptcpLogFunction(userId ,alertData) {
+    const alertDoc      = doc(alertRecords, alertData.id);
+    const participants  = collection(alertDoc, 'participants');
+    const querySnapshot = await getDocs(participants);
+    const { host } = ( await getDoc(callDoc)).data();
+    if( userId != host ) {
+        let clickfield = '未加入會議';
+        let clickColor = 'var(--text-color)';
+        let answearfield = '-';
+        let timeStringfield = '-';
+        const user = doc(users, userId);
+        const data = (await getDoc(user)).data();
+        querySnapshot.forEach( async (docc) => {
+            if( userId === docc.id) {
+                const { answear,click,timestamp } = docc.data();
+                if( timestamp != undefined ) {
+                    timeStringfield = timestamp.toDate().toLocaleString();
+                }
+                if( click === true ) {
+                    clickfield = '完成';
+                    clickColor = '#7CFC00'
+                }else if(click === false ){
+                    clickfield = '未完成';
+                    clickColor = '#ff0000'
+                }
+                if( answear != undefined ) {
+                    answearfield = answear;
+                }
+            }
+        });
+        const ptcp = ptcpPrefab.cloneNode(true);
+        const ptcpName = ptcp.querySelector('.ptcp__name');
+        const ptcpClick = ptcp.querySelector('.ptcp__click');
+        const ptcpAns = ptcp.querySelector('.ptcp__ans');
+        const ptcpTimestamp = ptcp.querySelector('.ptcp__timestamp');
+
+        ptcpName.innerHTML = data.name;
+        ptcpClick.innerHTML = clickfield;
+        ptcpClick.style.color = clickColor;
+        ptcpAns.innerHTML = answearfield;
+        ptcpTimestamp.innerHTML = timeStringfield;
+        ptcpLog.insertBefore(ptcp, ptcpLog.children[0]);
+    }
+}
+
+alertSearch.onkeyup = function() {myFunction()};
+function myFunction() {
+
+  let filter, tr, td1, td2, td3, td4, td5, i, txtValue;
+  filter = alertSearch.value.toUpperCase();
+  tr = alertLog.getElementsByTagName('tr');
+
+  for (i = 0; i < tr.length; i++) {
+    td1 = tr[i].getElementsByTagName("td")[0];
+    td2 = tr[i].getElementsByTagName("td")[1];
+    td3 = tr[i].getElementsByTagName("td")[2];
+    td4 = tr[i].getElementsByTagName("td")[3];
+    td5 = tr[i].getElementsByTagName("td")[4];
+    txtValue = (td1.textContent || td1.innerText) + (td2.textContent || td2.innerText) + (td3.textContent || td3.innerText) + (td4.textContent || td4.innerText) + (td5.textContent || td5.innerText);
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+    } else {
+        tr[i].style.display = "none";
+    }
+  }
 }
 
 settingBtn.addEventListener('click', async (e) => {
@@ -277,7 +521,7 @@ for (const tab of catagoryTabs) {
                 targetPage = page;
             }
         }
-        if (catagory !== 'write' && catagory !== 'chat') {
+        if (catagory !== 'write' && catagory !== 'chat' && catagory !== 'alert') {
             targetPage.innerHTML = '';
             let q = query(posts, orderBy('timestamp', 'desc'));
             if (catagory !== 'entire') {
@@ -321,6 +565,8 @@ writeSubmitBtn.addEventListener('click', async () => {
 });
 
 downloadChatBtn.addEventListener('click', async () => {
+    downloadChatBtn.disabled = true;
+    downloadChatBtn.innerHTML = '載入中';
     const element = document.createElement('a');
     const chatLogString = await getChatLog();
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(chatLogString));
@@ -330,6 +576,8 @@ downloadChatBtn.addEventListener('click', async () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    downloadChatBtn.disabled = false;
+    downloadChatBtn.innerHTML = '下載';
 });
 
 async function getChatLog() {
@@ -345,6 +593,125 @@ async function getChatLog() {
                 + timeString + '\n'
                 + text + '\n';
     }
+    return log;
+}
+
+downloadAlertBtn.addEventListener('click', async () => {
+    downloadAlertBtn.disabled = true;
+    downloadAlertBtn.innerHTML = '載入中';
+    const element = document.createElement('a');
+    const alertLogString = await getAlertLog();
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(alertLogString));
+    element.setAttribute('download', 'alertLog.csv');
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    downloadAlertBtn.disabled = false;
+    downloadAlertBtn.innerHTML = '下載';
+});
+
+async function getAlertLog() {
+    const alertDocs = await getDocs(alertRecords);
+    let log = '';
+    for (const alert of alertDocs.docs) {
+        const { alertType:type,interval,duration,timestamp, done } = alert.data();
+        const alertDoc      = doc(alertRecords, alert.id);
+        const participants  = collection( alertDoc,'participants' );
+        const querySnapshot = await getDocs(participants);
+        const { attendees } = (await getDoc(callDoc)).data();
+        const { host } = ( await getDoc(callDoc)).data();
+        if( done === true ) {
+            const timeString = timestamp.toDate().toLocaleString();
+
+            log += '警醒類型,警醒間隔,持續時間,建立時間' + '\n';
+            log += type + ',' + interval + ',' + duration + ',' + timeString + '\n';
+
+            if( type != 'click' ) {
+                const { question } = alert.data();
+                log += '問題,' + question + '\n';
+                if( type === 'multiple choice' || type === 'vote' ){
+                    const { multipleChoice, answear } = alert.data();
+                    let i = 1;
+                    for (const option of multipleChoice) {
+                        log += '選項' + i + ',' + option + ',';
+                        const q = query(participants, where('answear', '==', i.toString() ));
+                        const snapshot1 = await getDocs(q);
+                        let amount = 0;
+                        snapshot1.forEach(async () => {;
+                            amount++;
+                        });
+                        let total = 0;
+                        querySnapshot.forEach( async (docc) => {
+                            const { answear } = docc.data();
+                            if( answear != undefined ) {
+                                total++;
+                            }
+                        });
+                        if(total!=0) {
+                            log += amount + '人,' + amount/total*100 + '%' + '\n';
+                        }else {
+                            log += amount + '人,0%' + '\n';
+                        }
+                        i++;
+                    }
+                    if( answear != undefined ) {
+                        if( answear === i.toString() ) {
+                            log += '答案,' + answear + '\n';
+                        }
+                    }
+                }
+            }
+            log += '姓名,點擊狀態,回答,完成時間\n';
+
+            const user = await getUser();
+            let localUserId = user.uid;
+
+            if( localUserId === host ) {
+                for (const userId of attendees) {
+                    log = await downloadAlert(userId, log, alert);
+                }
+            }else {
+                log = await downloadAlert(localUserId, log, alert);
+            }
+        }
+    }
+
+    return log;
+}
+
+async function downloadAlert(userId, log, alert) {
+    const alertDoc      = doc(alertRecords, alert.id);
+    const participants  = collection( alertDoc,'participants' );
+    const querySnapshot = await getDocs(participants);
+    const { host } = ( await getDoc(callDoc)).data();
+    if( userId != host ) {
+        let clickfield = '未加入會議';
+        let answearfield = '-';
+        let timeStringfield = '-';
+        const user = doc(users, userId);
+        const data = (await getDoc(user)).data();
+        querySnapshot.forEach( async (docc) => {
+            if( userId === docc.id) {
+                const { answear,click,timestamp } = docc.data();
+                if( timestamp != undefined ) {
+                    timeStringfield = timestamp.toDate().toLocaleString();
+                }
+                if( click === true ) {
+                    clickfield = '完成';
+                }else if(click === false ){
+                    clickfield = '未完成';
+                }
+                if( answear != undefined ) {
+                    answearfield = answear;
+                }
+            }
+        });
+
+        log +=  data.name + ',' + clickfield + ',' + answearfield + ',' + timeStringfield + '\n';
+    }
+
     return log;
 }
 

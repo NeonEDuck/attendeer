@@ -229,6 +229,7 @@ enterBtn.addEventListener('click', async () => {
 
     console.log(`join call: ${callId} as ${localUserId}`);
     socket.emit('join-call', callId, localUserId);
+    const { name } = (await getDoc(callDoc)).data();
 
     socket.on('user-connected', async (socketId, userId) => {
         console.log(`user connected: ${userId}`);
@@ -782,8 +783,79 @@ function spawnDismissTimerNotification(endTime) {
     text.appendChild(timerElement)
 }
 
+let alertSchedulerVersion = 0;
+
 export async function setupAlertScheduler() {
     console.log('setupAlertScheduler');
+
+    startAlert();
+
+    // intervalID = setIntervalImmediately(async () => {
+
+    //     try {
+
+    //         const { alert } = (await getDoc(callDoc)).data();
+    //         const { interval, time: duration, alertType} = alert;
+
+    //         alertDocCurrently = doc(alertRecords);
+
+    //         let dataNormal = {
+    //             timestamp: new Date(),
+    //             duration: duration, //時長
+    //             alertType: alertType,
+    //             interval: interval,
+    //             started: false,
+    //             done: false,
+    //             outdated: false,
+    //         };
+
+    //         if(alertType === 'multiple choice') {
+    //             dataNormal = Object.assign(dataNormal, dataMultipleChoice );
+    //         }
+
+    //         setDoc(alertDocCurrently, dataNormal);
+
+    //         console.log('add alert');
+
+    //         let alertPrevious = alertDocCurrently;
+
+    //         await delay( interval * MINUTE );
+
+    //         updateDoc(alertPrevious, {started: true});
+
+    //         console.log('alert started');
+
+    //         await delay( duration * MINUTE );
+
+    //         if ((await getDoc(alertPrevious))?.data()?.outdated === true) {
+    //             deleteDoc(alertPrevious);
+    //         }
+    //         else {
+    //             updateDoc(alertPrevious, {done: true});
+    //             console.log('alert done');
+
+    //             let dataAlert = {
+    //                 alert: {
+    //                     interval: interval,
+    //                     time: duration,
+    //                     alertType: 'click',
+    //                 },
+    //             }
+    //             updateDoc(callDoc, dataAlert);
+    //         }
+
+    //     } catch (error) {
+
+    //         //因為重新設定警醒時，舊文件會被刪除，所以導致更新文件會顯示錯誤。
+
+    //     }
+
+    // }, (interval+duration) * MINUTE + 2000 );
+}
+
+async function startAlert() {
+    alertSchedulerVersion++;
+    const currentAlertSchedulerVersion = alertSchedulerVersion;
 
     const q1 = query(alertRecords, where('done', '==', false ));
     const snapshot1 = await getDocs(q1);
@@ -792,11 +864,7 @@ export async function setupAlertScheduler() {
         await updateDoc(alertDoc, {outdated: true});
     });
 
-    const { alert } = (await getDoc(callDoc)).data();
-    const { interval, time: duration } = alert;
-
-    intervalID = setIntervalImmediately(async () => {
-
+    while (true) {
         try {
 
             const { alert } = (await getDoc(callDoc)).data();
@@ -814,7 +882,7 @@ export async function setupAlertScheduler() {
                 outdated: false,
             };
 
-            if(alertType === 'multiple choice') {
+            if(alertType === 'multiple choice' || alertType === 'essay question' || alertType === 'vote') {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
@@ -855,7 +923,11 @@ export async function setupAlertScheduler() {
 
         }
 
-    }, (interval+duration) * MINUTE + 1500 );
+        if (currentAlertSchedulerVersion !== alertSchedulerVersion) {
+            console.log('break');
+            break;
+        }
+    }
 }
 
 export function setupAlertListener() {
@@ -916,6 +988,41 @@ export function setupAlertListener() {
                                     span.classList.toggle("chosen");
                                 });
                             }
+                        }else if(alertType === 'essay question') {
+                            const textarea = document.createElement('textarea');
+                            textarea.setAttribute("readonly", "readonly");
+                            textarea.classList.add('qst_show')
+                            textarea.innerHTML = question;
+                            alertShow.appendChild(textarea);
+                            const div = document.createElement('div');
+                            alertShow.appendChild(div);
+                            const textarea1 = document.createElement('textarea');
+                            textarea1.classList.add('qst_show_answear')
+                            div.appendChild(textarea1);
+                        }else if(alertType === 'vote') {
+                            const textarea = document.createElement('textarea');
+                            textarea.setAttribute("readonly", "readonly");
+                            textarea.classList.add('qst_show')
+                            textarea.innerHTML = question;
+                            alertShow.appendChild(textarea);
+                            const divRadios = document.createElement('div');
+                            divRadios.classList.add('radios')
+                            alertShow.appendChild(divRadios);
+                            for (let i = 0; i < multipleChoice.length; i++) {
+                                const divRadio = document.createElement('div');
+                                divRadio.classList.add('radio')
+                                divRadios.appendChild(divRadio);
+                                const input = document.createElement('input');
+                                input.setAttribute("id", "radio" + (i+1) );
+                                input.setAttribute("type", "radio");
+                                input.setAttribute("name", "radio");
+                                input.setAttribute("value", i+1 );
+                                divRadio.appendChild(input);
+                                const label = document.createElement('label');
+                                label.setAttribute("for", "radio" + (i+1) );
+                                divRadio.appendChild(label);
+                                label.innerHTML = multipleChoice[i];
+                            }
                         }
 
                         const alertBtnDiv = document.createElement('div');
@@ -941,6 +1048,7 @@ export function setupAlertListener() {
                                 const participants = collection(alertDoc, 'participants');
                                 const userDoc      = doc(participants, localUserId);
                                 const answearChosen = document.querySelector(".chosen");
+                                const qstShowAnswear = document.querySelector(".qst_show_answear");
 
                                 if(alertType === 'click') {
                                     const data = {
@@ -978,6 +1086,49 @@ export function setupAlertListener() {
                                         alertBtn.classList.remove('active');
 
                                         alertModule.hidden = true;
+                                    }
+                                }else if(alertType === 'essay question') {
+                                    if(qstShowAnswear.value != '') {
+                                        const data = {
+                                            click: true,
+                                            answear: qstShowAnswear.value,
+                                            timestamp: new Date(),
+                                        }
+                                        await updateDoc(userDoc, data);
+                                        alertBtnTime.hidden = true;
+                                        alertBtnText.innerHTML = '簽到完成';
+                                        alertBtn.classList.add('active');
+
+                                        await delay(1000);
+                                        alertBtn.hidden = true;
+                                        alertBtnTime.hidden = false;
+                                        alertBtnText.innerHTML = '警醒按鈕';
+                                        alertBtn.classList.remove('active');
+
+                                        alertModule.hidden = true;
+                                    }
+                                }else if(alertType === 'vote') {
+                                    const radio = document.querySelector(".radios").querySelectorAll('input');
+                                    for (let x = 0; x < radio.length; x ++) {
+                                        if (radio[x].checked) {
+                                            const data = {
+                                                click: true,
+                                                answear: radio[x].value,
+                                                timestamp: new Date(),
+                                            }
+                                            await updateDoc(userDoc, data);
+                                            alertBtnTime.hidden = true;
+                                            alertBtnText.innerHTML = '簽到完成';
+                                            alertBtn.classList.add('active');
+
+                                            await delay(1000);
+                                            alertBtn.hidden = true;
+                                            alertBtnTime.hidden = false;
+                                            alertBtnText.innerHTML = '警醒按鈕';
+                                            alertBtn.classList.remove('active');
+
+                                            alertModule.hidden = true;
+                                        }
                                     }
                                 }
                             }
@@ -1081,7 +1232,13 @@ async function addMessageToChat(msgData) {
             const msgText = msg.querySelector('.msg__text');
             const myMsgDate = msg.querySelector('.msg__date');
             myMsgDate.attributes[1].value = YMDhm;
-            msgUser.innerHTML = name;
+            const { host } = ( await getDoc(callDoc)).data();
+            if ( user === host ) {
+                msgUser.innerHTML = name + '老師';
+                msgUser.classList.add('host');
+            }else {
+                msgUser.innerHTML = '匿名者';
+            }
             msgTime.innerHTML = hh + ":" + mm;
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
