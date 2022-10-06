@@ -1,12 +1,16 @@
 import './navbar.js'
+import { setIntervalImmediately } from './util.js'
 
-const textareas = document.querySelectorAll('textarea.auto-resize');
+setIntervalImmediately(() => {
+    const textareas = document.querySelectorAll('main textarea.auto-resize:not(.settle)');
 
-for (const textarea of textareas) {
-    textarea.addEventListener('input', (e) => {
-        e.target.style.height = "2em";
-        e.target.style.height = (e.target.scrollHeight) + "px";
-    });
-}
+    for (const textarea of textareas) {
+        textarea.addEventListener('input', (e) => {
+            e.target.style.height = "2em";
+            e.target.style.height = (e.target.scrollHeight) + "px";
+        });
+        textarea.classList.add('settle');
+    }
+}, 500);
 
-document.querySelector('body').classList.add(localStorage.getItem('color-scheme') || '')
+document.querySelector('body').classList.add(localStorage.getItem('color-scheme') || '');

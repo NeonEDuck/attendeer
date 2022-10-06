@@ -3,8 +3,8 @@ html, body {
 }
 
 body {
-    background-color: var(--body-color);
-    color: var(--text-color);
+    background-color: var(--clr-body);
+    color: var(--clr-text-500);
 }
 
 html, body, input, button, textarea {
@@ -19,15 +19,15 @@ fieldset {
     display: flex;
     flex-direction: column;
     gap: 0.5em;
-    border: 1px solid black;
-    border-radius: 1em;
-    padding: 0.5em;
+    border-top: 1px solid var(--clr-text-500);
+    padding: 1em;
 }
 
 legend {
     vertical-align: super;
-    margin-inline-start: 0.5em;
-    color: var(--text-color);
+    padding-inline: 0.5em;
+    font-size: 1.25em;
+    color: var(--clr-text-500);
 }
 
 .field {
@@ -35,7 +35,7 @@ legend {
     justify-content: flex-start;
     align-items: center;
     gap: 0.5em;
-    color: var(--text-color);
+    color: var(--clr-text-500);
 }
 
 .content {
@@ -70,18 +70,24 @@ h2 {
 
 h3 {
     font-size: 1.5rem;
-    color: var(--text-color);
+    color: var(--clr-text-500);
 }
 
 h1, h2, h3, h4, h5, h6, p, span {
     line-height: 1.5em;
     min-height: 1.5em;
+    color: var(--clr-text-500);
 }
 
 a {
-    color: blue;
+    color: var(--clr-primary-500);
 }
 
 label {
-    color: var(--text-color);
+    color: var(--clr-text-500);
+}
+
+
+path, circle {
+    fill: var(--clr-text-500);
 }

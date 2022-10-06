@@ -1,0 +1,68 @@
+#notification-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column-reverse;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 0.5em;
+    padding: 1em;
+    width: 30em;
+    max-width: 80vw;
+    z-index: 50;
+
+    .notification {
+        --padding: 1em;
+        display: flex;
+        flex-direction: row;
+        background-color: var(--clr-component-500);
+        padding: var(--padding);
+        gap: var(--padding);
+        border-radius: var(--padding);
+        height: 0px;
+        box-shadow: var(--box-shadow-500);
+        opacity: 0;
+        transition:
+            height var(--transition-timing),
+            padding var(--transition-timing),
+            opacity var(--transition-timing);
+        animation: shake 500ms ease-in-out;
+        overflow: hidden;
+
+        header {
+            align-self: center;
+
+            svg {
+                width: 1.5em;
+                height: 1.5em;
+            }
+        }
+        > * {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            height: max-content;
+        }
+    }
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0%);
+    }
+    30% {
+        transform: translateX(5%);
+    }
+    50% {
+        transform: translateX(-3.25%);
+    }
+    85% {
+        transform: translateX(2%);
+    }
+    90% {
+        transform: translateX(-1%);
+    }
+    100% {
+        transform: translateX(0%);
+    }
+}

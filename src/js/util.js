@@ -29,6 +29,14 @@ export function replaceAll(str, find, replace) {
     return str.replace(find, replace);
 }
 
+export function dateToMinutes(date) {
+    return date.getHours() * 60 + date.getMinutes();
+}
+
+export function timeToMinutes({hour, minute}) {
+    return hour * 60 + minute;
+}
+
 export function htmlToElement(html) {
     let template = document.createElement('template');
     template.innerHTML = html;

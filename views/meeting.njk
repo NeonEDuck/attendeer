@@ -12,17 +12,9 @@
     <div class="cam">
         <video class="cam__video" autoplay playsinline control=false></video>
         <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
-        {# <div id="cam__menu" class="cam__menu close">
-            <li class="cam__li" style="--i:0;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:1;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:2;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-        </div> #}
+        <div class="cam__menu">
+            <button class="cam__pin-btn" data-tooltip="釘選"><i class='bx bx-pin'></i></button>
+        </div>
         <span class="cam__name"></span>
         <span class="cam__warning" hidden>!</span>
     </div>
@@ -43,6 +35,18 @@
         <div class="my-msg__date" data-content-before=":before">
             <p class="my-msg__text" ></p>
         </div>
+    </li>
+    <li class="notification" data-type="generic">
+        <header>
+            {% include 'svg/bell.svg' %}
+        </header>
+        <div class="flex-item-1">
+            <h3 class="notification__title">下課提醒</h3>
+            <p class="notification__text">現在是下課時間</p>
+        </div>
+        <footer>
+            <button class="notification__close-btn btn-red">{% include 'svg/cross.svg' %}</button>
+        </footer>
     </li>
 {% endblock prefab %}
 
@@ -72,31 +76,31 @@
                     <ul class="menu-links">
                         <li class="nav-link">
                             <button class="nav-btn">
-                                <i class='bx bxs-cog icon'></i>
+                                {% include 'svg/setting.svg' %}
                                 <span class="text nav-text">裝置設定</span>
                             </button>
                         </li>
                         <li class="nav-link">
                             <button class="nav-btn">
-                                <i class='bx bxs-cog icon'></i>
+                                {% include 'svg/setting.svg' %}
                                 <span class="text nav-text">會議選項</span>
                             </button>
                         </li>
                         <li class="nav-link">
                             <button class="nav-btn">
-                                <i class='bx bxs-cog icon'></i>
+                                {% include 'svg/setting.svg' %}
                                 <span class="text nav-text">會議資訊</span>
                             </button>
                         </li>
                         <li class="nav-link">
                             <button class="nav-btn">
-                                <i class='bx bxs-cog icon'></i>
+                                {% include 'svg/setting.svg' %}
                                 <span class="text nav-text">警醒資訊</span>
                             </button>
                         </li>
                         <li class="nav-link">
                             <button class="nav-btn">
-                                <i class='bx bxs-cog icon'></i>
+                                {% include 'svg/setting.svg' %}
                                 <span class="text nav-text">背景效果</span>
                             </button>
                         </li>
@@ -131,12 +135,17 @@
             </div>
         </div>
 
+        <ul id="notification-container">
+        </ul>
+
         <div id="meeting-panel__left">
             <div id="cam-area">
+                <div id="pinned-cam-container">
+
+                </div>
                 <div id="cam-container">
 
                 </div>
-
                 <div id='alert' hidden>
 
                 </div>
@@ -159,7 +168,11 @@
                             <div class="name">螢幕分享</div>
                             <div class="ico" id="ico"><button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button></div>
                         </li>
-                        <li class="li-bin li-4">
+                        <li class="li-4">
+                            <div class="name">下課鈴</div>
+                            <div class="ico" id="ico"><button id="notify-dismiss-btn" class="btn-primary btn-round" disabled>{% include './svg/bell.svg' %}</button></div>
+                        </li>
+                        <li class="li-bin li-5">
                             <div class="name">退出會議</div>
                             <div class="ico" id="ico"><button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang_up.svg' %}</button></div>
                         </li>
@@ -175,7 +188,7 @@
                 <button id="message-btn" class="btn-primary btn-round">{% include 'svg/message.svg' %}</button> #}
 
 
-                <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
+                <button id="message-btn" class="btn-primary btn-round" data-tooltip="聊天室">{% include './svg/message.svg' %}</button>
             </div>
         </div>
 
@@ -207,7 +220,7 @@
                         autocomplete="off"
                         required
                     />
-                    <button id="send-msg-btn" class="btn-primary"><i class='bx bx-send'></i></button>
+                    <button id="send-msg-btn" class="btn-primary">{% include 'svg/airplane.svg' %}</button>
                 </div>
             </div>
         </div>
@@ -224,7 +237,7 @@
         <div class="flex flex-row gap-2">
             <button id="mic-btn" class="btn-switch btn-round btn-on" disabled>{% include 'svg/mic.svg' %}{% include 'svg/mic_off.svg' %}</button>
             <button id="webcam-btn" class="btn-switch btn-round" disabled>{% include 'svg/webcam.svg' %}{% include 'svg/webcam_off.svg' %}</button>
-            <button id="enter-btn" class="btn-round" disabled>{% include 'svg/right_arrow.svg' %}</button>
+            <button id="enter-btn" class="btn-round" data-tooltip="進入會議" disabled>{% include 'svg/right_arrow.svg' %}</button>
         </div>
     </div>
 {% endblock content %}

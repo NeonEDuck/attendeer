@@ -15,7 +15,6 @@
     display: flex;
     flex-direction: column;
     padding: 1em;
-    filter: var(--shadow);
 }
 #class-secondary {
     display: flex;
@@ -31,6 +30,11 @@ $post-gap: 4em;
     gap: 0.5em;
     padding-inline-start: $bulletin-pad;
     padding-inline-end: $bulletin-pad * 2;
+    > button {
+        box-shadow:
+            0.75rem -0.5rem 1rem -0.5em var(--clr-shadow-700),
+            -0.75rem -0.5rem 1rem -0.5em var(--clr-shadow-700);
+    }
 }
 
 #bulletin-vertical-tab-container {
@@ -38,12 +42,18 @@ $post-gap: 4em;
     flex-direction: column;
     gap: 0.5em;
     padding-block: $bulletin-pad;
+    > button {
+        box-shadow:
+            0.5rem 0.75rem 1rem -0.5em var(--clr-shadow-700),
+            0.5rem -0.75rem 1rem -0.5em var(--clr-shadow-700);
+    }
 }
 
 #bulletin {
     padding: $bulletin-pad;
-    background-color: var(--color-component-700);
+    background-color: var(--clr-component-500);
     border-radius: $bulletin-pad;
+    box-shadow: var(--box-shadow-500);
 
     > div {
         display: flex;
@@ -118,11 +128,12 @@ $post-gap: 4em;
     flex: 1 0 0;
     align-items: flex-end;
     gap: 0.5em;
-    background-color: var(--color-component-700);
+    background-color: var(--clr-component-500);
     border-radius: 1.2em;
     padding: 0.5em;
     position: relative;
     overflow: hidden;
+    box-shadow: var(--box-shadow-500);
 
     &__table {
         text-align: center;
@@ -134,11 +145,18 @@ $post-gap: 4em;
         }
         td, th {
             padding-block: 0.5em;
+            transition: background-color var(--transition-color);
+            &:hover {
+                background-color: var(--clr-component-300);
+            }
             &:not(:first-child) {
                 border-left: 0.5px solid hsl(0 0% 5% / 10%);
             }
             &.on {
-                background-color: var(--clr-active-700);
+                background-color: var(--clr-primary-500);
+                &:hover {
+                    background-color: var(--clr-primary-300);
+                }
             }
         }
 

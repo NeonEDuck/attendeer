@@ -3,7 +3,7 @@ import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getUser, getUserData, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, timeToMinutes } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
@@ -14,18 +14,19 @@ const body = document.querySelector('body');
 const camPrefab    = prefab.querySelector('.cam');
 const msgPrefab    = prefab.querySelector('.msg');
 const myMsgPrefab  = prefab.querySelector('.my-msg');
+const notificationPrefab  = prefab.querySelector('.notification');
 
-const sidebarRight = document.querySelector(".sidebar-right");
-const icons  = document.querySelectorAll('.ico');
-// const camMenu  = document.querySelector('#cam__menu');
+const sidebarRight      = document.querySelector(".sidebar-right");
+const icons             = document.querySelectorAll('.ico');
 
-const micBtn         = document.querySelector('#mic-btn');
-const webcamBtn      = document.querySelector('#webcam-btn');
-const enterBtn       = document.querySelector('#enter-btn');
-const screenShareBtn = document.querySelector('#screen-share-btn');
-const hangUpBtn      = document.querySelector('#hang-up-btn');
-const messageBtn     = document.querySelector('#message-btn');
-const sendMsgBtn     = document.querySelector('#send-msg-btn');
+const micBtn            = document.querySelector('#mic-btn');
+const webcamBtn         = document.querySelector('#webcam-btn');
+const enterBtn          = document.querySelector('#enter-btn');
+const screenShareBtn    = document.querySelector('#screen-share-btn');
+const notifyDismissBtn  = document.querySelector('#notify-dismiss-btn');
+const hangUpBtn         = document.querySelector('#hang-up-btn');
+const messageBtn        = document.querySelector('#message-btn');
+const sendMsgBtn        = document.querySelector('#send-msg-btn');
 // const alertBtn       = document.querySelector('#alert-btn');
 // const alertBtnTime   = document.querySelector('#alert-btn__time');
 const alertModule = document.querySelector('#alert');
@@ -33,16 +34,19 @@ const alertModule = document.querySelector('#alert');
 const confirmPanel   = document.querySelector('#confirm-panel');
 const meetingPanel   = document.querySelector('#meeting-panel');
 
-const cpCamContainer = document.querySelector('#confirm-panel__cam-container');
-const camContainer   = document.querySelector('#cam-container');
-const camArea        = document.querySelector('#cam-area');
-const toolbar        = document.querySelector('#toolbar');
-const chat           = document.querySelector('#chat');
-const chatRoom       = document.querySelector('#chat__room')
-const msgInput       = document.querySelector('#msg-input');
-const callId         = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+const cpCamContainer        = document.querySelector('#confirm-panel__cam-container');
+const camContainer          = document.querySelector('#cam-container');
+const pinnedCamContainer    = document.querySelector('#pinned-cam-container');
+const camArea               = document.querySelector('#cam-area');
+const notificationContainer = document.querySelector('#notification-container');
+const toolbar               = document.querySelector('#toolbar');
+const chat                  = document.querySelector('#chat');
+const chatRoom              = document.querySelector('#chat__room')
+const msgInput              = document.querySelector('#msg-input');
+const callId                = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
 
 // Global variable
+let isHost = false;
 let localUserId = null;
 let webcamStream = null;
 const localStreams = {
@@ -50,7 +54,7 @@ const localStreams = {
     'screenShare': null,
     'audio': null,
 };
-Cam.init(camArea, camContainer);
+Cam.init(camArea, camContainer, pinnedCamContainer);
 Peer.init(localStreams, socket);
 let unmute = true;
 let webcamOn = false;
@@ -58,10 +62,16 @@ const localCams = {
     'webcam': new Cam('local', 'webcam', cpCamContainer),
     'screenShare': new Cam('local', 'screen-share', cpCamContainer),
 }
+const dismissTimePadding = 10;
+let schoolData;
+let notifyDismissCoolDownTimeInMinute = 1;
+let inNotifyDismissCoolDown = false;
+let dismissedClasses = [];
 
 // Default state
 webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
+localCams.webcam.node.querySelector('.cam__menu').hidden = true;
 localCams.screenShare.node.hidden = true;
 
 let userAbove = '';
@@ -101,6 +111,16 @@ document.onreadystatechange = async () => {
     await requestStreamPermission();
     await refreshStream();
 }
+
+plusTestBtn.addEventListener('click', () => {
+    const cam = camPrefab.cloneNode(true);
+
+    camContainer.appendChild(cam);
+});
+
+minusTestBtn.addEventListener('click', () => {
+    camContainer.lastChild.remove();
+});
 
 micBtn.addEventListener('click', async () => {
     try {
@@ -177,7 +197,39 @@ screenShareBtn.addEventListener('click', async () => {
     }
 })
 
+notifyDismissBtn.addEventListener('click', async () => {
+    if (isHost) {
+        console.log('click')
+        const [ name, timeInMinute ] = getDismissTime();
+        if (name && !dismissedClasses.find(item => item.name === name)) {
+            dismissedClasses.push({name, time: new Date()});
+            console.log(dismissedClasses);
+
+            notifyDismissBtn.disabled = true;
+            notificationContainer.querySelectorAll('.notification[data-type="dismiss-class"] .notification__close-btn').forEach((e) => {
+                e.click();
+            });
+            let dismissEndTime = new Date((new Date()).getTime() + timeInMinute * MINUTE);
+            socket.emit('throw-dismiss-class', {name, time: dismissEndTime});
+            spawnDismissTimerNotification(dismissEndTime);
+        }
+    }
+    else {
+        socket.emit('throw-notify-dismiss', {localUserId});
+        notifyDismissBtn.disabled = true;
+    }
+});
+
 enterBtn.addEventListener('click', async () => {
+    const { alert, host, school } = (await getDoc(callDoc)).data();
+    const { interval, time: duration, alertType } = alert;
+    isHost = localUserId === host;
+    const data = await fetchData('/school_time_table.json');
+    console.log(data);
+    console.log(school);
+    schoolData = data.find(item => item.id === school);
+    console.log(schoolData);
+
     console.log(`join call: ${callId} as ${localUserId}`);
     socket.emit('join-call', callId, localUserId);
 
@@ -283,6 +335,108 @@ enterBtn.addEventListener('click', async () => {
         }
     });
 
+    socket.on('catch-disable-notify-dismiss', async () => {
+        console.log(`catch disable notify dismiss cooldown`);
+        notifyDismissBtn.disabled = true;
+        notifyDismissBtn.dataset.tooltip = '老師已收到下課鈴';
+    });
+
+    socket.on('catch-enable-notify-dismiss', async () => {
+        console.log(`catch enable notify dismiss cooldown`);
+        notifyDismissBtn.disabled = false;
+        delete notifyDismissBtn.dataset.tooltip;
+    });
+
+    socket.on('catch-dismiss-class', (data) => {
+        console.log(`catch dismiss class`);
+        const { name, time } = data;
+        dismissedClasses.push(data);
+
+        spawnDismissTimerNotification(new Date(time));
+    });
+
+    socket.on('catch-inform-status', (data) => {
+        console.log(`catch inform status`);
+        console.log(data);
+
+        dismissedClasses = data.dismissedClasses;
+        if (dismissedClasses.length > 0) {
+            const recentDismiss = dismissedClasses[dismissedClasses.length-1];
+            const classTimeInfo = schoolData.data.find(item => item.name === recentDismiss.name);
+            const recentDismissTimeInMinute = timeToMinutes(classTimeInfo.end) - timeToMinutes(classTimeInfo.start);
+            const recentDismissEndTime = new Date(new Date(recentDismiss.time).getTime() + recentDismissTimeInMinute * MINUTE);
+
+            if (recentDismissEndTime - (new Date()) > 0) {
+                spawnDismissTimerNotification(recentDismissEndTime);
+            }
+        }
+
+        inNotifyDismissCoolDown = data.inNotifyDismissCoolDown;
+        const notified = !inCanNotifyTime() || inNotifyDismissCoolDown;
+        notifyDismissBtn.disabled = notified;
+        const firstDismissed = [];
+        notified && firstDismissed.push(getDismissTime()[0]);
+        // setTimeout(() => {
+        setIntervalImmediately(() => {
+            const [ name ] = getDismissTime();
+            // console.log(dismissedClasses);
+
+            if (!inCanNotifyTime() || !name || dismissedClasses.find(item => item.name === name)) {
+                notifyDismissBtn.disabled = true;
+            }
+            else if (!firstDismissed.includes(name)) {
+                firstDismissed.push(name);
+                notifyDismissBtn.disabled = false;
+            }
+        }, 1000);
+        // }, 60 - (new Date()).getSeconds());
+    });
+
+    //! 沒有延展性
+    document.querySelector('.li-4 .name').innerHTML = (isHost)?'開始下課':'提醒下課';
+
+    if (isHost) {
+        socket.on('catch-notify-dismiss', async (data) => {
+            console.log(`catch notify dismiss`);
+            const { userId } = data;
+            const [ name ] = getDismissTime();
+            console.log(inNotifyDismissCoolDown)
+            // console.log(`inClassTime: ${inClassTime()}`)
+            console.log(`dismissedClasses`)
+            console.log(dismissedClasses)
+
+            if (inCanNotifyTime() && name && !dismissedClasses.find(item => item.name === name)) {
+                if (!inNotifyDismissCoolDown) {
+                    inNotifyDismissCoolDown = true
+                    console.log(`現在是下課時間`);
+                    const notification = spawnNotification();
+                    socket.emit('throw-disable-notify-dismiss');
+
+                    setTimeout(() => {
+                        inNotifyDismissCoolDown = false
+                        const [ name ] = getDismissTime();
+                        if (inCanNotifyTime() && name && !dismissedClasses.find(item => item.name === name)) {
+                            socket.emit('throw-enable-notify-dismiss');
+                        }
+                    }, notifyDismissCoolDownTimeInMinute * MINUTE);
+                }
+            }
+        });
+
+        socket.on('catch-request-status', (socketId) => {
+            console.log('catch request status');
+            socket.emit('throw-inform-status', socketId, {dismissedClasses, inNotifyDismissCoolDown});
+        });
+
+        setIntervalImmediately(() => {
+            const [ name ] = getDismissTime();
+            notifyDismissBtn.disabled = !name || dismissedClasses.find(item => item.name === name);
+        }, 1000);
+    }
+    else {
+        socket.emit('throw-request-status');
+    }
+
     let chatInit = true;
 
     // async function addMessageToChat(msgData) {
@@ -322,9 +476,7 @@ enterBtn.addEventListener('click', async () => {
         chatRoom.scrollTop = chatRoom.scrollHeight;
     });
 
-    const { alert, host } = (await getDoc(callDoc)).data();
-    const { interval, time: duration, alertType} = alert;
-    if (localUserId === host){
+    if (isHost) {
         console.log('您是會議主辦人');
 
         const q1 = query(alertRecords, where('done', '==', false ));
@@ -366,7 +518,7 @@ enterBtn.addEventListener('click', async () => {
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
 
-    // document.getElementById("cam__menu").classList.remove('close');
+    localCams.webcam.node.querySelector('.cam__menu').hidden = false;
 
     sidebarListener();
 
@@ -492,6 +644,141 @@ async function refreshStream() {
             });
         }
     }
+}
+
+function getStartAndEndTimeOfTheDay() {
+    const start = schoolData.data[0].start;
+    const end = schoolData.data[schoolData.data.length-1].end;
+
+    return [start.hour * 60 + start.minute, end.hour * 60 + end.minute]
+}
+
+function inCanNotifyTime() {
+    const now = new Date();
+    const minuteOfToday = dateToMinutes(now);
+    const [startTimeOfTheDay, endTimeOfTheDay] = getStartAndEndTimeOfTheDay();
+
+    if (minuteOfToday < startTimeOfTheDay || minuteOfToday >= endTimeOfTheDay) {
+        return true;
+    }
+
+    for (const classTime of schoolData.data) {
+        const startTime = timeToMinutes(classTime.start);
+        const endTime   = timeToMinutes(classTime.end);
+        if (minuteOfToday >= startTime + dismissTimePadding && minuteOfToday < endTime) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function inClassTime() {
+    const now = new Date();
+    const minuteOfToday = dateToMinutes(now);
+    const [startTimeOfTheDay, endTimeOfTheDay] = getStartAndEndTimeOfTheDay();
+
+    if (minuteOfToday < startTimeOfTheDay || minuteOfToday >= endTimeOfTheDay) {
+        return true;
+    }
+
+    for (const classTime of schoolData.data) {
+        const startTime = timeToMinutes(classTime.start);
+        const endTime   = timeToMinutes(classTime.end);
+        if (minuteOfToday >= startTime && minuteOfToday < endTime) {
+            console.log(`現在是第${classTime.name}節課`);
+            return true;
+        }
+    }
+    return false;
+}
+
+function getDismissTime() {
+    const now = new Date();
+    const minuteOfToday = dateToMinutes(now);
+
+    let prevEndTime = 0;
+    let prevName = '';
+    for (let i = 0; i < schoolData.data.length; i++) {
+        const classTime = schoolData.data[i];
+        const startTime = timeToMinutes(classTime.start);
+        const endTime   = timeToMinutes(classTime.end);
+        if (minuteOfToday >= startTime && minuteOfToday < endTime) {
+            const percentage = (minuteOfToday - startTime) / (endTime - startTime);
+            if (percentage < 0.5) {
+                if (minuteOfToday - startTime < dismissTimePadding) {
+                    // console.log(`現在下課會是第${prevName}節下課`);
+                    return [prevName, startTime - prevEndTime];
+                }
+            }
+            else {
+                if (endTime - minuteOfToday < dismissTimePadding) {
+                    // console.log(`現在下課會是第${classTime.name}節下課`);
+                    if (i < schoolData.data.length - 1) {
+                        const nextStartTime = timeToMinutes(schoolData.data[i+1].start);
+                        return [classTime.name, nextStartTime - endTime];
+                    }
+                    return [classTime.name, 24 * 60 - endTime];
+                }
+            }
+            // console.log(`現在是第${classTime.name}節上課`);
+            return [null, 0];
+        }
+        else {
+            if (startTime > minuteOfToday) {
+                // console.log(`現在是第${prevName}節下課`);
+                // console.log(`${startTime - prevEndTime}`);
+                return [prevName, startTime - prevEndTime];
+            }
+        }
+        prevEndTime = endTime;
+        prevName = classTime.name;
+    }
+
+    // console.log(`現在放學了`);
+    return [null, 0];
+}
+
+function spawnNotification() {
+    const notification = notificationPrefab.cloneNode(true);
+    const closeBtn = notification.querySelector('.notification__close-btn');
+    notificationContainer.appendChild(notification);
+    notification.dataset.type = 'dismiss-class';
+    notification.style.height = `${notification.scrollHeight}px`;
+    notification.style.opacity = '1';
+    closeBtn.addEventListener('click', () => {
+        notification.style.height = '';
+        notification.style.paddingBlock = '0px';
+        notification.style.opacity = '';
+        notification.addEventListener('transitionend', () => {
+            notification.remove();
+        })
+    });
+    return notification;
+}
+
+function spawnDismissTimerNotification(endTime) {
+    const notification = spawnNotification();
+    const closeBtn = notification.querySelector('.notification__close-btn');
+    closeBtn.remove();
+    const timerElement = htmlToElement(`
+        <span></span>
+    `);
+    const timer = setIntervalImmediately(() => {
+        const timeLeft = endTime - (new Date());
+        const min = `${Math.floor(timeLeft/MINUTE)}`.padStart(2, '0');
+        const sec = `${Math.floor((timeLeft%MINUTE)/1000)}`.padStart(2, '0');
+        timerElement.innerHTML = `${min}:${sec}`;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            closeBtn.click();
+        }
+    }, 1000);
+
+    const title = notification.querySelector('.notification__title');
+    const text = notification.querySelector('.notification__text');
+    title.innerHTML = '距離上課還有：'
+    text.innerHTML = '';
+    text.appendChild(timerElement)
 }
 
 export async function setupAlertScheduler() {

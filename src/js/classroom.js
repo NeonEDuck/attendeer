@@ -501,14 +501,14 @@ async function generateCalendar(month, year) {
 
     const days_of_month = [31, getFebDays(year), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-    calendar_days.innerHTML = ''
-
     const currDate = new Date()
     if (month == undefined) month = currDate.getMonth()
     if (year == undefined) year = currDate.getFullYear()
 
     const calendarEvents = {};
     const eventDocs = await getDocs(events);
+
+    calendar_days.innerHTML = ''
 
     for (const eventDoc of eventDocs.docs) {
         const { date, text } = eventDoc.data();

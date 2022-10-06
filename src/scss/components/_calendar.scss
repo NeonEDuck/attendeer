@@ -1,7 +1,7 @@
 .calendar {
     height: max-content;
     width: 100%;
-    background-color: var(--color-component-700);
+    background-color: var(--clr-component-500);
     border-radius: 1.2em;
     padding: 0.5em;
     position: relative;
@@ -10,7 +10,7 @@
 }
 
 .light .calendar {
-    filter: var(--shadow);
+    box-shadow: var(--box-shadow-500);
 }
 
 .calendar-header {
@@ -19,7 +19,7 @@
     align-items: center;
     font-size: 1.25em;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--clr-text-500);
     padding: 0.25em;
 }
 
@@ -37,14 +37,14 @@
 .calendar-week-day div {
     display: grid;
     place-items: center;
-    color: var(--bg-second);
+    color: var(--clr-text-300);
 }
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0em;
-    color: var(--text-color);
+    color: var(--clr-text-500);
 }
 
 .calendar-days div {
@@ -57,44 +57,36 @@
     position: relative;
     cursor: pointer;
     animation: to-top 0.5s forwards;
-    /* border-radius: 50%; */
     border-radius: 50%;
-    transition: background-color 0.25s ease-out;
-}
-
-.calendar-days div span {
-    display: none;
-}
-
-.calendar-days div:hover span {
-    transition: width 0.2s ease-in-out, height 0.2s ease-in-out;
+    transition: var(--transition-color);
 }
 
 .calendar-days div:hover {
-    background-color: var(--color-hover);
-    // transition: width 0.2s ease-in-out, height 0.2s ease-in-out;
+    background-color: var(--clr-component-300);
 }
 
-.calendar-days div.current-selected-day,
-.calendar-days div.current-selected-day:hover {
-    background-color: var(--color-hover);
-    color: var(--black);
+.calendar-days .current-selected-day{
+    background-color: var(--clr-primary-500);
+    color: var(--clr-text-white);
     border-radius: 50%;
-}
-
-.calendar-days div.curr-date,
-.calendar-days div.curr-date:hover {
-    background-color: var(--gray);
-    color: var(--white);
-    border-radius: 50%;
-
-    &.current-selected-day {
-        background-color: var(--dark-gray);
+    &:hover  {
+        background-color: var(--clr-primary-300);
     }
 }
 
-.calendar-days div.detailed-date,
-.calendar-days div.detailed-date:hover {
+.calendar-days .curr-date,
+.calendar-days .curr-date:hover {
+    background-color: var(--clr-primary-300);
+    color: var(--clr-text-white);
+    border-radius: 50%;
+
+    &.current-selected-day {
+        background-color: var(--clr-primary-700);
+    }
+}
+
+.calendar-days .detailed-date,
+.calendar-days .detailed-date:hover {
     background-color: var(--clr-primary-300);
     color: var(--white);
     border-radius: 50%;
@@ -104,24 +96,19 @@
     }
 }
 
-.calendar-days div.curr-date span {
+.calendar-days .curr-date span {
     display: none;
 }
-
-// .month-picker {
-//     padding: 0.25em 0.5em;
-//     border-radius: 0.5em;
-//     cursor: pointer;
-// }
-
-// .month-picker:hover {
-//     background-color: var(--color-hover);
-// }
 
 .month-picker,
 .year-picker {
     display: flex;
     align-items: center;
+}
+
+span#month {
+    width: 4em;
+    text-align: center;
 }
 
 .month-change,
@@ -132,9 +119,10 @@
     place-items: center;
     margin-inline: 0.25em;
     cursor: pointer;
+    user-select: none;
 
     &:hover {
-        background-color: var(--color-hover);
+        background-color: var(--clr-component-300);
     }
 }
 
@@ -153,7 +141,7 @@
     height: 100%;
     top: 0;
     left: 0;
-    background-color: var(--bg-main);
+    background-color: var(--clr-component-500);
     padding: 1em;
     grid-template-columns: repeat(3, auto);
     gap: 0.25em;
@@ -181,11 +169,11 @@
     border-radius: 0.5em;
     text-align: center;
     cursor: pointer;
-    color: var(--color-txt);
+    color: var(--clr-text-500);
 }
 
 .month-list > div > div:hover {
-    background-color: var(--color-hover);
+    background-color: var(--clr-component-300);
 }
 
 @keyframes to-top {
