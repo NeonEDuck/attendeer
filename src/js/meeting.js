@@ -553,6 +553,7 @@ messageBtn.addEventListener('click', async () => {
 });
 
 sendMsgBtn.addEventListener('click', async () => {
+    sendMsgBtn.disabled = true;
     let text = msgInput?.value?.trim();
     if (text) {
         const msgDoc = doc(messages);
@@ -565,6 +566,7 @@ sendMsgBtn.addEventListener('click', async () => {
         await setDoc(msgDoc, data);
     }
     msgInput.value = '';
+    sendMsgBtn.disabled = false;
 });
 
 msgInput.addEventListener("keyup", function(event) {
