@@ -24,6 +24,8 @@ const webcamBtn         = document.querySelector('#webcam-btn');
 const enterBtn          = document.querySelector('#enter-btn');
 const screenShareBtn    = document.querySelector('#screen-share-btn');
 const notifyDismissBtn  = document.querySelector('#notify-dismiss-btn');
+const plusTestBtn       = document.querySelector('#plus-test-btn');
+const minusTestBtn      = document.querySelector('#minus-test-btn');
 const hangUpBtn         = document.querySelector('#hang-up-btn');
 const messageBtn        = document.querySelector('#message-btn');
 const sendMsgBtn        = document.querySelector('#send-msg-btn');
@@ -111,16 +113,6 @@ document.onreadystatechange = async () => {
     await requestStreamPermission();
     await refreshStream();
 }
-
-plusTestBtn.addEventListener('click', () => {
-    const cam = camPrefab.cloneNode(true);
-
-    camContainer.appendChild(cam);
-});
-
-minusTestBtn.addEventListener('click', () => {
-    camContainer.lastChild.remove();
-});
 
 micBtn.addEventListener('click', async () => {
     try {
