@@ -145,7 +145,7 @@ $post-gap: 4em;
         }
         td, th {
             padding-block: 0.5em;
-            transition: background-color var(--transition-color);
+            transition: var(--transition-color);
             &:hover {
                 background-color: var(--clr-component-300);
             }
