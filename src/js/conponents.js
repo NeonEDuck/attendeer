@@ -246,7 +246,9 @@ export class Peer {
                     break;
 
                 case "failed":
-                    Cam.getCam(this.userId, streamType).warning.hidden = false;
+                    for (const streamType in Peer.peers[this.userId]?.streams) {
+                        Cam.getCam(this.userId, streamType).warning.hidden = false;
+                    }
                     console.log(`connectionState: ${this.userId} failed`);
 
                     //? 嘗試重新連線，不確定是否能成功，需要測試
