@@ -176,7 +176,15 @@ screenShareBtn.addEventListener('click', async () => {
     else {
         console.log('turn on screen share');
         const displayMediaStreamConstraints = {
-            localStream: true // or pass HINTS
+            localStream: true, // or pass HINTS
+            video: {
+                cursor: "always"
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
         };
         if (navigator.mediaDevices.getDisplayMedia) {
             localStreams.screenShare = await navigator.mediaDevices.getDisplayMedia(displayMediaStreamConstraints);
