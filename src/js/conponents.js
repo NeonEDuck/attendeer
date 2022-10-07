@@ -141,17 +141,33 @@ export class Cam {
         for (const track of stream.getTracks()) {
             mediaStream.addTrack(track);
         }
+        //! 現在有用 但一定有問題
+        if (mediaStream.getVideoTracks()[0]) {
+            mediaStream.getVideoTracks()[0].onended = function () {
+                this.turnOff();
+            };
+        }
         this.video.srcObject = mediaStream;
     }
 
     turnOff() {
+        if (this.node.classList.contains('pinned')) {
+            Cam.area.classList.remove('pinned-mode');
+            this.node.classList.remove('pinned');
+            Cam.container.appendChild(this.node);
+        }
         this.video.srcObject = null;
         if (this.streamType === Cam.Type.Webcam) {
             this.profile.hidden = false;
         }
+        else if (this.owner === 'local' && this.streamType === 'screen-share') {
+            this.node.hidden = true;
+            this.video.srcObject = null;
+        }
         else {
             this.destory();
         }
+        Cam.resizeAll();
     }
 
     destory() {

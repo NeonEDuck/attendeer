@@ -158,14 +158,14 @@ webcamBtn.addEventListener('click', async () => {
 });
 
 screenShareBtn.addEventListener('click', async () => {
-    if (localStreams.screenShare) {
+
+    const turnOffScreenShare = async () => {
         console.log('turn off screen share');
         localStreams.screenShare.getTracks().forEach(function(track) {
             track.stop();
         });
         localStreams.screenShare = null;
-        localCams.screenShare.node.hidden = true;
-        localCams.screenShare.video.srcObject = null;
+        localCams.screenShare.turnOff();
         for (const [id, peer] of Object.entries(Peer.peers)) {
             for (let sender of peer.senders.screenShare) {
                 console.log(`remove from ${id} ${sender}`)
@@ -174,7 +174,7 @@ screenShareBtn.addEventListener('click', async () => {
             peer.senders.screenShare = [];
         }
     }
-    else {
+    const turnOnScreenShare = async () => {
         console.log('turn on screen share');
         const displayMediaStreamConstraints = {
             localStream: true, // or pass HINTS
@@ -194,12 +194,22 @@ screenShareBtn.addEventListener('click', async () => {
         }
         localCams.screenShare.node.hidden = false;
         localCams.screenShare.video.srcObject = localStreams.screenShare;
+        localStreams.screenShare.getVideoTracks()[0].onended = function () {
+            turnOffScreenShare();
+        };
         for (const [id, peer] of Object.entries(Peer.peers)) {
             localStreams.screenShare.getTracks().forEach((track) => {
                 console.log(`add to ${id}`)
                 peer.senders.screenShare.push(peer.pc.addTrack(track, localStreams.screenShare));
             });
         }
+    }
+
+    if (localStreams.screenShare) {
+        turnOffScreenShare();
+    }
+    else {
+        turnOnScreenShare();
     }
 })
 
