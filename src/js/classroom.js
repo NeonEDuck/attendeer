@@ -84,6 +84,16 @@ document.onreadystatechange = async () => {
 
     className.innerHTML = name;
 
+    let localUserId = user.uid;
+
+    if( localUserId != host ) {
+        downloadAlertBtn.remove();
+        alertSearch.remove();
+        listAlert.remove();
+        const alertNope = document.querySelector('#alert-nope');
+        alertNope.hidden = false;
+    }
+
     let chatInit = true;
     onSnapshot(messages, async (snapshot) => {
         if (chatInit) {
@@ -127,27 +137,28 @@ document.onreadystatechange = async () => {
         `));
     }
 
-    let alertInit = true;
-    onSnapshot(alertRecords, async (snapshot) => {
-        if (alertInit) {
-            alertInit = false;
-            const q = query(alertRecords, orderBy('timestamp', 'asc'));
-            const alertDocs = await getDocs(q);
-            for (const alertDoc of alertDocs.docs) {
-                await addAlertToLog(alertDoc);
-            }
-        }
-        else {
-            snapshot.docChanges().forEach( async (change) => {
-                if (change.type === 'modified') {
-                    await addAlertToLog(change.doc);
+    if( localUserId === host ) {
+        let alertInit = true;
+        onSnapshot(alertRecords, async (snapshot) => {
+            if (alertInit) {
+                alertInit = false;
+                const q = query(alertRecords, orderBy('timestamp', 'asc'));
+                const alertDocs = await getDocs(q);
+                for (const alertDoc of alertDocs.docs) {
+                    await addAlertToLog(alertDoc);
                 }
-            });
-        }
+            }
+            else {
+                snapshot.docChanges().forEach( async (change) => {
+                    if (change.type === 'modified') {
+                        await addAlertToLog(change.doc);
+                    }
+                });
+            }
 
-        await delay(100);
-    });
-
+            await delay(100);
+        });
+    }
 
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
     for (const row of rows) {
@@ -299,15 +310,8 @@ async function addAlertToLog(alertData) {
                 }
             }
 
-            const user = await getUser();
-            let localUserId = user.uid;
-
-            if( localUserId === host ) {
-                for (const userId of attendees) {
-                    ptcpLogFunction(userId, alertData);
-                }
-            }else {
-                ptcpLogFunction(localUserId, alertData);
+            for (const userId of attendees) {
+                ptcpLogFunction(userId, alertData);
             }
 
             loading.style.display = 'none';
@@ -665,15 +669,8 @@ async function getAlertLog() {
             }
             log += '姓名,點擊狀態,回答,完成時間\n';
 
-            const user = await getUser();
-            let localUserId = user.uid;
-
-            if( localUserId === host ) {
-                for (const userId of attendees) {
-                    log = await downloadAlert(userId, log, alert);
-                }
-            }else {
-                log = await downloadAlert(localUserId, log, alert);
+            for (const userId of attendees) {
+                log = await downloadAlert(userId, log, alert);
             }
         }
     }
