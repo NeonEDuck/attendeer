@@ -78,6 +78,7 @@ webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
 localCams.webcam.node.querySelector('.cam__menu').hidden = true;
 localCams.screenShare.node.hidden = true;
+localCams.screenShare.video.muted = true;
 
 let userAbove = '';
 export let intervalID;

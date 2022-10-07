@@ -138,8 +138,9 @@ export class Cam {
     turnOn(stream) {
         this.profile.hidden = true;
         const mediaStream = new MediaStream();
-        const [ track ] = stream.getTracks();
-        mediaStream.addTrack(track);
+        for (const track of stream.getTracks()) {
+            mediaStream.addTrack(track);
+        }
         this.video.srcObject = mediaStream;
     }
 
