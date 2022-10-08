@@ -246,8 +246,6 @@ enterBtn.addEventListener('click', async () => {
     schoolData = data.find(item => item.id === school);
     console.log(schoolData);
 
-    console.log(`join call: ${callId} as ${localUserId}`);
-    socket.emit('join-call', callId, localUserId);
     const { name } = (await getDoc(callDoc)).data();
 
     socket.on('user-connected', async (socketId, userId) => {
@@ -453,6 +451,9 @@ enterBtn.addEventListener('click', async () => {
     else {
         socket.emit('throw-request-status');
     }
+
+    console.log(`join call: ${callId} as ${localUserId}`);
+    socket.emit('join-call', callId, localUserId);
 
     let chatInit = true;
 
