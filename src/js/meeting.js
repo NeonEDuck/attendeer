@@ -72,6 +72,14 @@ let schoolData;
 let notifyDismissCoolDownTimeInMinute = 1;
 let inNotifyDismissCoolDown = false;
 let dismissedClasses = [];
+export let globalAlertType = '';
+export let globalInterval = 0;
+export let globalTime = 0;
+export function setGlobalAlert(alertType, interval, time) {
+    globalAlertType = alertType;
+    globalInterval = interval;
+    globalTime = time;
+}
 
 // Default state
 webcamBtn.disabled = true;
@@ -86,7 +94,6 @@ export let intervalID;
 // Firestore
 const calls = collection(firestore, 'calls');
 const callDoc = doc(calls, callId);
-const participants = collection(callDoc, 'participants');
 const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
 
@@ -238,7 +245,6 @@ enterBtn.addEventListener('click', async () => {
 
     console.log(`join call: ${callId} as ${localUserId}`);
     socket.emit('join-call', callId, localUserId);
-    const { name } = (await getDoc(callDoc)).data();
 
     socket.on('user-connected', async (socketId, userId) => {
         console.log(`user connected: ${userId}`);
@@ -503,6 +509,10 @@ enterBtn.addEventListener('click', async () => {
             },
         }
         await updateDoc(callDoc, dataAlert);
+
+        globalAlertType = 'click';
+        globalInterval = interval;
+        globalTime = duration;
 
         setupAlertScheduler();
     }
@@ -876,22 +886,19 @@ async function startAlert() {
     while (true) {
         try {
 
-            const { alert } = (await getDoc(callDoc)).data();
-            const { interval, time: duration, alertType} = alert;
-
             alertDocCurrently = doc(alertRecords);
 
             let dataNormal = {
                 timestamp: new Date(),
-                duration: duration, //時長
-                alertType: alertType,
-                interval: interval,
+                duration: globalTime, //時長
+                alertType: globalAlertType,
+                interval: globalInterval,
                 started: false,
                 done: false,
                 outdated: false,
             };
 
-            if(alertType === 'multiple choice' || alertType === 'essay question' || alertType === 'vote') {
+            if( globalAlertType != 'click' ) {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
@@ -901,13 +908,13 @@ async function startAlert() {
 
             let alertPrevious = alertDocCurrently;
 
-            await delay( interval * MINUTE );
+            await delay( globalInterval * MINUTE );
 
             updateDoc(alertPrevious, {started: true});
 
             console.log('alert started');
 
-            await delay( duration * MINUTE );
+            await delay( globalTime * MINUTE );
 
             if ((await getDoc(alertPrevious))?.data()?.outdated === true) {
                 deleteDoc(alertPrevious);
@@ -918,8 +925,8 @@ async function startAlert() {
 
                 let dataAlert = {
                     alert: {
-                        interval: interval,
-                        time: duration,
+                        interval: globalInterval,
+                        time: globalTime,
                         alertType: 'click',
                     },
                 }
@@ -941,7 +948,7 @@ async function startAlert() {
 
 export function setupAlertListener() {
     console.log('setupAlertListener');
-    let unsubscribe = onSnapshot(alertRecords, (snapshot) => {
+    onSnapshot(alertRecords, (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
             if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == false) {
 
@@ -950,10 +957,8 @@ export function setupAlertListener() {
                 const alertDoc     = doc(alertRecords, change.doc.id);
                 const participants = collection(alertDoc, 'participants');
                 const userDoc      = doc(participants, localUserId);
-                const { alertType, duration, timestamp, interval, done, answear, question, multipleChoice } = change.doc.data();
-                const timestampStart = new Date(timestamp.toMillis() + interval * MINUTE);
+                const { alertType, duration, timestamp, interval, question, multipleChoice } = change.doc.data();
                 const timestampEnd = new Date(timestamp.toMillis() + (interval + duration) * MINUTE);
-                const now = new Date();
 
                     if( (await getDoc(userDoc)).data() === undefined ) {
                         const data = {
@@ -961,6 +966,7 @@ export function setupAlertListener() {
                         }
                         await setDoc(userDoc, data);
                     }
+
                     const {click} = (await getDoc(userDoc)).data();
                     if( click === false ) {
                         console.log('see alert');
@@ -1049,97 +1055,63 @@ export function setupAlertListener() {
                         alertBtnTime.innerHTML = '00:00';
                         alertBtn.appendChild(alertBtnTime);
 
-                        alertModule.hidden = false;
-
                         alertBtn.addEventListener('click', async () => {
-                            if (alertBtn.dataset.id) {
-                                const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
-                                const participants = collection(alertDoc, 'participants');
-                                const userDoc      = doc(participants, localUserId);
-                                const answearChosen = document.querySelector(".chosen");
-                                const qstShowAnswear = document.querySelector(".qst_show_answear");
+                            const answearChosen = document.querySelector(".chosen");
+                            const qstShowAnswear = document.querySelector(".qst_show_answear");
 
-                                if(alertType === 'click') {
-                                    const data = {
-                                        click : true,
-                                        timestamp: new Date()
-                                    }
-                                    await updateDoc(userDoc, data);
-                                    alertBtnTime.hidden = true;
-                                    alertBtnText.innerHTML = '簽到完成';
-                                    alertBtn.classList.add('active');
+                            let DoneClick = false;
+                            let data;
 
-                                    await delay(1000);
-                                    alertBtn.hidden = true;
-                                    alertBtnTime.hidden = false;
-                                    alertBtnText.innerHTML = '警醒按鈕';
-                                    alertBtn.classList.remove('active');
+                            if(alertType === 'click') {
+                                data = {
+                                    click : true,
+                                    timestamp: new Date()
+                                }
+                            }else if(alertType === 'multiple choice') {
+                                if(answearChosen != null) {
 
-                                    alertModule.hidden = true;
-                                }else if(alertType === 'multiple choice') {
-                                    if(answearChosen != null) {
-                                        const data = {
-                                            click: true,
-                                            answear: answearChosen.innerHTML,
-                                            timestamp: new Date(),
-                                        }
-                                        await updateDoc(userDoc, data);
-                                        alertBtnTime.hidden = true;
-                                        alertBtnText.innerHTML = '簽到完成';
-                                        alertBtn.classList.add('active');
-
-                                        await delay(1000);
-                                        alertBtn.hidden = true;
-                                        alertBtnTime.hidden = false;
-                                        alertBtnText.innerHTML = '警醒按鈕';
-                                        alertBtn.classList.remove('active');
-
-                                        alertModule.hidden = true;
-                                    }
-                                }else if(alertType === 'essay question') {
-                                    if(qstShowAnswear.value != '') {
-                                        const data = {
-                                            click: true,
-                                            answear: qstShowAnswear.value,
-                                            timestamp: new Date(),
-                                        }
-                                        await updateDoc(userDoc, data);
-                                        alertBtnTime.hidden = true;
-                                        alertBtnText.innerHTML = '簽到完成';
-                                        alertBtn.classList.add('active');
-
-                                        await delay(1000);
-                                        alertBtn.hidden = true;
-                                        alertBtnTime.hidden = false;
-                                        alertBtnText.innerHTML = '警醒按鈕';
-                                        alertBtn.classList.remove('active');
-
-                                        alertModule.hidden = true;
-                                    }
-                                }else if(alertType === 'vote') {
-                                    const radio = document.querySelector(".radios").querySelectorAll('input');
-                                    for (let x = 0; x < radio.length; x ++) {
-                                        if (radio[x].checked) {
-                                            const data = {
-                                                click: true,
-                                                answear: radio[x].value,
-                                                timestamp: new Date(),
-                                            }
-                                            await updateDoc(userDoc, data);
-                                            alertBtnTime.hidden = true;
-                                            alertBtnText.innerHTML = '簽到完成';
-                                            alertBtn.classList.add('active');
-
-                                            await delay(1000);
-                                            alertBtn.hidden = true;
-                                            alertBtnTime.hidden = false;
-                                            alertBtnText.innerHTML = '警醒按鈕';
-                                            alertBtn.classList.remove('active');
-
-                                            alertModule.hidden = true;
-                                        }
+                                    DoneClick = true;
+                                    data = {
+                                        click: true,
+                                        answear: answearChosen.innerHTML,
+                                        timestamp: new Date(),
                                     }
                                 }
+                            }else if(alertType === 'essay question') {
+                                if(qstShowAnswear.value != '') {
+                                    DoneClick = true;
+                                    data = {
+                                        click: true,
+                                        answear: qstShowAnswear.value,
+                                        timestamp: new Date(),
+                                    }
+                                }
+                            }else if(alertType === 'vote') {
+                                const radio = document.querySelector(".radios").querySelectorAll('input');
+                                for (let x = 0; x < radio.length; x ++) {
+                                    if (radio[x].checked) {
+                                        DoneClick = true;
+                                        data = {
+                                            click: true,
+                                            answear: radio[x].value,
+                                            timestamp: new Date(),
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if ( DoneClick === true ) {
+                                await updateDoc(userDoc, data);
+                                alertBtnTime.hidden = true;
+                                alertBtnText.innerHTML = '簽到完成';
+                                alertBtn.classList.add('active');
+                                await delay(1000);
+                                alertBtn.hidden = true;
+                                alertBtnTime.hidden = false;
+                                alertBtnText.innerHTML = '警醒按鈕';
+                                alertBtn.classList.remove('active');
+                                alertModule.hidden = true;
                             }
                         });
 
