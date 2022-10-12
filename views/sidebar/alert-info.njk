@@ -8,18 +8,18 @@
                     <fieldset>
                         <legend>警醒</legend>
                         <div class="field"  id="alertType">
-                            <label for="alert-type">警醒類型:</label>
-                            <label id="alert-type" class="alert-type"></label>
+                            <label for="info-type">警醒類型:</label>
+                            <label id="info-type" class="alert-type"></label>
                         </div>
-                        <label for="alert-interval">警醒間隔:</label>
+                        <label for="info-interval">警醒間隔:</label>
                         <div class="field">
-                            <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
-                            <label for="alert-interval">分鐘</label>
+                            <input id="info-interval" class="alert-interval" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
+                            <label for="info-interval">分鐘</label>
                         </div>
-                        <label for="alert-time">警醒持續時間:</label>
+                        <label for="info-time">警醒持續時間:</label>
                         <div class="field">
-                            <input id="alert-time" class="alert-time" name="alert-time" type="number" readonly='readonly' min="1" max="3" required>
-                            <label for="alert-time">分鐘</label>
+                            <input id="info-time" class="alert-time" name="alert-time" type="number" readonly='readonly' min="1" max="3" required>
+                            <label for="info-time">分鐘</label>
                         </div>
                     </fieldset>
                     <div class="type-info">
@@ -93,15 +93,15 @@
                 <fieldset>
                     <legend>警醒</legend>
                     <div class="error-text"></div>
-                    <label for="alert-interval">警醒間隔:</label>
+                    <label for="btn-interval">警醒間隔:</label>
                     <div class="field">
-                        <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
-                        <label for="alert-interval">分鐘</label>
+                        <input id="btn-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                        <label for="btn-interval">分鐘</label>
                     </div>
-                    <label for="alert-time">警醒持續時間:</label>
+                    <label for="btn-time">警醒持續時間:</label>
                     <div class="field">
-                        <input id="alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
-                        <label for="alert-time">分鐘</label>
+                        <input id="btn-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                        <label for="btn-time">分鐘</label>
                     </div>
                 </fieldset>
                 <div class="center-btn">
@@ -176,15 +176,15 @@
                                 <div class="error-text"></div>
                             </div>
                             <div class="field alert">
-                                <label for="alert-interval">警醒間隔:</label>
+                                <label for="mcs-interval">警醒間隔:</label>
                                 <div class="field">
-                                    <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" min="10" max="50">
-                                    <label for="alert-interval">分鐘</label>
+                                    <input id="mcs-interval" class="alert-interval" name="alert-interval" type="number" min="10" max="50">
+                                    <label for="mcs-interval">分鐘</label>
                                 </div>
-                                <label for="alert-time">警醒持續時間:</label>
+                                <label for="mcs-time">警醒持續時間:</label>
                                 <div class="field">
-                                    <input id="alert-time" class="alert-time" name="alert-time" type="number" min="1" max="3">
-                                    <label for="alert-time">分鐘</label>
+                                    <input id="mcs-time" class="alert-time" name="alert-time" type="number" min="1" max="3">
+                                    <label for="mcs-time">分鐘</label>
                                 </div>
                             </div>
                             <div class="field btns">
@@ -210,7 +210,7 @@
 
                 <fieldset>
                     <legend>問答題</legend>
-                    <label for="alert-interval">Question:</label>
+                    <label>Question:</label>
 
                     <div class="field">
                         <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
@@ -219,15 +219,15 @@
 
                 <fieldset>
                     <legend>警醒</legend>
-                    <label for="alert-interval">警醒間隔:</label>
+                    <label for="eqs-interval">警醒間隔:</label>
                     <div class="field">
-                        <input id="essay-question__alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
-                        <label for="alert-interval">分鐘</label>
+                        <input id="eqs-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                        <label for="eqs-interval">分鐘</label>
                     </div>
-                    <label for="alert-time">警醒持續時間:</label>
+                    <label for="eqs-time">警醒持續時間:</label>
                     <div class="field">
-                        <input id="essay-question__alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
-                        <label for="alert-time">分鐘</label>
+                        <input id="eqs-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                        <label for="eqs-time">分鐘</label>
                     </div>
                 </fieldset>
                 <div class="center-btn">
@@ -249,14 +249,14 @@
 
                 <fieldset>
                     <legend>投票</legend>
-                    <label for="alert-interval">輸入投票題目:</label>
+                    <label>輸入投票題目:</label>
 
                     <div class="field">
                         <textarea id="vote__qst" cols="25" rows="5" maxlength="50"></textarea>
                     </div>
 
                     <div class="field">
-                        <label for="alert-interval">輸入投票回答:</label>
+                        <label>輸入投票回答:</label>
                         <select name="options" id="option-selected">
                             <option value="" selected >請選擇投票數量</option>
                             <option value="2" >2</option>
@@ -271,15 +271,15 @@
 
                 <fieldset>
                     <legend>警醒</legend>
-                    <label for="alert-interval">警醒間隔:</label>
+                    <label for="vs-interval">警醒間隔:</label>
                     <div class="field">
-                        <input id="vote-setting__alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
-                        <label for="alert-interval">分鐘</label>
+                        <input id="vs-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                        <label for="vs-interval">分鐘</label>
                     </div>
-                    <label for="alert-time">警醒持續時間:</label>
+                    <label for="vs-time">警醒持續時間:</label>
                     <div class="field">
-                        <input id="vote-setting__alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
-                        <label for="alert-time">分鐘</label>
+                        <input id="vs-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                        <label for="vs-time">分鐘</label>
                     </div>
                 </fieldset>
 
