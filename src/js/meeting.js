@@ -72,13 +72,20 @@ let schoolData;
 let notifyDismissCoolDownTimeInMinute = 1;
 let inNotifyDismissCoolDown = false;
 let dismissedClasses = [];
-export let globalAlertType = '';
-export let globalInterval = 0;
-export let globalTime = 0;
-export function setGlobalAlert(alertType, interval, time) {
+export let globalAlertType;
+export let globalInterval;
+export let globalTime;
+export let globalQuestion;
+export let globalAnswear;
+export let globalMultipleChoice;
+
+export function setGlobalAlert(alertType, interval, time, question, answear, globalmultipleChoice) {
     globalAlertType = alertType;
     globalInterval = interval;
     globalTime = time;
+    globalQuestion = question;
+    globalAnswear = answear;
+    globalMultipleChoice = globalmultipleChoice;
 }
 
 // Default state

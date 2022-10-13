@@ -543,32 +543,33 @@ body.dark {
                                         box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
                                         resize: none;
                                     }
-                                    .span_No {
-                                        box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--button-color-3);
-                                        position: relative;
-                                        display: flex;
-                                        justify-content: center;
-                                        align-items: center;
-                                        cursor: pointer;
-                                        pointer-events: auto;
-                                        width: 2.5em;
-                                        height: 2.5em;
-                                        border-radius: 50%;
-
-                                        &.answear {
-                                            background-color: var(--primary-color);
-                                        }
-                                        &.disable {
-                                            cursor: not-allowed;
-                                            pointer-events: none;
-                                        }
-                                    }
 
                                     .voteOptions {
                                         flex-direction: column;
                                     }
                                 }
                             }
+                        }
+                    }
+
+                    .span_No {
+                        box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--button-color-3);
+                        position: relative;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        cursor: pointer;
+                        pointer-events: auto;
+                        width: 2.5em;
+                        height: 2.5em;
+                        border-radius: 50%;
+
+                        &.answear {
+                            background-color: var(--primary-color);
+                        }
+                        &.disable {
+                            cursor: not-allowed;
+                            pointer-events: none;
                         }
                     }
 
@@ -954,7 +955,7 @@ body.dark {
                                     transition: margin-left 0.3s ease-in-out;
                                     height: 100%;
                                     display: grid;
-                                    grid-template-rows: 10% 10% 70% 10%;
+                                    grid-template-rows: 10% 80% 10%;
                                     .title {
                                         text-align: left;
                                         font-size: 25px;
