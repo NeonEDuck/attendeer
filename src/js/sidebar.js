@@ -2,15 +2,20 @@ import { firestore } from './firebase-config.js';
 import { collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { getUser } from './util.js';
+import { prefab } from './prefab.js';
 import { setupAlertScheduler, alertDocCurrently, globalAlertType, setGlobalAlert, globalInterval, globalTime } from './meeting.js';
 
 // HTML elements
+
 const body       = document.querySelector("body");
 const sidebar    = document.querySelector(".sidebar"),
       toggle     = sidebar.querySelector(".toggle"),
       modeSwitch = sidebar.querySelector(".toggle-switch"),
       modeText   = sidebar.querySelector(".mode-text"),
       navBtn     = sidebar.querySelectorAll('.nav-btn');
+
+const alertSetting       = prefab.querySelector('.alert-setting');
+const alertButtonSetting = document.querySelector('.button-setting');
 
 const fltCntr             = document.querySelector(".floating-container"),
       closeFloatingButton = fltCntr.querySelector('.close-floating_button'),
@@ -25,12 +30,10 @@ const fltCntr             = document.querySelector(".floating-container"),
       submitSettingBtn    = alertInfo.querySelector('#submit-setting'),
       cancelSettingBtn    = alertInfo.querySelector('#cancel-setting');
 
-const btnInterval = document.querySelector("#btn-interval");
 const mcsInterval = document.querySelector("#mcs-interval");
 const eqsInterval = document.querySelector("#eqs-interval");
 const vsInterval  = document.querySelector("#vs-interval");
 
-const btnTime     = document.querySelector("#btn-time");
 const mcsTime     = document.querySelector("#mcs-time");
 const eqsTime     = document.querySelector("#eqs-time");
 const vsTime      = document.querySelector("#vs-time");
@@ -39,7 +42,6 @@ const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
       alertChoose              = floatingAlert.querySelector('.alert-choose'),
       alertExchange            = floatingAlert.querySelector('#alert-exchange'),
       alertReturn              = floatingAlert.querySelector('#alert-return'),
-      alertBtnReturn           = floatingAlert.querySelector('#alert-btn-return'),
       alertEssayQuestionReturn = floatingAlert.querySelector('#alert-essay-question-return'),
       voteSettingReturn        = floatingAlert.querySelector('#vote-setting-return'),
       alertStepProgress        = floatingAlert.querySelectorAll('.alert-step-progress'),
@@ -47,10 +49,8 @@ const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
       multipleChoiceSetting    = floatingAlert.querySelector('.multiple-choice-setting'),
       essayQuestion            = floatingAlert.querySelector('.essay-question'),
       voteSetting              = floatingAlert.querySelector('.vote-setting'),
-      alertBtnFinish           = buttonSetting.querySelector('#alert-btn-finish'),
       essayQuestionFinish      = essayQuestion.querySelector('#essay-question-finish'),
       voteSettingFinish        = voteSetting.querySelector('#vote-setting-finish'),
-      btnSettingErrorText      = buttonSetting.querySelector('.error-text'),
       errorText                = alertStepProgress[1].querySelectorAll('.error-text'),
       container                = floatingAlert.querySelectorAll('.container'),
       choose1                  = floatingAlert.querySelector('#choose-1'),
@@ -59,27 +59,27 @@ const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
       choose4                  = floatingAlert.querySelector('#choose-4');
 
 //multiple choice
-const slidePage      = container[1].querySelector(".slidepage");
-const options        = container[1].querySelector(".options");
-const prev1          = container[1].querySelector(".prev-1");
-const next1          = container[1].querySelector(".next-1");
-const addBtn         = container[1].querySelector(".add_options");
-const fieldAdd       = container[1].querySelector(".add");
-const prev2          = container[1].querySelector(".prev-2");
-const next2          = container[1].querySelector(".next-2");
-const prev3          = container[1].querySelector(".prev-3");
-const next3          = container[1].querySelector(".next-3");
-const progressText   = container[1].querySelectorAll(".step p");
-const progressCheck  = container[1].querySelectorAll(".step .check");
-const bullet         = container[1].querySelectorAll(".step .bullet");
-const qstText        = container[1].querySelectorAll(".qst_text");
-let bxX              = container[1].querySelectorAll(".bx-x");
+const slidePage      = container[0].querySelector(".slidepage");
+const options        = container[0].querySelector(".options");
+const prev1          = container[0].querySelector(".prev-1");
+const next1          = container[0].querySelector(".next-1");
+const addBtn         = container[0].querySelector(".add_options");
+const fieldAdd       = container[0].querySelector(".add");
+const prev2          = container[0].querySelector(".prev-2");
+const next2          = container[0].querySelector(".next-2");
+const prev3          = container[0].querySelector(".prev-3");
+const next3          = container[0].querySelector(".next-3");
+const progressText   = container[0].querySelectorAll(".step p");
+const progressCheck  = container[0].querySelectorAll(".step .check");
+const bullet         = container[0].querySelectorAll(".step .bullet");
+const qstText        = container[0].querySelectorAll(".qst_text");
+let bxX              = container[0].querySelectorAll(".bx-x");
 
 //essay-question
-const qstText3       = container[2].querySelector(".qst_text");
+const qstText3       = container[1].querySelector(".qst_text");
 
 //vote-settig
-const optionSelected = container[3].querySelector("#option-selected");
+const optionSelected = container[2].querySelector("#option-selected");
 
 // Global variable
 let current = 0;
@@ -159,7 +159,7 @@ closeFloatingButton.addEventListener('click', () => {
 
     alertInfo.classList.remove('close');
     alertChoose.classList.add("close");
-    buttonSetting.classList.add("close");
+    buttonSetting.hidden = true;
     multipleChoiceSetting.classList.add("close");
     essayQuestion.classList.add("close");
     voteSetting.classList.add("close");
@@ -176,8 +176,9 @@ closeFloatingButton.addEventListener('click', () => {
     for(let i=0; i < optionInput.length; i++){
         optionInput[i].value = "";
     }
-    if( container[1].querySelector(".answear-chosen") != null ) {
-        container[1].querySelector(".answear-chosen").classList.remove("answear-chosen");
+
+    if( multipleChoiceSetting.querySelector(".answear-chosen") != null ) {
+        multipleChoiceSetting.querySelector(".answear-chosen").classList.remove("answear-chosen");
     }
     const option = multipleChoiceSetting.querySelectorAll('.option');
     option.forEach(option => {
@@ -194,24 +195,23 @@ closeFloatingButton.addEventListener('click', () => {
         errorText.innerHTML = '';
     })
     const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
-    essayQuestionErrorText.innerHTML = '';
-    qstText3.value = '';
-
-    btnSettingErrorText.innerHTML = '';
-
-    alertInfoErrorText.innerHTML = '';
-
     const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
+    essayQuestionErrorText.innerHTML = '';
+    alertInfoErrorText.innerHTML = '';
     voteSettingErrorText.innerHTML = '';
     
     const voteOptionInput = alertStepProgress[3].querySelectorAll(".option_input");
     const voteQst = alertStepProgress[3].querySelector("#vote__qst");
 
+    qstText3.value = '';
     voteQst.value = '';
     optionSelected.value = '';
     voteOptionInput.forEach( optionInput => {
         optionInput.remove();
-    })
+    });
+
+    const alertSetting = document.querySelector('.alert-setting');
+    alertSetting.remove();
 });
 
 //警醒浮動視窗 開啟
@@ -219,14 +219,11 @@ async function closeModalForm() {
 
     alertInfoErrorText.innerHTML = '';
 
-    const Interval = classModel.querySelector("#info-interval");
-    const Time     = classModel.querySelector("#info-time");
+    infoInterval.setAttribute("readonly", "readonly");
+    infoTime.setAttribute("readonly", "readonly");
 
-    Interval.setAttribute("readonly", "readonly");
-    Time.setAttribute("readonly", "readonly");
-
-    Interval.classList.remove('Revise');
-    Time.classList.remove('Revise');
+    infoInterval.classList.remove('Revise');
+    infoTime.classList.remove('Revise');
 
     centerBtns[0].hidden = false;
     centerBtns[1].hidden = true;
@@ -694,10 +691,68 @@ alertReturn.addEventListener('click', () => {
 });
 
 choose1.addEventListener('click', () => {
-    buttonSetting.classList.remove("close");
+    buttonSetting.hidden = false;
     alertChoose.classList.toggle("close");
-    btnInterval.value = globalInterval;
-    btnTime.value     = globalTime;
+
+    const alert = alertSetting.cloneNode(true);
+    const title = alert.querySelector('.class-modal__title');
+    const alertInterval = alert.querySelector('.alert-interval');
+    const alertTime = alert.querySelector('.alert-time');
+    const alertFinish = alert.querySelector('#alert-finish');
+    const alertReturn = alert.querySelector('#alert-return');
+    const errorText = alert.querySelector('.error-text');
+    
+    title.innerHTML = "警醒按鈕設定";
+    alertInterval.value = globalInterval;
+    alertTime.value = globalTime;
+
+    alertButtonSetting.appendChild(alert);
+
+    alertFinish.addEventListener('click', async () => {
+
+        const type = 'click';
+        const interval = Number(alertInterval.value);
+        const time     = Number(alertTime.value);
+        setGlobalAlert(type,interval,time);
+    
+        if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
+    
+            const data = {
+                alert: {
+                    interval:interval,
+                    time:time,
+                    alertType:type,
+                },
+            }
+    
+            const callDoc = doc(calls, callId);
+            await updateDoc(callDoc, data);
+    
+            alertInfo.classList.remove("close");
+    
+            AlertReplace();
+    
+            closeModalForm();
+    
+            errorText.innerHTML = '';
+            
+            alert.remove();
+
+            buttonSetting.hidden = true;
+
+        }else if( interval < 10 || interval > 50 ) {
+            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+        }else if( time < 1 || time > 3 ) {
+            errorText.innerHTML = '持續時間範圍：1 ~ 3';
+        }
+    });
+
+    alertReturn.addEventListener('click', () => {
+        buttonSetting.hidden = true;
+        alertChoose.classList.remove("close");
+        errorText.innerHTML = '';
+        alert.remove();
+    });
 });
 
 choose2.addEventListener('click', () => {
@@ -719,57 +774,6 @@ choose4.addEventListener('click', () => {
     alertChoose.classList.toggle("close");
     vsInterval.value = globalInterval;
     vsTime.value     = globalTime;
-});
-
-alertBtnFinish.addEventListener('click', async () => {
-    const errorText = buttonSetting.querySelector('.error-text');
-    const btnInterval = document.querySelector("#btn-interval");
-    const btnTime     = document.querySelector("#btn-time");
-
-    const type = 'click';
-    const interval = Number(btnInterval.value);
-    const time     = Number(btnTime.value);
-    setGlobalAlert(type,Number(btnInterval.value), Number(btnTime.value));
-
-    if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
-
-        const data = {
-            alert: {
-                interval:interval,
-                time:time,
-                alertType:type,
-            },
-        }
-
-        const callDoc = doc(calls, callId);
-        await updateDoc(callDoc, data);
-
-        alertInfo.classList.remove("close");
-        alertChoose.classList.toggle("close");
-        fltCntr.classList.remove("show");
-        buttonSetting.classList.toggle("close");
-        alertChoose.classList.toggle("close");
-        Array.from(navBtn).forEach((item) => {
-            item.className = "nav-btn";
-        });
-
-        AlertReplace();
-
-        errorText.innerHTML = '';
-    }else if( interval < 10 || interval >50 ) {
-        errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-    }else if( time < 1 || time > 3 ) {
-        errorText.innerHTML = '持續時間範圍：1 ~ 3';
-    }
-
-});
-
-alertBtnReturn.addEventListener('click', () => {
-    buttonSetting.classList.toggle("close");
-    alertChoose.classList.remove("close");
-
-    const errorText = buttonSetting.querySelector('.error-text');
-    errorText.innerHTML = '';
 });
 
 prev1.addEventListener('click', () => {
@@ -807,8 +811,6 @@ next1.addEventListener('click', () => {
     }else {
         errorText[0].innerHTML = '禁止輸入空字串！';
     }
-
-    
 });
 next2.addEventListener('click', () => {
     let optionInput = container[1].querySelectorAll('.option_input');
@@ -1140,7 +1142,7 @@ voteSettingFinish.addEventListener("click", async () =>{
 optionSelected.addEventListener("change",Selected);
 
 function Selected(event){
-    const fieldOptions = container[3].querySelector(".options");
+    const fieldOptions = container[2].querySelector(".options");
     const optionInput = fieldOptions.querySelectorAll(".option_input");
 
     optionInput.forEach( optionInput => {

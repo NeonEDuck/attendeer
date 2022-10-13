@@ -486,17 +486,15 @@ body.dark {
                                 }
                                 .alert-interval {
                                     &.Revise {
-                                        color: var(--text-color-11);
-                                        background-color: var(--floating--color-11);
-                                        box-shadow: inset 2px 2px 4px var(--floating--color-22), inset -2px -2px 4px var(--floating--color-33);
+                                        color: var(--clr-text-black);
+                                        background-color: var(--white);
                                     }
                                 }
 
                                 .alert-time {
                                     &.Revise {
-                                        color: var(--text-color-11);
-                                        background-color: var(--floating--color-11);
-                                        box-shadow: inset 2px 2px 4px var(--floating--color-22), inset -2px -2px 4px var(--floating--color-33);
+                                        color: var(--clr-text-black);
+                                        background-color: var(--white);
                                     }
                                 }
                                 input {

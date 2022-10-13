@@ -48,6 +48,34 @@
             <button class="notification__close-btn btn-red">{% include 'svg/cross.svg' %}</button>
         </footer>
     </li>
+
+    <div class="alert-setting">
+        <div class="alert_icon_buttons" id="alert-return" style="left: 15px;">
+            <i class="bx bx-arrow-back"></i>
+        </div>
+        <div class="container">
+            <h1 class="class-modal__title"></h1>
+            <fieldset>
+                <legend>警醒</legend>
+                <div id="error-text" class="error-text"></div>
+                <label for="alert-interval">警醒間隔:</label>
+                <div class="field">
+                    <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                    <label for="alert-interval">分鐘</label>
+                </div>
+                <label for="alert-time">警醒持續時間:</label>
+                <div class="field">
+                    <input id="alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                    <label for="alert-time">分鐘</label>
+                </div>
+            </fieldset>
+            <div class="center-btn">
+                <button type="button" id="alert-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
+            </div>
+        </div>
+    </div>
+
+
 {% endblock prefab %}
 
 {% block content %}
