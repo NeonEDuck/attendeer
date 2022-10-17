@@ -182,7 +182,31 @@
         </div>
     </div>
 
-    
+    <div class="alert-vote-setting">
+        <div class="container">
+            <fieldset class="fieldset-vote">
+                <legend>投票</legend>
+                <label>輸入投票題目:</label>
+                <div class="field">
+                    <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
+                </div>
+                <div class="field">
+                    <label>輸入投票回答:</label>
+                    <select name="options" id="option-selected">
+                        <option value="" selected >請選擇投票數量</option>
+                        <option value="2" >2</option>
+                        <option value="3" >3</option>
+                        <option value="4" >4</option>
+                    </select>
+                </div>
+                <div class="field options"></div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="vote-option_input">
+        <input type="text" class="option_input">
+    </div>
 
 {% endblock prefab %}
 

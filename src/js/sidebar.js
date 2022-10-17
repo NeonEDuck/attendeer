@@ -969,7 +969,131 @@ choose3.addEventListener('click', () => {
     });
 });
 
+choose4.addEventListener('click', () => {
+    alertChoose.classList.toggle("close");
+    voteSetting.hidden = false;
 
+    const alert = alertSetting.cloneNode(true);
+    const title = alert.querySelector('.class-modal__title');
+    const alertInterval = alert.querySelector('.alert-interval');
+    const alertTime = alert.querySelector('.alert-time');
+    const alertFinish = alert.querySelector('#alert-finish');
+    const alertReturn = alert.querySelector('#alert-return');
+    const errorText = alert.querySelector('.error-text');
+    const container = alert.querySelector('.container');
+    const fieldsetAlert = alert.querySelector('.fieldset-alert');
+    voteSetting.appendChild(alert);
+
+    const alertvote = alertVoteSetting.cloneNode(true);
+    const fieldsetVote = alertvote.querySelector('.fieldset-vote');
+    const qstText = alertvote.querySelector('.qst_text');
+    const optionSelected = alertvote.querySelector("#option-selected");
+    const fieldOptions = alertvote.querySelector(".options");
+    container.insertBefore(fieldsetVote,fieldsetAlert);
+
+    title.innerHTML = "設定投票警醒";
+    alertInterval.value = globalInterval;
+    alertTime.value = globalTime;
+
+    optionSelected.addEventListener("change",Selected);
+
+    function Selected(event){
+        const optionInput = fieldOptions.querySelectorAll(".option_input");
+
+        optionInput.forEach( optionInput => {
+            optionInput.remove();
+        })
+
+        if(event.target.value != '') {
+            for(let i = 0; i < parseInt(event.target.value); i++) {
+                const optionsInput = voteOptionInput.cloneNode(true);
+                const optionInput = optionsInput.querySelector('.option_input');
+                fieldOptions.appendChild(optionInput);
+            }
+        }
+    }
+
+    alertFinish.addEventListener("click", async () =>{
+        alertType = 'vote';
+        interval = Number(alertInterval.value);
+        time     = Number(alertTime.value);
+        if( qstText.value === '' ) {
+            errorText.innerHTML = '問題禁止為空字串';
+            return;
+        }else if( optionSelected.value === '' ) {
+            errorText.innerHTML = '請選擇投票選項數量';
+            return;
+        }
+        
+        const optionInput = fieldOptions.querySelectorAll(".option_input");
+        let i = 0;
+        optionInput.forEach( optionInput => {
+            if( optionInput.value === '' ) {
+                errorText.innerHTML = '選項必須有值';
+                i++;
+            }
+        })
+        
+        if( i > 0 ) { return; }
+    
+        if( interval < 10 || interval > 50 ) {
+            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            return;
+        }else if( time < 1 || time > 3) {
+            errorText.innerHTML = '持續時間範圍：1 ~ 3';
+            return;
+        }
+    
+        question = qstText.value;
+    
+        let multipleChoiceDict = {};
+        for(let i=0; i < optionInput.length; i++){
+            multipleChoiceDict[i] = optionInput[i].value;
+        }
+        multipleChoice = Object.values(multipleChoiceDict);
+    
+        dataMultipleChoice = {
+            question: question,
+            multipleChoice: multipleChoice,
+        }
+    
+        let dataAlert = {
+            alert: {
+                interval: interval,
+                time: time,
+                alertType: alertType,
+            },
+        }
+    
+        const callDoc = doc(calls, callId);
+        await updateDoc(callDoc, dataAlert);
+
+        setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+    
+        voteSetting.hidden = true;
+        alertInfo.classList.remove("close");
+        AlertReplace();
+        closeModalForm();
+        alert.remove();
+    });
+
+    alertReturn.addEventListener('click', () => {
+        voteSetting.classList.toggle("close");
+        alertChoose.classList.remove("close");
+
+        const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
+        voteSettingErrorText.innerHTML = '';
+        
+        const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
+        const voteQst = alertStepProgress[3].querySelector("#vote__qst");
+
+        voteQst.value = '';
+        optionSelected.value = '';
+        optionInput.forEach( optionInput => {
+            optionInput.remove();
+        })
+    });
+});
 
 async function AlertReplace() {
     setupAlertScheduler();
