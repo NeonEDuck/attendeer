@@ -52,9 +52,8 @@
     <div class="alert-setting">
         <div class="container">
             <h1 class="class-modal__title"></h1>
-            <fieldset>
+            <fieldset class="fieldset-alert">
                 <legend>警醒</legend>
-                <div id="error-text" class="error-text"></div>
                 <label for="alert-interval">警醒間隔:</label>
                 <div class="field">
                     <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
@@ -66,6 +65,7 @@
                     <label for="alert-time">分鐘</label>
                 </div>
             </fieldset>
+            <div id="error-text" class="error-text"></div>
             <div class="center-btn">
                 <button type="button" id="alert-return" class="margin-inline-start-auto btn-primary">返回</button>
                 <button type="button" id="alert-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
@@ -157,6 +157,32 @@
         <input type="text" class="option_input">
         <i class="bx bx-x" style="display: none;"></i>
     </div>
+
+    <div class="alert-essay-question-setting">
+        <div class="container">
+            <fieldset class="fieldset-essay-question">
+                <legend>問答題</legend>
+                <label>Question:</label>
+                <div class="field">
+                    <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="alert-essay-question-setting">
+        <div class="container">
+            <fieldset class="fieldset-essay-question">
+                <legend>問答題</legend>
+                <label>Question:</label>
+                <div class="field">
+                    <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    
 
 {% endblock prefab %}
 

@@ -18,9 +18,16 @@ const alertSetting               = prefab.querySelector('.alert-setting');
 const alertButtonSetting         = document.querySelector('.button-setting');
 
 const alertMultipleChoiceSetting = prefab.querySelector('.alert-multiple-choice-setting');
+const fieldOption                = prefab.querySelector('.option');
 const multipleChoiceSetting      = document.querySelector('.multiple-choice-setting');
 
-const fieldOption                = prefab.querySelector('.option');
+const alertEssayQuestionSetting  = prefab.querySelector('.alert-essay-question-setting');
+const essayQuestionSetting       = document.querySelector('.essay-question-setting');
+
+const alertVoteSetting           = prefab.querySelector('.alert-vote-setting');
+const voteOptionInput            = prefab.querySelector('.vote-option_input');
+const voteSetting                = document.querySelector('.vote-setting');
+
 
 const fltCntr             = document.querySelector(".floating-container"),
       closeFloatingButton = fltCntr.querySelector('.close-floating_button'),
@@ -35,35 +42,18 @@ const fltCntr             = document.querySelector(".floating-container"),
       submitSettingBtn    = alertInfo.querySelector('#submit-setting'),
       cancelSettingBtn    = alertInfo.querySelector('#cancel-setting');
 
-const eqsInterval = document.querySelector("#eqs-interval");
-const vsInterval  = document.querySelector("#vs-interval");
-
-const eqsTime     = document.querySelector("#eqs-time");
-const vsTime      = document.querySelector("#vs-time");
-
 const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
       alertChoose              = floatingAlert.querySelector('.alert-choose'),
       alertExchange            = floatingAlert.querySelector('#alert-exchange'),
       alertReturn              = floatingAlert.querySelector('#alert-return'),
-      alertEssayQuestionReturn = floatingAlert.querySelector('#alert-essay-question-return'),
-      voteSettingReturn        = floatingAlert.querySelector('#vote-setting-return'),
       alertStepProgress        = floatingAlert.querySelectorAll('.alert-step-progress'),
       buttonSetting            = floatingAlert.querySelector('.button-setting'),
-      essayQuestion            = floatingAlert.querySelector('.essay-question'),
-      voteSetting              = floatingAlert.querySelector('.vote-setting'),
-      essayQuestionFinish      = essayQuestion.querySelector('#essay-question-finish'),
-      voteSettingFinish        = voteSetting.querySelector('#vote-setting-finish'),
+      essayQuestion            = floatingAlert.querySelector('.essay-question-setting'),
       container                = floatingAlert.querySelectorAll('.container'),
       choose1                  = floatingAlert.querySelector('#choose-1'),
       choose2                  = floatingAlert.querySelector('#choose-2'),
       choose3                  = floatingAlert.querySelector('#choose-3'),
       choose4                  = floatingAlert.querySelector('#choose-4');
-
-//essay-question
-const qstText3       = container[0].querySelector(".qst_text");
-
-//vote-settig
-const optionSelected = container[1].querySelector("#option-selected");
 
 // Global variable
 let current = 0;
@@ -75,9 +65,9 @@ let time;
 let question;
 let answearID;
 let multipleChoice;
+export let dataMultipleChoice = {};
 
 let localUserId = null;
-export let dataMultipleChoice = {}; 
 
 // Firestore
 const calls   = collection(firestore, 'calls');
@@ -150,27 +140,11 @@ closeFloatingButton.addEventListener('click', () => {
     alertChoose.classList.add("close");
     buttonSetting.hidden = true;
     multipleChoiceSetting.hidden = true;
-    essayQuestion.classList.add("close");
-    voteSetting.classList.add("close");
+    essayQuestion.hidden = true;
+    voteSetting.hidden = true;
 
     optionsTotal = 0;
     current = 0;
-
-    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
-    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
-    essayQuestionErrorText.innerHTML = '';
-    alertInfoErrorText.innerHTML = '';
-    voteSettingErrorText.innerHTML = '';
-    
-    const voteOptionInput = alertStepProgress[3].querySelectorAll(".option_input");
-    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
-
-    qstText3.value = '';
-    voteQst.value = '';
-    optionSelected.value = '';
-    voteOptionInput.forEach( optionInput => {
-        optionInput.remove();
-    });
 
     const alertSetting = document.querySelector('.alert-setting');
     if( alertSetting != null ) {
@@ -179,6 +153,14 @@ closeFloatingButton.addEventListener('click', () => {
     const alertMultipleChoiceSetting = document.querySelector('.alert-multiple-choice-setting');
     if( alertMultipleChoiceSetting != null ) {
         alertMultipleChoiceSetting.remove();
+    }
+    const alertEssayQuestionSetting = document.querySelector('.alert-essay-question-setting');
+    if( alertEssayQuestionSetting != null ) {
+        alertEssayQuestionSetting.remove();
+    }
+    const alertVoteSetting = document.querySelector('.alert-vote-setting');
+    if( alertVoteSetting != null ) {
+        alertVoteSetting.remove();
     }
 });
 
@@ -811,15 +793,12 @@ choose2.addEventListener('click', () => {
     
             const optionInput = multipleChoiceSetting.querySelectorAll(".option_input");
             let multipleChoiceDict = {};
-    
             for(let i=0; i < optionInput.length; i++){
                 multipleChoiceDict[i] = optionInput[i].value;
             }
-    
             multipleChoice = Object.values(multipleChoiceDict);
 
             const answearChosen = multipleChoiceSetting.querySelector(".answear");
-    
             if(answearChosen != null) {
                 answearID = answearChosen.innerHTML;
             }
@@ -831,7 +810,6 @@ choose2.addEventListener('click', () => {
                 answear: globalAnswear,
                 multipleChoice: globalMultipleChoice,
             }
-    
             let dataAlert = {
                 alert: {
                     interval: globalInterval,
@@ -839,7 +817,6 @@ choose2.addEventListener('click', () => {
                     alertType: globalAlertType,
                 },
             }
-    
             const callDoc = doc(calls, callId);
             await updateDoc(callDoc, dataAlert);
 
@@ -848,13 +825,9 @@ choose2.addEventListener('click', () => {
     
             alertInfo.classList.remove("close");
             multipleChoiceSetting.hidden = true;
-            Array.from(navBtn).forEach((item) => {
-                item.className = "nav-btn";
-            });
     
             AlertReplace();
             closeModalForm();
-
             alert.remove();
     
         }else if( interval < 10 || interval >50 ) {
@@ -862,17 +835,14 @@ choose2.addEventListener('click', () => {
         }else if( time < 1 || time > 3 ) {
             errorText.innerHTML = '持續時間範圍：1 ~ 3';
         }
-    
     });
 
     for(let i = 0; i < 2; i++){
         addOptions();
     }
-    
     addBtn.addEventListener('click', () => {
         addOptions();
     });
-    
     function addOptions(){
         optionsTotal += 1;
         const option    = fieldOption.cloneNode(true);
@@ -923,200 +893,83 @@ choose2.addEventListener('click', () => {
 });
 
 choose3.addEventListener('click', () => {
-    essayQuestion.classList.remove("close");
     alertChoose.classList.toggle("close");
-    eqsInterval.value = globalInterval;
-    eqsTime.value     = globalTime;
-});
+    essayQuestion.hidden = false;
 
-choose4.addEventListener('click', () => {
-    voteSetting.classList.remove("close");
-    alertChoose.classList.toggle("close");
-    vsInterval.value = globalInterval;
-    vsTime.value     = globalTime;
-});
+    const alert = alertSetting.cloneNode(true);
+    const title = alert.querySelector('.class-modal__title');
+    const alertInterval = alert.querySelector('.alert-interval');
+    const alertTime = alert.querySelector('.alert-time');
+    const alertFinish = alert.querySelector('#alert-finish');
+    const alertReturn = alert.querySelector('#alert-return');
+    const errorText = alert.querySelector('.error-text');
+    const container = alert.querySelector('.container');
+    const fieldsetAlert = alert.querySelector('.fieldset-alert');
+    essayQuestionSetting.appendChild(alert);
 
-essayQuestionFinish.addEventListener("click", async () =>{
+    const alertqst = alertEssayQuestionSetting.cloneNode(true);
+    const fieldsetEssayQuestion = alertqst.querySelector('.fieldset-essay-question');
+    const qstText = alertqst.querySelector('.qst_text');
+    container.insertBefore(fieldsetEssayQuestion,fieldsetAlert);
 
-    const eqsInterval = essayQuestion.querySelector("#eqs-interval");
-    const eqsTime     = essayQuestion.querySelector("#eqs-time");
-    interval  = Number(eqsInterval.value);
-    time      = Number(eqsTime.value);
-    alertType = 'essay question';
-    setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
-    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
-    if( qstText3.value === '' ) {
-        essayQuestionErrorText.innerHTML = '問題禁止為空字串';
-        return;
-    }else if( interval < 10 || interval > 50 ) {
-        essayQuestionErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-        return;
-    }else if( time < 1 || time > 3) {
-        essayQuestionErrorText.innerHTML = '持續時間範圍：1 ~ 3';
-        return;
-    }
-    question = qstText3.value;
+    title.innerHTML = "設定問答題";
+    alertInterval.value = globalInterval;
+    alertTime.value = globalTime;
 
-    dataMultipleChoice = {
-        question: question,
-    }
+    alertFinish.addEventListener('click', async () => {
 
-    let dataAlert = {
-        alert: {
-            interval: interval,
-            time: time,
-            alertType: alertType,
-        },
-    }
-    const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, dataAlert);
+        alertType = 'essay question';
+        interval = Number(alertInterval.value);
+        time     = Number(alertTime.value);
 
-    alertInfo.classList.remove("close");
-    fltCntr.classList.remove("show");
-    essayQuestion.classList.toggle("close");
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
+        if( qstText.value === '' ) {
+            errorText.innerHTML = '問題禁止為空字串';
+            return;
+        }else if( interval < 10 || interval > 50 ) {
+            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            return;
+        }else if( time < 1 || time > 3) {
+            errorText.innerHTML = '持續時間範圍：1 ~ 3';
+            return;
+        }
+        question = qstText.value;
+    
+        dataMultipleChoice = {
+            question: question,
+        }
+    
+        let dataAlert = {
+            alert: {
+                interval: interval,
+                time: time,
+                alertType: alertType,
+            },
+        }
+        const callDoc = doc(calls, callId);
+        await updateDoc(callDoc, dataAlert);
+    
+        setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+
+        alertInfo.classList.remove("close");
+        essayQuestion.hidden = true;
+    
+        qstText.value = '';
+
+        AlertReplace();
+        closeModalForm();
+        alert.remove();
     });
 
-    essayQuestionErrorText.innerHTML = '';
-    qstText3.value = '';
-
-    AlertReplace();
-});
-
-alertEssayQuestionReturn.addEventListener('click', () => {
-    essayQuestion.classList.toggle("close");
-    alertChoose.classList.remove("close");
-
-    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
-    essayQuestionErrorText.innerHTML = '';
-    qstText3.value = '';
-});
-
-voteSettingFinish.addEventListener("click", async () =>{
-    const vsInterval = voteSetting.querySelector("#vs-interval");
-    const vsTime     = voteSetting.querySelector("#vs-time");
-    alertType = 'vote';
-    interval = Number(vsInterval.value);
-    time     = Number(vsTime.value);
-    setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
-    const voteErrorText = alertStepProgress[3].querySelector('.error-text');
-    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
-    if( voteQst.value === '' ) {
-        voteErrorText.innerHTML = '問題禁止為空字串';
-        return;
-    }else if( optionSelected.value === '' ) {
-        voteErrorText.innerHTML = '請選擇投票選項數量';
-        return;
-    }
-    
-    const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
-    
-    let i = 0;
-    optionInput.forEach( optionInput => {
-        if( optionInput.value === '' ) {
-            voteErrorText.innerHTML = '選項必須有值';
-            i++;
-        }
-    })
-    
-    if( i > 0 ) {
-        return;
-    }
-
-    if( interval < 10 || interval > 50 ) {
-        voteErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-        return;
-    }else if( time < 1 || time > 3) {
-        voteErrorText.innerHTML = '持續時間範圍：1 ~ 3';
-        return;
-    }
-
-    question = voteQst.value;
-
-    let multipleChoiceDict = {};
-
-    for(let i=0; i < optionInput.length; i++){
-        multipleChoiceDict[i] = optionInput[i].value;
-    }
-
-    multipleChoice = Object.values(multipleChoiceDict);
-
-    dataMultipleChoice = {
-        question: question,
-        multipleChoice: multipleChoice,
-    }
-
-    let dataAlert = {
-        alert: {
-            interval: interval,
-            time: time,
-            alertType: alertType,
-        },
-    }
-
-    const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, dataAlert);
-
-    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
-    voteSettingErrorText.innerHTML = '';
-    
-    const voteOptionInput = alertStepProgress[3].querySelectorAll(".option_input");
-
-    voteQst.value = '';
-    optionSelected.value = '';
-    voteOptionInput.forEach( optionInput => {
-        optionInput.remove();
-    })
-
-    fltCntr.classList.remove("show");
-    voteSetting.classList.toggle("close");
-    alertInfo.classList.remove("close");
-    
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
+    alertReturn.addEventListener('click', () => {
+        essayQuestion.hidden = true;
+        alertChoose.classList.remove("close");
+        errorText.innerHTML = '';
+        qstText.value = '';
+        alert.remove();
     });
-
-    AlertReplace();
 });
 
-optionSelected.addEventListener("change",Selected);
 
-function Selected(event){
-    const fieldOptions = container[2].querySelector(".options");
-    const optionInput = fieldOptions.querySelectorAll(".option_input");
-
-    optionInput.forEach( optionInput => {
-        optionInput.remove();
-    })
-
-    if(event.target.value != '') {
-
-        for(let i = 0; i < parseInt(event.target.value); i++) {
-            const input = document.createElement('input');
-            input.setAttribute("type", "text");
-            input.classList.add("option_input");
-            fieldOptions.appendChild(input);
-        }
-    }
-}
-
-voteSettingReturn.addEventListener('click', () => {
-    voteSetting.classList.toggle("close");
-    alertChoose.classList.remove("close");
-
-    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
-    voteSettingErrorText.innerHTML = '';
-    
-    const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
-    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
-
-    voteQst.value = '';
-    optionSelected.value = '';
-    optionInput.forEach( optionInput => {
-        optionInput.remove();
-    })
-});
 
 async function AlertReplace() {
     setupAlertScheduler();
