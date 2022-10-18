@@ -509,46 +509,44 @@ body.dark {
                                 }
                             }
 
-                            .type-info {
-                                .fieldset {
+                            .fieldset {
+                                display: flex;
+                                width: 25em;
+                                justify-content: flex-start;
+                                gap: 0.1em;
+                                color: var(--text-color);
+                                .div-label {
                                     display: flex;
-                                    width: 25em;
-                                    justify-content: flex-start;
-                                    gap: 0.1em;
+                                    align-items: center;
                                     color: var(--text-color);
-                                    .addOption {
-                                        display: flex;
-                                        align-items: center;
-                                        color: var(--text-color);
-                                        label {
-                                            width: 88%;
-                                        }
-                                        button {
-                                            width: 15%;
-                                            background-color: var(--primary-color);
-                                            color: var(--button-text-color);
-                                        }
+                                    label {
+                                        width: 88%;
                                     }
-                                    textarea {
-                                        width: 100%;
-                                        height: 5em;
-                                        font-size: 20px;
-                                        color: var(--text-color);
-                                        border: none;
-                                        outline: none;
-                                        font-family: "Montserrat", "sans-serif";
-                                        background-color: var(--floating--color-1);
-                                        transition: 0.25s ease;
-                                        border-radius: 8px;
-                                        box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
-                                        resize: none;
-                                    }
-
-                                    .voteOptions {
-                                        flex-direction: column;
+                                    button {
+                                        width: 15%;
+                                        background-color: var(--primary-color);
+                                        color: var(--button-text-color);
                                     }
                                 }
+                                textarea {
+                                    width: 100%;
+                                    height: 5em;
+                                    font-size: 20px;
+                                    color: var(--text-color);
+                                    border: none;
+                                    outline: none;
+                                    font-family: "Montserrat", "sans-serif";
+                                    background-color: var(--floating--color-1);
+                                    transition: 0.25s ease;
+                                    border-radius: 8px;
+                                    box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
+                                    resize: none;
+                                }
+                                .voteOptions {
+                                    flex-direction: column;
+                                }
                             }
+                        
                         }
                     }
 

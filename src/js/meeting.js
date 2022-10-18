@@ -1008,7 +1008,7 @@ export function setupAlertListener() {
                                 span.innerHTML = i+1;
                                 field.appendChild(span);
                                 const input = document.createElement('input');
-                                input.classList.add('option_Input')
+                                input.classList.add('option_input')
                                 input.setAttribute("readonly", "readonly");
                                 input.value = multipleChoice[i];
                                 field.appendChild(input);

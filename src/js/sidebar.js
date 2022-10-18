@@ -42,14 +42,14 @@ const fltCntr             = document.querySelector(".floating-container"),
       submitSettingBtn    = alertInfo.querySelector('#submit-setting'),
       cancelSettingBtn    = alertInfo.querySelector('#cancel-setting');
 
+const fieldset            = document.querySelector('.fieldset');
+
 const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
       alertChoose              = floatingAlert.querySelector('.alert-choose'),
       alertExchange            = floatingAlert.querySelector('#alert-exchange'),
       alertReturn              = floatingAlert.querySelector('#alert-return'),
-      alertStepProgress        = floatingAlert.querySelectorAll('.alert-step-progress'),
       buttonSetting            = floatingAlert.querySelector('.button-setting'),
       essayQuestion            = floatingAlert.querySelector('.essay-question-setting'),
-      container                = floatingAlert.querySelectorAll('.container'),
       choose1                  = floatingAlert.querySelector('#choose-1'),
       choose2                  = floatingAlert.querySelector('#choose-2'),
       choose3                  = floatingAlert.querySelector('#choose-3'),
@@ -58,7 +58,6 @@ const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
 // Global variable
 let current = 0;
 let optionsTotal = 0;
-
 let alertType;
 let interval;
 let time;
@@ -183,97 +182,63 @@ async function closeModalForm() {
     infoType.innerHTML = globalAlertType;
     infoInterval.value = globalInterval;
     infoTime.value     = globalTime;
+    fieldset.innerHTML = '';
 
-    const fieldset = document.querySelector('.fieldset');
-    if(fieldset != null){
-        fieldset.remove();
-    }
-    if(globalAlertType === 'multiple choice') {
-        const typeInfo = document.querySelector('.type-info');
-        const fieldset2 = document.createElement('fieldset');
-        fieldset2.classList.add("fieldset");
-        typeInfo.appendChild(fieldset2);
-        const legend = document.createElement('legend');
-        legend.innerHTML = '選擇題';
-        fieldset2.appendChild(legend);
-        const div = document.createElement('div');
-        div.classList.add("addOption");
-        fieldset2.appendChild(div);
-        const label = document.createElement('label');
-        label.innerHTML = '問題:';
+    const legend = document.createElement('legend');
+    const div = document.createElement('div');
+    const label = document.createElement('label');
+    const textarea = document.createElement('textarea');
+
+    if(globalAlertType === 'click') {
+        fieldset.hidden = true;
+    }else {
+        fieldset.hidden = false;
+        fieldset.appendChild(legend);
+        div.classList.add("div-label");
+        fieldset.appendChild(div);
         div.appendChild(label);
-        const textarea = document.createElement('textarea');
         textarea.classList.add("info-textarea");
         textarea.setAttribute("readonly", "readonly");
         textarea.innerHTML = globalQuestion;
-        fieldset2.appendChild(textarea);
+        fieldset.appendChild(textarea);
+    }
+    if(globalAlertType === 'multiple choice') {
+        legend.innerHTML = '選擇題';
+        label.innerHTML = '問題:';
+
         for (let i = 0; i < globalMultipleChoice.length; i++) {
-            const div = document.createElement('div');
-            div.classList.add("field");
-            fieldset2.appendChild(div);
-            const span = document.createElement('span');
-            span.classList.add("span_No" , "disable");
-            span.innerHTML = i+1;
-            div.appendChild(span);
-            const input = document.createElement('input');
-            input.classList.add("option_Input");
+            const option    = fieldOption.cloneNode(true);
+            const spanNo = option.querySelector(".span_No");
+            const input = option.querySelector('.option_input');
+            const icon = option.querySelector('.bx-x');
+            fieldset.appendChild(option);
+            icon.remove();
             input.setAttribute("readonly", "readonly");
+            spanNo.innerHTML = i+1;
             input.value = globalMultipleChoice[i];
-            div.appendChild(input);
             if(globalAnswear === (i+1).toString()){
                 answearID = globalAnswear;
-                span.classList.toggle('answear');
+                spanNo.classList.toggle('answear');
             }
         }
     }else if(globalAlertType === 'essay question') {
-        const typeInfo = document.querySelector('.type-info');
-        const fieldset2 = document.createElement('fieldset');
-        fieldset2.classList.add("fieldset");
-        typeInfo.appendChild(fieldset2);
-        const legend = document.createElement('legend');
         legend.innerHTML = '問答題';
-        fieldset2.appendChild(legend);
-        const label = document.createElement('label');
         label.innerHTML = '問題:';
-        fieldset2.appendChild(label);
-        const textarea = document.createElement('textarea');
-        textarea.classList.add("info-textarea");
-        textarea.setAttribute("readonly", "readonly");
-        textarea.innerHTML = question;
-        fieldset2.appendChild(textarea);
     }else if(globalAlertType === 'vote') {
-
-        const typeInfo = document.querySelector('.type-info');
-        const fieldset = document.querySelector('.fieldset');
-        if(fieldset != null){
-            fieldset.remove();
-        }
-        const fieldset2 = document.createElement('fieldset');
-        fieldset2.classList.add("fieldset");
-        typeInfo.appendChild(fieldset2);
-        const legend = document.createElement('legend');
         legend.innerHTML = '投票';
-        fieldset2.appendChild(legend);
-        const label = document.createElement('label');
         label.innerHTML = '投票題目:';
-        fieldset2.appendChild(label);
-        const textarea = document.createElement('textarea');
-        textarea.classList.add("info-textarea");
-        textarea.setAttribute("readonly", "readonly");
-        textarea.innerHTML = question;
-        fieldset2.appendChild(textarea);
         const div = document.createElement('div');
         div.classList.add('field','select');
-        fieldset2.appendChild(div);
+        fieldset.appendChild(div);
         const label2 = document.createElement('label');
         label2.innerHTML = '投票選項:';
         div.appendChild(label2);
         const div2 = document.createElement('div');
         div2.classList.add('field','voteOptions');
-        fieldset2.appendChild(div2);
+        fieldset.appendChild(div2);
         for (let i = 0; i < multipleChoice.length; i++) {
             const input = document.createElement('input');
-            input.classList.add("option_Input");
+            input.classList.add("option_input");
             input.setAttribute("type", "text");
             input.setAttribute("readonly", "readonly");
             input.value = multipleChoice[i];
@@ -290,7 +255,7 @@ settingBtn.addEventListener('click', async () => {
     const infoInterval = classModel.querySelector("#info-interval");
     const infoTime     = classModel.querySelector("#info-time");
     const textarea = classModel.querySelector('.info-textarea');
-    const input = classModel.querySelectorAll('.option_Input');
+    const input = classModel.querySelectorAll('.option_input');
     const spanNo = classModel.querySelectorAll('.span_No');
     const fieldset = classModel.querySelector('.fieldset');
 
@@ -300,20 +265,18 @@ settingBtn.addEventListener('click', async () => {
     infoInterval.removeAttribute('readonly');
     infoTime.removeAttribute('readonly');
 
-    if( globalAlertType === 'multiple choice' ) {
-
-        let optionsTotal = 0;
-
+    if( globalAlertType != 'click' ) {
         textarea.removeAttribute('readonly');
+    }
+    if( globalAlertType === 'multiple choice' ) {
+        optionsTotal = 0;
         input.forEach(input => {
             input.removeAttribute('readonly');
-            optionsTotal +=1;
+            optionsTotal ++;
         });
-
         spanNo.forEach(spanNo => {
             spanNo.classList.remove('disable');
         });
-
         Array.from(spanNo).forEach((item, index) => {
             item.addEventListener("click", async (e) => {
                 Array.from(spanNo).forEach((item) => {
@@ -323,7 +286,7 @@ settingBtn.addEventListener('click', async () => {
             });
         });
 
-        const addOption = classModel.querySelector('.addOption');
+        const addOption = classModel.querySelector('.div-label');
         const button = document.createElement('button');
         button.classList.add('infoAddBtn');
         button.type = "button";
@@ -358,13 +321,13 @@ settingBtn.addEventListener('click', async () => {
         button.addEventListener('click', async () => {
             optionsTotal += 1;
             const div = document.createElement('div');
-            div.classList.add("field");
+            div.classList.add("field",'option');
             fieldset.appendChild(div);
             let spanNo = document.createElement('span');
             spanNo.classList.add("span_No");
             div.appendChild(spanNo);
             const input = document.createElement('input');
-            input.classList.add("option_Input");
+            input.classList.add("option_input");
             div.appendChild(input);
             const icon = document.createElement('i');
             icon.classList.add("bx", "bx-x");
@@ -448,18 +411,13 @@ settingBtn.addEventListener('click', async () => {
             select.appendChild(option);
         }
         select.options[i - 1].selected = true;
-
         select.addEventListener("change",alertInfoSelected);
     }
-
-
 });
 
 function alertInfoSelected(event){
-    console.log(event.target.value);
-
     const fieldOptions = classModel.querySelector(".voteOptions");
-    const optionInput = fieldOptions.querySelectorAll(".option_Input");
+    const optionInput = fieldOptions.querySelectorAll(".option_input");
 
     optionInput.forEach( optionInput => {
         optionInput.remove();
@@ -469,7 +427,7 @@ function alertInfoSelected(event){
         for(let i = 0; i < parseInt(event.target.value); i++) {
             const input = document.createElement('input');
             input.setAttribute("type", "text");
-            input.classList.add("option_Input");
+            input.classList.add("option_input");
             fieldOptions.appendChild(input);
         }
     }
@@ -477,40 +435,29 @@ function alertInfoSelected(event){
 
 //取消修改警醒資訊
 cancelSettingBtn.addEventListener('click', async () => {
-
     closeModalForm();
-
 });
 
 //確定修改警醒資訊
 submitSettingBtn.addEventListener('click', async () => {
     const infoInterval = classModel.querySelector("#info-interval");
     const infoTime     = classModel.querySelector("#info-time");
-
-    interval = Number(infoInterval.value);
-    time     = Number(infoTime.value);
-    alertType = globalAlertType;
-    setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
-
     const infoTextarea = classModel.querySelector(".info-textarea");
     const spanNoAnswear = classModel.querySelector(".answear");
-    const optionInput = classModel.querySelectorAll(".option_Input");
+    const optionInput = classModel.querySelectorAll(".option_input");
 
-    if( interval < 10 || interval > 50 ) {
+    if( Number(infoInterval.value) < 10 || Number(infoInterval.value) > 50 ) {
         alertInfoErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-    }else if( time < 1 || time > 3) {
+    }else if( Number(infoTime.value) < 1 || Number(infoTime.value) > 3) {
         alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
     }else {
-
         if (alertType === 'multiple choice') {
-
             let x = 0;
             for(let i = 0; i < optionInput.length; i++){
                 if(optionInput[i].value != ''){
                     x += 1;
                 }
             }
-
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
@@ -522,15 +469,12 @@ submitSettingBtn.addEventListener('click', async () => {
                 return;
             }else {
                 question = infoTextarea.value;
-
                 answearID = spanNoAnswear.innerHTML;
 
                 let multipleChoiceDict = {};
-
                 for(let i=0; i < optionInput.length; i++){
                     multipleChoiceDict[i] = optionInput[i].value;
                 }
-
                 multipleChoice = Object.values(multipleChoiceDict);
 
                 dataMultipleChoice = {
@@ -539,16 +483,12 @@ submitSettingBtn.addEventListener('click', async () => {
                     multipleChoice: multipleChoice,
                 }
             }
-
-
         }else if(alertType === 'essay question') {
-        
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
             }else {
                 question = infoTextarea.value;
-
                 dataMultipleChoice = {
                     question: question,
                 }
@@ -562,8 +502,7 @@ submitSettingBtn.addEventListener('click', async () => {
                 alertInfoErrorText.innerHTML = '請選擇投票選項數量';
                 return;
             }
-            const optionInput = classModel.querySelectorAll(".option_Input");
-
+            const optionInput = classModel.querySelectorAll(".option_input");
             let i = 0;
             optionInput.forEach( optionInput => {
                 if( optionInput.value === '' ) {
@@ -571,17 +510,13 @@ submitSettingBtn.addEventListener('click', async () => {
                     i++;
                 }
             })
-            if( i > 0 ) {
-                return;
-            }
+            if( i > 0 ) {return;}
             question = infoTextarea.value;
 
             let multipleChoiceDict = {};
-
             for(let i=0; i < optionInput.length; i++){
                 multipleChoiceDict[i] = optionInput[i].value;
             }
-
             multipleChoice = Object.values(multipleChoiceDict);
 
             dataMultipleChoice = {
@@ -593,6 +528,10 @@ submitSettingBtn.addEventListener('click', async () => {
         infoInterval.classList.remove('Revise');
         infoTime.classList.remove('Revise');
 
+        interval = Number(infoInterval.value);
+        time     = Number(infoTime.value);
+        alertType = globalAlertType;
+
         const data = {
             alert: {
                 interval,
@@ -603,17 +542,13 @@ submitSettingBtn.addEventListener('click', async () => {
         const callDoc = doc(calls, callId);
         await updateDoc(callDoc, data);
 
-        fltCntr.classList.remove("show");
+        setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
         centerBtns[0].hidden = false;
         centerBtns[1].hidden = true;
 
         infoInterval.setAttribute('readonly','true');
         infoTime.setAttribute('readonly','true');
-
-        Array.from(navBtn).forEach((item) => {
-            item.className = "nav-btn";
-        });
 
         AlertReplace();
     }
@@ -643,22 +578,23 @@ choose1.addEventListener('click', () => {
     const alertFinish = alert.querySelector('#alert-finish');
     const alertReturn = alert.querySelector('#alert-return');
     const errorText = alert.querySelector('.error-text');
-    
     title.innerHTML = "警醒按鈕設定";
     alertInterval.value = globalInterval;
     alertTime.value = globalTime;
-
     alertButtonSetting.appendChild(alert);
 
     alertFinish.addEventListener('click', async () => {
-
-        alertType = 'click';
-        interval = Number(alertInterval.value);
-        time     = Number(alertTime.value);
-        setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
-    
-        if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
-    
+        if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
+            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            return;
+        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3 ) {
+            errorText.innerHTML = '持續時間範圍：1 ~ 3';
+            return;
+        }else {
+            alertType = 'click';
+            interval = Number(alertInterval.value);
+            time     = Number(alertTime.value);
+        
             const data = {
                 alert: {
                     interval:interval,
@@ -666,33 +602,21 @@ choose1.addEventListener('click', () => {
                     alertType:alertType,
                 },
             }
-    
             const callDoc = doc(calls, callId);
             await updateDoc(callDoc, data);
-    
+            setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+
             alertInfo.classList.remove("close");
-    
             AlertReplace();
-    
             closeModalForm();
-    
-            errorText.innerHTML = '';
-            
             alert.remove();
-
             buttonSetting.hidden = true;
-
-        }else if( interval < 10 || interval > 50 ) {
-            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-        }else if( time < 1 || time > 3 ) {
-            errorText.innerHTML = '持續時間範圍：1 ~ 3';
         }
     });
 
     alertReturn.addEventListener('click', () => {
         buttonSetting.hidden = true;
         alertChoose.classList.remove("close");
-        errorText.innerHTML = '';
         alert.remove();
     });
 });
@@ -728,7 +652,6 @@ choose2.addEventListener('click', () => {
     prev1.addEventListener('click', () => {
         multipleChoiceSetting.hidden = true;
         alertChoose.classList.remove("close");
-        errorText.innerHTML = '';
         const alertMultipleChoiceSetting = document.querySelector('.alert-multiple-choice-setting');
         alertMultipleChoiceSetting.remove();
     });
@@ -767,7 +690,6 @@ choose2.addEventListener('click', () => {
             }
         }
         const answearChosen = multipleChoiceSetting.querySelector(".answear");
-
         if(x === optionInput.length && answearChosen != null ){
             slidePage.style.marginLeft = "-50%";
             bullet[current].classList.add("active");
@@ -784,13 +706,13 @@ choose2.addEventListener('click', () => {
     
     next3.addEventListener('click', async () => {
     
-        question = qstText[0].value;
-        interval = Number(alertInterval.value);
-        time     = Number(alertTime.value);
-        alertType = 'multiple choice';
-    
-        if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
-    
+        if ( Number(alertInterval.value) < 10 || Number(alertInterval.value) >50 ) {
+            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            return;
+        }else if ( Number(alertTime.value) < 1 || Number(alertTime.value) > 3 ) {
+            errorText.innerHTML = '持續時間範圍：1 ~ 3';
+            return;
+        }else {
             const optionInput = multipleChoiceSetting.querySelectorAll(".option_input");
             let multipleChoiceDict = {};
             for(let i=0; i < optionInput.length; i++){
@@ -802,6 +724,11 @@ choose2.addEventListener('click', () => {
             if(answearChosen != null) {
                 answearID = answearChosen.innerHTML;
             }
+
+            question = qstText[0].value;
+            interval = Number(alertInterval.value);
+            time     = Number(alertTime.value);
+            alertType = 'multiple choice';
 
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -829,14 +756,8 @@ choose2.addEventListener('click', () => {
             AlertReplace();
             closeModalForm();
             alert.remove();
-    
-        }else if( interval < 10 || interval >50 ) {
-            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-        }else if( time < 1 || time > 3 ) {
-            errorText.innerHTML = '持續時間範圍：1 ~ 3';
         }
     });
-
     for(let i = 0; i < 2; i++){
         addOptions();
     }
@@ -906,7 +827,6 @@ choose3.addEventListener('click', () => {
     const container = alert.querySelector('.container');
     const fieldsetAlert = alert.querySelector('.fieldset-alert');
     essayQuestionSetting.appendChild(alert);
-
     const alertqst = alertEssayQuestionSetting.cloneNode(true);
     const fieldsetEssayQuestion = alertqst.querySelector('.fieldset-essay-question');
     const qstText = alertqst.querySelector('.qst_text');
@@ -918,20 +838,21 @@ choose3.addEventListener('click', () => {
 
     alertFinish.addEventListener('click', async () => {
 
+        if( qstText.value === '' ) {
+            errorText.innerHTML = '問題禁止為空字串';
+            return;
+        }else if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
+            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            return;
+        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
+            errorText.innerHTML = '持續時間範圍：1 ~ 3';
+            return;
+        }
+
         alertType = 'essay question';
         interval = Number(alertInterval.value);
         time     = Number(alertTime.value);
 
-        if( qstText.value === '' ) {
-            errorText.innerHTML = '問題禁止為空字串';
-            return;
-        }else if( interval < 10 || interval > 50 ) {
-            errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-            return;
-        }else if( time < 1 || time > 3) {
-            errorText.innerHTML = '持續時間範圍：1 ~ 3';
-            return;
-        }
         question = qstText.value;
     
         dataMultipleChoice = {
@@ -952,8 +873,6 @@ choose3.addEventListener('click', () => {
 
         alertInfo.classList.remove("close");
         essayQuestion.hidden = true;
-    
-        qstText.value = '';
 
         AlertReplace();
         closeModalForm();
@@ -963,8 +882,6 @@ choose3.addEventListener('click', () => {
     alertReturn.addEventListener('click', () => {
         essayQuestion.hidden = true;
         alertChoose.classList.remove("close");
-        errorText.innerHTML = '';
-        qstText.value = '';
         alert.remove();
     });
 });
@@ -1014,9 +931,6 @@ choose4.addEventListener('click', () => {
     }
 
     alertFinish.addEventListener("click", async () =>{
-        alertType = 'vote';
-        interval = Number(alertInterval.value);
-        time     = Number(alertTime.value);
         if( qstText.value === '' ) {
             errorText.innerHTML = '問題禁止為空字串';
             return;
@@ -1024,7 +938,7 @@ choose4.addEventListener('click', () => {
             errorText.innerHTML = '請選擇投票選項數量';
             return;
         }
-        
+
         const optionInput = fieldOptions.querySelectorAll(".option_input");
         let i = 0;
         optionInput.forEach( optionInput => {
@@ -1033,17 +947,18 @@ choose4.addEventListener('click', () => {
                 i++;
             }
         })
-        
         if( i > 0 ) { return; }
-    
-        if( interval < 10 || interval > 50 ) {
+        if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
             errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
             return;
-        }else if( time < 1 || time > 3) {
+        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
             errorText.innerHTML = '持續時間範圍：1 ~ 3';
             return;
         }
-    
+
+        alertType = 'vote';
+        interval = Number(alertInterval.value);
+        time     = Number(alertTime.value);
         question = qstText.value;
     
         let multipleChoiceDict = {};
@@ -1067,7 +982,6 @@ choose4.addEventListener('click', () => {
     
         const callDoc = doc(calls, callId);
         await updateDoc(callDoc, dataAlert);
-
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
     
         voteSetting.hidden = true;
@@ -1078,20 +992,9 @@ choose4.addEventListener('click', () => {
     });
 
     alertReturn.addEventListener('click', () => {
-        voteSetting.classList.toggle("close");
+        voteSetting.hidden = true;
         alertChoose.classList.remove("close");
-
-        const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
-        voteSettingErrorText.innerHTML = '';
-        
-        const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
-        const voteQst = alertStepProgress[3].querySelector("#vote__qst");
-
-        voteQst.value = '';
-        optionSelected.value = '';
-        optionInput.forEach( optionInput => {
-            optionInput.remove();
-        })
+        alert.remove();
     });
 });
 
