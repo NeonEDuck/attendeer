@@ -33,7 +33,6 @@ const fltCntr             = document.querySelector(".floating-container"),
       closeFloatingButton = fltCntr.querySelector('.close-floating_button'),
       floatingAlert       = fltCntr.querySelector('#floating-alert'),
       alertInfo           = fltCntr.querySelector('.alert-info'),
-      classModel          = alertInfo.querySelector('.class-modal'),
       infoType            = alertInfo.querySelector('#info-type'),
       infoInterval        = floatingAlert.querySelector("#info-interval"),
       infoTime            = floatingAlert.querySelector("#info-time"),
@@ -145,22 +144,11 @@ closeFloatingButton.addEventListener('click', () => {
     optionsTotal = 0;
     current = 0;
 
-    const alertSetting = document.querySelector('.alert-setting');
-    if( alertSetting != null ) {
-        alertSetting.remove();
+    const container = document.querySelector('.container');
+    if( container != null ) {
+        container.remove();
     }
-    const alertMultipleChoiceSetting = document.querySelector('.alert-multiple-choice-setting');
-    if( alertMultipleChoiceSetting != null ) {
-        alertMultipleChoiceSetting.remove();
-    }
-    const alertEssayQuestionSetting = document.querySelector('.alert-essay-question-setting');
-    if( alertEssayQuestionSetting != null ) {
-        alertEssayQuestionSetting.remove();
-    }
-    const alertVoteSetting = document.querySelector('.alert-vote-setting');
-    if( alertVoteSetting != null ) {
-        alertVoteSetting.remove();
-    }
+    alertInfo.classList.remove('Revise');
 });
 
 //警醒浮動視窗 開啟
@@ -173,6 +161,7 @@ async function closeModalForm() {
 
     infoInterval.classList.remove('Revise');
     infoTime.classList.remove('Revise');
+    alertInfo.classList.remove('Revise');
 
     centerBtns[0].hidden = false;
     centerBtns[1].hidden = true;
@@ -251,13 +240,14 @@ async function closeModalForm() {
 settingBtn.addEventListener('click', async () => {
     centerBtns[0].hidden = true;
     centerBtns[1].hidden = false;
+    alertInfo.classList.add('Revise');
 
-    const infoInterval = classModel.querySelector("#info-interval");
-    const infoTime     = classModel.querySelector("#info-time");
-    const textarea = classModel.querySelector('.info-textarea');
-    const input = classModel.querySelectorAll('.option_input');
-    const spanNo = classModel.querySelectorAll('.span_No');
-    const fieldset = classModel.querySelector('.fieldset');
+    const infoInterval = alertInfo.querySelector("#info-interval");
+    const infoTime     = alertInfo.querySelector("#info-time");
+    const textarea = alertInfo.querySelector('.info-textarea');
+    const input = alertInfo.querySelectorAll('.option_input');
+    const spanNo = alertInfo.querySelectorAll('.span_No');
+    const fieldset = alertInfo.querySelector('.fieldset');
 
     infoInterval.classList.add('Revise');
     infoTime.classList.add('Revise');
@@ -286,7 +276,7 @@ settingBtn.addEventListener('click', async () => {
             });
         });
 
-        const addOption = classModel.querySelector('.div-label');
+        const addOption = alertInfo.querySelector('.div-label');
         const button = document.createElement('button');
         button.classList.add('infoAddBtn');
         button.type = "button";
@@ -328,6 +318,7 @@ settingBtn.addEventListener('click', async () => {
             div.appendChild(spanNo);
             const input = document.createElement('input');
             input.classList.add("option_input");
+            input.setAttribute("type", "text");
             div.appendChild(input);
             const icon = document.createElement('i');
             icon.classList.add("bx", "bx-x");
@@ -397,7 +388,7 @@ settingBtn.addEventListener('click', async () => {
             input.removeAttribute('readonly');
             i++;
         });
-        const selectOptions = classModel.querySelector('.select');
+        const selectOptions = alertInfo.querySelector('.select');
         const select = document.createElement('select');
         select.setAttribute('id','option-selected');
         selectOptions.appendChild(select);
@@ -416,7 +407,7 @@ settingBtn.addEventListener('click', async () => {
 });
 
 function alertInfoSelected(event){
-    const fieldOptions = classModel.querySelector(".voteOptions");
+    const fieldOptions = alertInfo.querySelector(".voteOptions");
     const optionInput = fieldOptions.querySelectorAll(".option_input");
 
     optionInput.forEach( optionInput => {
@@ -440,11 +431,11 @@ cancelSettingBtn.addEventListener('click', async () => {
 
 //確定修改警醒資訊
 submitSettingBtn.addEventListener('click', async () => {
-    const infoInterval = classModel.querySelector("#info-interval");
-    const infoTime     = classModel.querySelector("#info-time");
-    const infoTextarea = classModel.querySelector(".info-textarea");
-    const spanNoAnswear = classModel.querySelector(".answear");
-    const optionInput = classModel.querySelectorAll(".option_input");
+    const infoInterval = alertInfo.querySelector("#info-interval");
+    const infoTime     = alertInfo.querySelector("#info-time");
+    const infoTextarea = alertInfo.querySelector(".info-textarea");
+    const spanNoAnswear = alertInfo.querySelector(".answear");
+    const optionInput = alertInfo.querySelectorAll(".option_input");
 
     if( Number(infoInterval.value) < 10 || Number(infoInterval.value) > 50 ) {
         alertInfoErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
@@ -494,7 +485,7 @@ submitSettingBtn.addEventListener('click', async () => {
                 }
             }
         }else if(alertType === 'vote') {
-            const optionSelected = classModel.querySelector("#option-selected");
+            const optionSelected = alertInfo.querySelector("#option-selected");
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
@@ -502,7 +493,7 @@ submitSettingBtn.addEventListener('click', async () => {
                 alertInfoErrorText.innerHTML = '請選擇投票選項數量';
                 return;
             }
-            const optionInput = classModel.querySelectorAll(".option_input");
+            const optionInput = alertInfo.querySelectorAll(".option_input");
             let i = 0;
             optionInput.forEach( optionInput => {
                 if( optionInput.value === '' ) {
@@ -550,6 +541,7 @@ submitSettingBtn.addEventListener('click', async () => {
         infoInterval.setAttribute('readonly','true');
         infoTime.setAttribute('readonly','true');
 
+        closeModalForm();
         AlertReplace();
     }
 });
@@ -573,6 +565,7 @@ choose1.addEventListener('click', () => {
 
     const alert = alertSetting.cloneNode(true);
     const title = alert.querySelector('.class-modal__title');
+    const container = alert.querySelector('.container');
     const alertInterval = alert.querySelector('.alert-interval');
     const alertTime = alert.querySelector('.alert-time');
     const alertFinish = alert.querySelector('#alert-finish');
@@ -581,7 +574,7 @@ choose1.addEventListener('click', () => {
     title.innerHTML = "警醒按鈕設定";
     alertInterval.value = globalInterval;
     alertTime.value = globalTime;
-    alertButtonSetting.appendChild(alert);
+    alertButtonSetting.appendChild(container);
 
     alertFinish.addEventListener('click', async () => {
         if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
@@ -609,7 +602,7 @@ choose1.addEventListener('click', () => {
             alertInfo.classList.remove("close");
             AlertReplace();
             closeModalForm();
-            alert.remove();
+            container.remove();
             buttonSetting.hidden = true;
         }
     });
@@ -617,7 +610,7 @@ choose1.addEventListener('click', () => {
     alertReturn.addEventListener('click', () => {
         buttonSetting.hidden = true;
         alertChoose.classList.remove("close");
-        alert.remove();
+        container.remove();
     });
 });
 
@@ -643,8 +636,8 @@ choose2.addEventListener('click', () => {
     const progressCheck  = alert.querySelectorAll(".step .check");
     const bullet         = alert.querySelectorAll(".step .bullet");
     const qstText        = alert.querySelectorAll(".qst_text");
-
-    multipleChoiceSetting.appendChild(alert);
+    const container      = alert.querySelector('.container');
+    multipleChoiceSetting.appendChild(container);
 
     alertInterval.value = globalInterval;
     alertTime.value     = globalTime;
@@ -652,8 +645,7 @@ choose2.addEventListener('click', () => {
     prev1.addEventListener('click', () => {
         multipleChoiceSetting.hidden = true;
         alertChoose.classList.remove("close");
-        const alertMultipleChoiceSetting = document.querySelector('.alert-multiple-choice-setting');
-        alertMultipleChoiceSetting.remove();
+        container.remove();
     });
     prev2.addEventListener('click', () => {
         slidePage.style.marginLeft = "0%";
@@ -755,7 +747,7 @@ choose2.addEventListener('click', () => {
     
             AlertReplace();
             closeModalForm();
-            alert.remove();
+            container.remove();
         }
     });
     for(let i = 0; i < 2; i++){
@@ -826,7 +818,7 @@ choose3.addEventListener('click', () => {
     const errorText = alert.querySelector('.error-text');
     const container = alert.querySelector('.container');
     const fieldsetAlert = alert.querySelector('.fieldset-alert');
-    essayQuestionSetting.appendChild(alert);
+    essayQuestionSetting.appendChild(container);
     const alertqst = alertEssayQuestionSetting.cloneNode(true);
     const fieldsetEssayQuestion = alertqst.querySelector('.fieldset-essay-question');
     const qstText = alertqst.querySelector('.qst_text');
@@ -876,13 +868,13 @@ choose3.addEventListener('click', () => {
 
         AlertReplace();
         closeModalForm();
-        alert.remove();
+        container.remove();
     });
 
     alertReturn.addEventListener('click', () => {
         essayQuestion.hidden = true;
         alertChoose.classList.remove("close");
-        alert.remove();
+        container.remove();
     });
 });
 
@@ -899,7 +891,7 @@ choose4.addEventListener('click', () => {
     const errorText = alert.querySelector('.error-text');
     const container = alert.querySelector('.container');
     const fieldsetAlert = alert.querySelector('.fieldset-alert');
-    voteSetting.appendChild(alert);
+    voteSetting.appendChild(container);
 
     const alertvote = alertVoteSetting.cloneNode(true);
     const fieldsetVote = alertvote.querySelector('.fieldset-vote');
@@ -988,13 +980,13 @@ choose4.addEventListener('click', () => {
         alertInfo.classList.remove("close");
         AlertReplace();
         closeModalForm();
-        alert.remove();
+        container.remove();
     });
 
     alertReturn.addEventListener('click', () => {
         voteSetting.hidden = true;
         alertChoose.classList.remove("close");
-        alert.remove();
+        container.remove();
     });
 });
 

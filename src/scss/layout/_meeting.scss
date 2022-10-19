@@ -361,29 +361,23 @@ body.dark {
     position: absolute;
     pointer-events: none;
     opacity: 0;
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
     z-index: 99;
-    h1.class-modal__title {
-        display: flex;
-        justify-content: center;
-        color: var(--text-color);
-    }
     input {
-        width: 350px;
-        height: 40px;
-        margin: 4px 0;
-        padding-left: 25px;
-        font-size: 13px;
-        color: var(--clr-text);
+        width: 100%;
         letter-spacing: 0.15px;
-        border: none;
+        background-color: transparent !important;
+        color: var(--text-color) !important;
         outline: none;
-        font-family: "Montserrat", "sans-serif";
-        background-color: transparent;
-        transition: 0.25s ease;
-        border-radius: 8px;
-        box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
+    }
+    textarea {
+        background-color: transparent !important;
+        color: var(--text-color) !important;
+    }
+
+    fieldset {
+        width: 100%;
     }
 
     .error-text {
@@ -399,29 +393,24 @@ body.dark {
             display: flex;
             top: -35px;
             right: 120px;
-            background: var(--floating--color-1);
-            color: var(--button-icon-color);
+            background: var(--button-hov-color);
+            color: var(--clr-body);
             height: 35px;
             width: 140px;
             justify-content: center;
             align-items: center;
             border-start-start-radius: 10px;
             border-start-end-radius: 10px;
-            border-color: var(--border--color);
-            border-width: 1px;
-            border-style: solid;
             font-size: 25px;
         }
 
         .floating {
             pointer-events: auto;
             position: relative;
-            width: 70vw;
-            min-width: 500px;
-            min-height: 700px;
-            max-width: 40vw;
-            max-height: 40vw;
-            height: 70vw;
+            width: 50%;
+            min-width: 514px;
+            max-width: 30vw;
+            height: 80%;
             padding: 15px;
             background-color: var(--floating--color-1);
             box-shadow: inset 0.2rem 0.2rem 0.5rem var(--floating--color-2), inset -0.2rem -0.2rem 0.5rem var(--floating--color-3);
@@ -434,24 +423,18 @@ body.dark {
                     align-items: center;
                     height: 100%;
                     width: 100%;
+                    overflow: auto;
+                    text-align: center;
 
                     .center-btn {
                         display: flex;
                         justify-content: center;
                         align-items: center;
-                        width: 88%;
-                        height: 7%;
-                        max-width: 411px;
+                        height: 40px;
+                        width: 100%;
                         .btn-primary {
-                            width: 60%;
+                            width: 50%;
                             height: 100%;
-                            font-weight: 700;
-                            letter-spacing: 1.15px;
-                            background-color: var(--primary-color);
-                            color: var(--button-text-color);
-                            border: none;
-                            outline: none;
-                            position: relative;
                             margin-inline: 2%;
                         }
                         #cancel-setting {
@@ -459,95 +442,41 @@ body.dark {
                         }
                     }
 
-                    .class-modal {
-                        width: 100%;
+                    #close-modal__form {
                         height: 100%;
-
-                        #close-modal__form {
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
+                        .error-text {
+                            color: #f00;
                             width: 100%;
-                            height: 100%;
-                            gap: 0.5em;
-                            .error-text {
+                            text-align: center;
+                        }
+
+                        .field {
+                            i {
                                 color: #f00;
-                                width: 100%;
-                                text-align: center;
+                                font-size: 40px;
                             }
-
-                            .field {
-                                i {
-                                    color: #f00;
-                                    font-size: 40px;
-                                }
-                                #alertType {
-                                    justify-content: center;
-                                }
-                                .alert-interval {
-                                    &.Revise {
-                                        color: var(--clr-text-black);
-                                        background-color: var(--white);
-                                    }
-                                }
-
-                                .alert-time {
-                                    &.Revise {
-                                        color: var(--clr-text-black);
-                                        background-color: var(--white);
-                                    }
-                                }
-                                input {
-                                    padding-left: 25px;
-                                    color: var(--text-color);
-                                    letter-spacing: 0.15px;
-                                    border: none;
-                                    outline: none;
-                                    background-color: var(--floating--color-1);
-                                    border-radius: 30px;
-                                    box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
-                                }
+                            #alertType {
+                                justify-content: center;
                             }
-
-                            .fieldset {
+                        }
+                        .fieldset {
+                            gap: 0;
+                            .div-label {
                                 display: flex;
-                                width: 25em;
-                                justify-content: flex-start;
-                                gap: 0.1em;
-                                color: var(--text-color);
-                                .div-label {
+                                label {    
+                                    width: 88%;
                                     display: flex;
                                     align-items: center;
-                                    color: var(--text-color);
-                                    label {
-                                        width: 88%;
-                                    }
-                                    button {
-                                        width: 15%;
-                                        background-color: var(--primary-color);
-                                        color: var(--button-text-color);
-                                    }
                                 }
-                                textarea {
-                                    width: 100%;
-                                    height: 5em;
-                                    font-size: 20px;
-                                    color: var(--text-color);
-                                    border: none;
-                                    outline: none;
-                                    font-family: "Montserrat", "sans-serif";
-                                    background-color: var(--floating--color-1);
-                                    transition: 0.25s ease;
-                                    border-radius: 8px;
-                                    box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
-                                    resize: none;
-                                }
-                                .voteOptions {
-                                    flex-direction: column;
+                                button {
+                                    width: 15%; margin: 1%;
                                 }
                             }
-                        
+                            .voteOptions {
+                                flex-direction: column;
+                            }
                         }
+                    
                     }
 
                     .span_No {
@@ -561,7 +490,7 @@ body.dark {
                         width: 2.5em;
                         height: 2.5em;
                         border-radius: 50%;
-
+                        margin-block: 3px;
                         &.answear {
                             background-color: var(--primary-color);
                         }
@@ -574,49 +503,39 @@ body.dark {
                     .alert-info {
                         width: 100%;
                         height: 100%;
-                        opacity: 1;
-                        &.close {
-                            width: 0;
-                            opacity: 0;
-                            display: none;
-                        }
+                        &.close {display: none;}
 
                         #alert-exchange {
                             right: 2%;
+                        }
+                        &.Revise {
+                            input {
+                                background-color: var(--white) !important;
+                                width: calc(100% - 3.5em - 40px);
+                            }
+                            textarea {
+                                background-color: var(--white) !important;
+                            }
                         }
                     }
 
                     .alert-choose {
                         width: 100%;
                         height: 100%;
-                        opacity: 1;
-                        &.close {
-                            width: 0;
-                            opacity: 0;
-                            display: none;
-                        }
+                        display: grid;
+
+                        &.close {display: none;}
+
                         .page-content {
                             display: grid;
                             grid-gap: 1rem;
                             max-width: 1024px;
-                            margin: 0 auto;
-                            align-content: center;
-                            justify-content: center;
-                            height: 94%;
                             width: 100%;
                             padding: 20px;
                             .card {
                                 position: relative;
-                                display: flex;
-                                align-items: flex-end;
                                 overflow: hidden;
                                 padding: 1rem;
-                                width: 100%;
-                                text-align: center;
-                                color: whitesmoke;
-                                background-color: whitesmoke;
-                                box-sizing: border-box;
-                                box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.1), 0 4px 4px rgba(0, 0, 0, 0.1), 0 8px 8px rgba(0, 0, 0, 0.1), 0 16px 16px rgba(0, 0, 0, 0.1);
                                 &:before {
                                     content: "";
                                     position: absolute;
@@ -698,6 +617,7 @@ body.dark {
                             font-size: 1rem;
                             font-style: italic;
                             line-height: 1.35;
+                            color: var(--clr-text-white);
                         }
 
                         .btn {
@@ -798,7 +718,6 @@ body.dark {
                         font-size: 2rem;
                         cursor: pointer;
                         color: var(--button-icon-color);
-                        transition: all 0.5s ease;
                         p {
                             color: var(--text-color);
                         }
@@ -820,12 +739,6 @@ body.dark {
                     #alert-btn-setting {
                         left: 15px;
                     }
-                    .error-text {
-                        color: #f00;
-                    }
-                    .field {
-                        justify-content: center;
-                    }
                 }
 
                 .multiple-choice-setting {
@@ -836,7 +749,6 @@ body.dark {
                 }
 
                 .alert-step-progress {
-                    opacity: 1;
                     height: 100%;
                     width: 100%;
                     .container {
@@ -849,9 +761,8 @@ body.dark {
                         .process-bar {
                             display: inline-flex;
                             margin: 4px 0;
-                            width: 500px;
+                            width: 100%;
                             color: var(--text-color);
-                            height: 12%;
                             .step {
                                 position: relative;
                                 text-align: center;
@@ -891,8 +802,8 @@ body.dark {
                                         position: absolute;
                                         content: "";
                                         height: 3px;
-                                        width: 133px;
-                                        right: -134px;
+                                        width: 130px;
+                                        right: -130px;
                                         bottom: 14px;
                                         background: var(--text-color);
                                     }
@@ -959,13 +870,9 @@ body.dark {
                                         font-size: 25px;
                                         font-weight: 500;
                                         padding: 5px;
-                                        display: flex;
                                     }
-                                    .field {
+                                    .field {    
                                         width: 50%;
-                                        display: flex;
-                                        position: relative;
-                                        z-index: 2;
                                         padding: 5px;
                                         &.alert {
                                             flex-flow: column;
@@ -973,8 +880,6 @@ body.dark {
                                         textarea {
                                             width: 100%;
                                             height: 100%;
-                                            font-size: 20px;
-                                            resize: none;
                                         }
                                         button {
                                             width: 100%;
@@ -1026,21 +931,12 @@ body.dark {
                                     }
                                     input {
                                         height: 45px;
-                                        width: 100%;
-                                        border: 1px solid lightgray;
-                                        border-radius: 5px;
-                                        font-size: 18px;
-                                        padding-left: 15px;
+                                        width: calc(100% - 3.5em - 40px);
                                     }
                                     .btns {
-                                        z-index: 1;
                                         button {
-                                            &.prev {
-                                                font-size: 17px;
-                                                width: 49%;
-                                            }
+                                            &.prev {width: 49%;}
                                             &.next {
-                                                font-size: 17px;
                                                 width: 49%;
                                                 margin-inline-start: 3px;
                                             }
