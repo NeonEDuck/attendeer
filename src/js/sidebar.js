@@ -108,7 +108,7 @@ export function sidebarListener() {
             });
             navBtn[index].classList.toggle("open");
             let navText = navBtn[index].querySelector('.nav-text').innerHTML;
-            fltCntr.classList.add("show");
+            fltCntr.hidden = false;
 
             if(navText === '警醒資訊') {
                 const { host } = (await getDoc(callDoc)).data();
@@ -129,7 +129,7 @@ export function sidebarListener() {
 //關閉浮動視窗的按鈕
 closeFloatingButton.addEventListener('click', () => {
 
-    fltCntr.classList.remove("show");
+    fltCntr.hidden = true;
     Array.from(navBtn).forEach((item) => {
         item.className = "nav-btn";
     });
@@ -144,10 +144,11 @@ closeFloatingButton.addEventListener('click', () => {
     optionsTotal = 0;
     current = 0;
 
-    const container = document.querySelector('.container');
-    if( container != null ) {
-        container.remove();
-    }
+    const alertStepProgress = document.querySelectorAll('.alert-step-progress');
+    alertStepProgress.forEach( alertStepProgress => {
+        alertStepProgress.innerHTML = '';
+    })
+
     alertInfo.classList.remove('Revise');
 });
 
@@ -248,9 +249,6 @@ settingBtn.addEventListener('click', async () => {
     const input = alertInfo.querySelectorAll('.option_input');
     const spanNo = alertInfo.querySelectorAll('.span_No');
     const fieldset = alertInfo.querySelector('.fieldset');
-
-    infoInterval.classList.add('Revise');
-    infoTime.classList.add('Revise');
 
     infoInterval.removeAttribute('readonly');
     infoTime.removeAttribute('readonly');
@@ -574,6 +572,7 @@ choose1.addEventListener('click', () => {
     title.innerHTML = "警醒按鈕設定";
     alertInterval.value = globalInterval;
     alertTime.value = globalTime;
+    alertButtonSetting.appendChild(title);
     alertButtonSetting.appendChild(container);
 
     alertFinish.addEventListener('click', async () => {
@@ -603,6 +602,7 @@ choose1.addEventListener('click', () => {
             AlertReplace();
             closeModalForm();
             container.remove();
+            title.remove();
             buttonSetting.hidden = true;
         }
     });
@@ -611,6 +611,7 @@ choose1.addEventListener('click', () => {
         buttonSetting.hidden = true;
         alertChoose.classList.remove("close");
         container.remove();
+        title.remove();
     });
 });
 
@@ -619,6 +620,7 @@ choose2.addEventListener('click', () => {
     alertChoose.classList.toggle("close");
 
     const alert          = alertMultipleChoiceSetting.cloneNode(true);
+    const title          = alert.querySelector('class-modal__title');
     const alertInterval  = alert.querySelector('.alert-interval');
     const alertTime      = alert.querySelector('.alert-time');
     const errorText      = alert.querySelector('.error-text');
@@ -637,6 +639,7 @@ choose2.addEventListener('click', () => {
     const bullet         = alert.querySelectorAll(".step .bullet");
     const qstText        = alert.querySelectorAll(".qst_text");
     const container      = alert.querySelector('.container');
+
     multipleChoiceSetting.appendChild(container);
 
     alertInterval.value = globalInterval;
@@ -646,6 +649,7 @@ choose2.addEventListener('click', () => {
         multipleChoiceSetting.hidden = true;
         alertChoose.classList.remove("close");
         container.remove();
+        title.remove();
     });
     prev2.addEventListener('click', () => {
         slidePage.style.marginLeft = "0%";
@@ -748,6 +752,7 @@ choose2.addEventListener('click', () => {
             AlertReplace();
             closeModalForm();
             container.remove();
+            title.remove();
         }
     });
     for(let i = 0; i < 2; i++){
@@ -818,6 +823,7 @@ choose3.addEventListener('click', () => {
     const errorText = alert.querySelector('.error-text');
     const container = alert.querySelector('.container');
     const fieldsetAlert = alert.querySelector('.fieldset-alert');
+    essayQuestionSetting.appendChild(title);
     essayQuestionSetting.appendChild(container);
     const alertqst = alertEssayQuestionSetting.cloneNode(true);
     const fieldsetEssayQuestion = alertqst.querySelector('.fieldset-essay-question');
@@ -869,12 +875,14 @@ choose3.addEventListener('click', () => {
         AlertReplace();
         closeModalForm();
         container.remove();
+        title.remove();
     });
 
     alertReturn.addEventListener('click', () => {
         essayQuestion.hidden = true;
         alertChoose.classList.remove("close");
         container.remove();
+        title.remove();
     });
 });
 
@@ -891,8 +899,8 @@ choose4.addEventListener('click', () => {
     const errorText = alert.querySelector('.error-text');
     const container = alert.querySelector('.container');
     const fieldsetAlert = alert.querySelector('.fieldset-alert');
+    voteSetting.appendChild(title);
     voteSetting.appendChild(container);
-
     const alertvote = alertVoteSetting.cloneNode(true);
     const fieldsetVote = alertvote.querySelector('.fieldset-vote');
     const qstText = alertvote.querySelector('.qst_text');
@@ -981,12 +989,14 @@ choose4.addEventListener('click', () => {
         AlertReplace();
         closeModalForm();
         container.remove();
+        title.remove();
     });
 
     alertReturn.addEventListener('click', () => {
         voteSetting.hidden = true;
         alertChoose.classList.remove("close");
         container.remove();
+        title.remove();
     });
 });
 
