@@ -620,7 +620,7 @@ choose2.addEventListener('click', () => {
     alertChoose.classList.toggle("close");
 
     const alert          = alertMultipleChoiceSetting.cloneNode(true);
-    const title          = alert.querySelector('class-modal__title');
+    const title          = alert.querySelector('.class-modal__title');
     const alertInterval  = alert.querySelector('.alert-interval');
     const alertTime      = alert.querySelector('.alert-time');
     const errorText      = alert.querySelector('.error-text');
@@ -639,7 +639,7 @@ choose2.addEventListener('click', () => {
     const bullet         = alert.querySelectorAll(".step .bullet");
     const qstText        = alert.querySelectorAll(".qst_text");
     const container      = alert.querySelector('.container');
-
+    multipleChoiceSetting.appendChild(title);
     multipleChoiceSetting.appendChild(container);
 
     alertInterval.value = globalInterval;
@@ -650,6 +650,7 @@ choose2.addEventListener('click', () => {
         alertChoose.classList.remove("close");
         container.remove();
         title.remove();
+        optionsTotal = 0;
     });
     prev2.addEventListener('click', () => {
         slidePage.style.marginLeft = "0%";

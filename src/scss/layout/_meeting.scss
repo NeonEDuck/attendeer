@@ -398,8 +398,8 @@ body.dark {
         display: flex;
         top: -35px;
         right: 120px;
-        background: var(--button-hov-color);
-        color: var(--clr-body);
+        background: var(--primary-color);
+        color: var(--clr-text-white);
         height: 35px;
         width: 140px;
         justify-content: center;
@@ -415,7 +415,7 @@ body.dark {
         width: 50%;
         min-width: 514px;
         max-width: 30vw;
-        height: 80%;
+        height: calc(100% - 150px);
         padding: 15px;
         background-color: var(--floating--color-1);
         box-shadow: inset 0.2rem 0.2rem 0.5rem var(--floating--color-2), inset -0.2rem -0.2rem 0.5rem var(--floating--color-3);
@@ -444,7 +444,7 @@ body.dark {
                 }
             }
             #close-modal__form {
-                height: 93%;
+                height: calc(100% - 2rem - 15px);
                 .field {
                     i {
                         color: #f00;
@@ -501,9 +501,11 @@ body.dark {
                 &.Revise {
                     input {
                         background-color: var(--white) !important;
+                        color: var(--clr-text-black) !important;
                     }
                     textarea {
                         background-color: var(--white) !important;
+                        color: var(--clr-text-black) !important;
                     }
                 }            
             }
@@ -522,6 +524,7 @@ body.dark {
                         position: relative;
                         overflow: hidden;
                         padding: 1rem;
+                        height: 300px;
                         &:before {
                             content: "";
                             position: absolute;
@@ -574,13 +577,11 @@ body.dark {
                         grid-template-columns: repeat(2, 1fr);
                     }
                 }
-                @media (min-width: 600px) {
-                    .card {
-                        height: 300px;
-                    }
-                }
                 .title {
                     text-shadow: -4px -4px 0 #18191a, 4px -4px 0 #18191a, -4px 4px 0 #18191a, 4px 4px 0 #18191a;
+                    color: var(--clr-text-white);
+                }
+                .copy {
                     color: var(--clr-text-white);
                 }
                 .btn {
