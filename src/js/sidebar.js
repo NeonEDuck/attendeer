@@ -525,7 +525,6 @@ submitSettingBtn.addEventListener('click', async () => {
             alert: {
                 interval,
                 time,
-                alertType,
             },
         }
         const callDoc = doc(calls, callId);
@@ -591,7 +590,6 @@ choose1.addEventListener('click', () => {
                 alert: {
                     interval:interval,
                     time:time,
-                    alertType:alertType,
                 },
             }
             const callDoc = doc(calls, callId);
@@ -738,7 +736,6 @@ choose2.addEventListener('click', () => {
                 alert: {
                     interval: globalInterval,
                     time: globalTime,
-                    alertType: globalAlertType,
                 },
             }
             const callDoc = doc(calls, callId);
@@ -862,7 +859,6 @@ choose3.addEventListener('click', () => {
             alert: {
                 interval: interval,
                 time: time,
-                alertType: alertType,
             },
         }
         const callDoc = doc(calls, callId);
@@ -977,7 +973,6 @@ choose4.addEventListener('click', () => {
             alert: {
                 interval: interval,
                 time: time,
-                alertType: alertType,
             },
         }
     

@@ -252,7 +252,7 @@ notifyDismissBtn.addEventListener('click', async () => {
 
 enterBtn.addEventListener('click', async () => {
     const { alert, host, school } = (await getDoc(callDoc)).data();
-    const { interval, time: duration, alertType } = alert;
+    const { interval, time: duration } = alert;
     isHost = localUserId === host;
     const data = await fetchData('/school_time_table.json');
     console.log(data);
@@ -523,7 +523,6 @@ enterBtn.addEventListener('click', async () => {
             alert: {
                 interval: interval,
                 time: duration,
-                alertType: 'click',
             },
         }
         await updateDoc(callDoc, dataAlert);
@@ -945,10 +944,11 @@ async function startAlert() {
                     alert: {
                         interval: globalInterval,
                         time: globalTime,
-                        alertType: 'click',
                     },
                 }
                 updateDoc(callDoc, dataAlert);
+
+                globalAlertType = 'click'
             }
 
         } catch (error) {
