@@ -26,6 +26,9 @@
                     <label for="class-modal__school-select">時課表:</label>
                     <select id="class-modal__school-select" name="school-select">
                         <option value="" selected disabled></option>
+                        {% for school in schools %}
+                            <option value="{{ school.SchoolId }}">{{ school.SchoolName }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </fieldset>

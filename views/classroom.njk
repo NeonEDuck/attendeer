@@ -28,10 +28,10 @@
     </div>
 
     <div class="post-reply-writer flex flex-row flex-align-start gap-2">
-        <img src="/imgs/dummy_profile.png" class="post__picture" alt="">
+        <img src="{{ photoURL or '/imgs/dummy_profile.png' }}" class="post__picture" alt="">
         <div class="flex flex-column flex-item-1">
             <div class="flex flex-row gap-2">
-                <p class="post__name">name</p>
+                <p class="post__name">{{ displayName or '未登入' }}</p>
             </div>
             <div class="flex flex-row flex-align-start gap-2">
                 <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
@@ -113,16 +113,18 @@
 {% endblock prefab %}
 
 {% block content %}
-    <input id="call-id" type="text" value="{{ callId }}" hidden>
+    <input id="call-id" type="text" value="{{ classInfo.ClassId }}" hidden>
     <main class="light">
         <div id="class-grid">
             <div id="class-sidebar">
-                <h1 id="class-name">讀取中...</h1>
+                <h1 id="class-name">{{ classInfo.ClassName }}</h1>
                 <div class="flex flex-row flex-align flex-wrap">
-                    <p style="text-wrap: no-wrap;">{{ callId }}</p>
+                    <p style="text-wrap: no-wrap;">{{ classInfo.ClassId }}</p>
                     <div class="flex flex-row margin-inline-start-auto gap-2">
-                        <button id="setting-btn" class="btn-transparent btn-round btn-round" data-tooltip="設定" hidden>{% include 'svg/setting.svg' %}</button>
-                        <button id="call-btn" class="btn-primary">進入會議</button>
+                        {% if isHost %}
+                            <button id="setting-btn" class="btn-transparent btn-round btn-round" data-tooltip="設定">{% include 'svg/setting.svg' %}</button>
+                        {% endif %}
+                        <a href="/{{ classInfo.ClassId }}/meeting" id="call-btn" class="btn btn-primary">進入會議</a>
                     </div>
                 </div>
                 <div class="flex flex-center">
@@ -135,7 +137,9 @@
 
             <div id="class-main" data-current-catagory="entire">
                 <div id="bulletin-horizontal-tab-container">
-                    <button id="write-tab" data-catagory="write" class="btn-tab-top" hidden>新增貼文</button>
+                    {% if isHost %}
+                        <button id="write-tab" data-catagory="write" class="btn-tab-top">新增貼文</button>
+                    {% endif %}
                     <button id="chat-tab" data-catagory="chat" class="btn-tab-top">聊天紀錄</button>
                     <button id="alert-tab" data-catagory="alert" class="btn-tab-top">警醒紀錄</button>
                 </div>
@@ -188,40 +192,46 @@
                                     <h1>警醒紀錄</h1>
                                     <button id="download-alert-btn">下載</button>
                                 </div>
-                                <h2 id="alert-nope" hidden>目前僅提供老師端查看警醒紀錄</h1>
-                                <input type="text" id="alert__Search" class="search" onkeyup="myFunction()" placeholder="Search for the keyword..">
+                                {% if isHost %}
+                                    <div id="alert-lookup">
 
-                                <div id="wrapper" hidden></div>
+                                        <input type="text" id="alert-lookup__search" class="search" placeholder="Search for the keyword..">
 
-                                <div id="list">
-                                    <table class='list__alert'>
-                                        <thead>
-                                            <tr class="alert">
-                                                <th>警醒類型</th>
-                                                <th>警醒間隔</th>
-                                                <th>持續時間</th>
-                                                <th>建立時間</th>
-                                                <th>問題內容</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="alert-log">
-                                        </tbody>
-                                    </table>
+                                        <div id="alert-lookup__detail" hidden></div>
 
-                                    <table class='list__ptcp close'>
-                                        <thead>
-                                            <tr class="ptcp">
-                                                <th>姓名</th>
-                                                <th>點擊狀態</th>
-                                                <th>回答</th>
-                                                <th>完成時間</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="ptcp-log">
-                                        </tbody>
-                                    </table>
+                                        <div id="alert-lookup__list" class="flex">
+                                            <table class="alert-lookup__table" data-type="alert">
+                                                <thead>
+                                                    <tr>
+                                                        <th>警醒類型</th>
+                                                        <th>警醒間隔</th>
+                                                        <th>持續時間</th>
+                                                        <th>建立時間</th>
+                                                        <th>問題內容</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="alert-log">
+                                                </tbody>
+                                            </table>
 
-                                </div>
+                                            <table class="alert-lookup__table" data-type="alert-detail" hidden>
+                                                <thead>
+                                                    <tr>
+                                                        <th>姓名</th>
+                                                        <th>點擊狀態</th>
+                                                        <th>回答</th>
+                                                        <th>完成時間</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="alert-detail-log">
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <h2>目前僅提供老師端查看警醒紀錄</h1>
+                                {% endif %}
                             </div>
                         </div>
 

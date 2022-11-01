@@ -3,7 +3,14 @@ import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export const LOWER_CASE = 'abcdefghjiklnmopqrstuvwxyz';
-export const MINUTE = 60 * 1000;
+export const SECOND = 1000;
+export const MINUTE = 60 * SECOND;
+export const AlertTypeEnum = {
+    'Click': 1,
+    'MultipleChoice': 2,
+    'EssayQuestion': 3,
+    'Vote': 4,
+}
 
 export function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
@@ -59,6 +66,16 @@ export async function fetchData(path) {
     })
 
     return response.json();
+}
+
+export async function apiCall(route, data) {
+    return fetch(`/api/${route}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data || {})
+    });
 }
 
 export function setIntervalImmediately(callback, ms) {
@@ -117,13 +134,12 @@ export function getUser() {
 
 const userDict = {};
 
-export async function getUserData(userId) {
-    if (!userDict[userId]) {
-        const userDoc = doc(users, userId);
-
-        const userSnapshot = await getDoc(userDoc)
-        userDict[userId] = userSnapshot.data();
+export async function getUserData(email) {
+    if (!userDict[email]) {
+        const response = await apiCall('getUserInfo', {email});
+        const user = await response.json();
+        userDict[email] = user;
     }
 
-    return userDict[userId];
+    return userDict[email];
 }

@@ -9,7 +9,7 @@
         <p class="class-card__name"></p>
         <p class="class-card__id"></p>
         <div class="class-card__btn-group">
-            <button class="class-card__link btn-round btn-primary" data-tooltip="查看">{% include 'svg/right_arrow.svg' %}</button>
+            <a class="class-card__link btn btn-round btn-primary" data-tooltip="查看">{% include 'svg/right_arrow.svg' %}</a>
         </div>
     </div>
 {% endblock prefab %}
@@ -17,9 +17,21 @@
 {% block content %}
     <main>
         <div class="class-list">
-            <div id="add-class-template" class="class-card-template flex-center flex-row" hidden>
-                <button id="add-class-btn" class="btn-round btn-primary">新增課程</button>
-            </div>
+            {% for class in classes %}
+                <div class="class-card">
+                    <p class="class-card__name">{{ class.ClassName }}</p>
+                    <p class="class-card__id">{{ class.ClassId }}</p>
+                    <div class="class-card__btn-group">
+                        <a href="/{{ class.ClassId }}" class="class-card__link btn btn-round btn-primary" data-tooltip="查看">{% include 'svg/right_arrow.svg' %}</a>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% if displayName %}
+                <div id="add-class-template" class="class-card-template flex-center flex-row">
+                    <button id="add-class-btn" class="btn-round btn-primary">新增課程</button>
+                </div>
+            {% endif %}
         </div>
 
         {% include "util/class_modal.njk" %}
