@@ -1,293 +1,234 @@
-
-    <div class = "floating-alert" id="floating-alert">
-        <div class="alert-info">
-            <div class="class-modal" >
-                {# 警醒設定畫面 #}
-                <form id="close-modal__form" class="flex flex-column gap-4">
-                    <h1 class="class-modal__title">警醒資訊</h1>
-                    <fieldset>
-                        <legend>警醒</legend>
-                        <div class="field"  id="alertType">
-                            <label for="alert-type">警醒類型:</label>
-                            <label id="alert-type" class="alert-type"></label>
-                        </div>
-                        <label for="alert-interval">警醒間隔:</label>
-                        <div class="field">
-                            <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
-                            <label for="alert-interval">分鐘</label>
-                        </div>
-                        <label for="alert-time">警醒持續時間:</label>
-                        <div class="field">
-                            <input id="alert-time" class="alert-time" name="alert-time" type="number" readonly='readonly' min="1" max="3" required>
-                            <label for="alert-time">分鐘</label>
-                        </div>
-                    </fieldset>
-                    <div class="type-info">
-                        <fieldset class="fieldset">
-
-                        </fieldset>
-                    </div>
-
-                    <div class="error-text"></div>
-
-                    <div class="center-btn">
-                        <button type="button" id="setting" class="margin-inline-start-auto btn-primary">修改</button>
-                    </div>
-
-                    <div class="center-btn" hidden>
-                        <input type="submit" id="submit-form" hidden disabled/>
-                        <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
-                        <button type="button" id="cancel-setting" class="margin-inline-start-auto btn-primary">取消</button>
-                    </div>
-                </form>
+<div class="prefab">
+    <div class="alert-setting">
+        <h1 class="class-modal__title"></h1>
+        <div class="container">
+            <fieldset class="fieldset-alert">
+                <legend>警醒</legend>
+                <label for="alert-interval">警醒間隔:</label>
+                <div class="field flex-center">
+                    <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                    <label for="alert-interval">分鐘</label>
+                </div>
+                <label for="alert-time">警醒持續時間:</label>
+                <div class="field flex-center">
+                    <input id="alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                    <label for="alert-time">分鐘</label>
+                </div>
+            </fieldset>
+            <div id="error-text" class="error-text"></div>
+            <div class="center-btn">
+                <button type="button" id="alert-return" class="margin-inline-start-auto btn-primary">返回</button>
+                <button type="button" id="alert-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
             </div>
+        </div>
+    </div>
+
+    <div class="alert-multiple-choice-setting">
+        <h1 class="class-modal__title">設定選擇題流程</h1>
+        <div class="container">
+            <div class="process-bar">
+                <div class="step">
+                    <p>問題</p>
+                    <div class="bullet">
+                        <span>1</span>
+                    </div>
+                    <i class='bx bx-check check'></i>
+                </div>
+                <div class="step">
+                    <p>選項</p>
+                    <div class="bullet">
+                        <span>2</span>
+                    </div>
+                    <i class='bx bx-check check'></i>
+                </div>
+                <div class="step">
+                    <p>警醒</p>
+                    <div class="bullet">
+                        <span>3</span>
+                    </div>
+                    <i class='bx bx-check check'></i>
+                </div>
+            </div>
+            <div class="error-text" ></div>
+            <div class="form-outer">
+                <div class="form-inner">
+                    <div class="page slidepage">
+                        <div class="title">輸入題目問題</div>
+                        
+                        <div class="field flex-center">
+                            <textarea class="qst_text" cols="45" rows="10" maxlength="50"></textarea>
+                        </div>
+                        <div class="field flex-center btns">
+                            <button class="prev-1 prev">返回</button>
+                            <button class="next-1 next">下一步</button>
+                        </div>
+                    </div>
+                    <div class="page page-2">
+                        <div class="title">輸入選項</div>
+                        <div class="options">
+                            <div class="field flex-center add">
+                                <button class="add_options">新增選項</button>
+                            </div>
+                        </div>
+                        <div class="field flex-center btns">
+                            <button class="prev-2 prev">上一步</button>
+                            <button class="next-2 next">下一步</button>
+                        </div>
+                    </div>
+                    <div class="page page-3">
+                        <div class="title">警醒設定</div>
+                        <fieldset>
+                            <legend>警醒</legend>
+                            <label for="alert-interval">警醒間隔:</label>
+                            <div class="field flex-center">
+                                <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                                <label for="alert-interval">分鐘</label>
+                            </div>
+                            <label for="alert-time">警醒持續時間:</label>
+                            <div class="field flex-center">
+                                <input id="alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                                <label for="alert-time">分鐘</label>
+                            </div>
+                        </fieldset>
+                        <div class="field flex-center btns">
+                            <button class="prev-3 prev">上一步</button>
+                            <button class="next-3 next">完成</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="field flex-center option">
+        <span class="span_No"></span>
+        <input type="text" class="option_input">
+        <i class="bx bx-x" style="display: none;"></i>
+    </div>
+
+    <div class="alert-essay-question-setting">
+        <div class="container">
+            <fieldset class="fieldset-essay-question">
+                <legend>問答題</legend>
+                <label>Question:</label>
+                <div class="field flex-center">
+                    <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="alert-vote-setting">
+        <div class="container">
+            <fieldset class="fieldset-vote">
+                <legend>投票</legend>
+                <label>輸入投票題目:</label>
+                <div class="field flex-center">
+                    <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
+                </div>
+                <div class="field flex-center">
+                    <label>輸入投票回答:</label>
+                    <select name="options" id="option-selected">
+                        <option value="" selected >請選擇投票數量</option>
+                        <option value="2" >2</option>
+                        <option value="3" >3</option>
+                        <option value="4" >4</option>
+                    </select>
+                </div>
+                <div class="field flex-center options"></div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="vote-option_input">
+        <input type="text" class="option_input">
+    </div>
+</div>
+    
+    <div class = "floating-alert" id="floating-alert" hidden>
+        <div class="alert-info">
+            {# 警醒設定畫面 #}
+            <h1 class="class-modal__title">警醒資訊</h1>
+            <form id="close-modal__form" class="flex flex-column flex-justify-space-between overflow-auto">
+                <fieldset>
+                    <legend>警醒</legend>
+                    <div class="field flex-center"  id="alertType">
+                        <label for="info-type">警醒類型:</label>
+                        <label id="info-type" class="alert-type"></label>
+                    </div>
+                    <label for="info-interval">警醒間隔:</label>
+                    <div class="field flex-center">
+                        <input id="info-interval" class="alert-interval" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
+                        <label for="info-interval">分鐘</label>
+                    </div>
+                    <label for="info-time">警醒持續時間:</label>
+                    <div class="field flex-center">
+                        <input id="info-time" class="alert-time" name="alert-time" type="number" readonly='readonly' min="1" max="3" required>
+                        <label for="info-time">分鐘</label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                </fieldset>
+
+                <div class="error-text"></div>
+
+                <div class="center-btn">
+                    <button type="button" id="setting" class="margin-inline-start-auto btn-primary">修改</button>
+                </div>
+
+                <div class="center-btn" hidden>
+                    <input type="submit" id="submit-form" hidden disabled/>
+                    <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+                    <button type="button" id="cancel-setting" class="margin-inline-start-auto btn-primary">取消</button>
+                </div>
+            </form>
             <div class="alert_icon_buttons" id="alert-exchange">
                 <i class='bx bx-repost'></i>
             </div>
         </div>
         <div class="alert-choose close">
+            <h1 class="class-modal__title">選擇你想要的警醒類型</h1>
             <div class="alert_icon_buttons" id="alert-return">
                 <i class='bx bx-arrow-back'></i>
             </div>
-            <div class="class-modal">
-                <h1 class="class-modal__title">選擇你想要的警醒類型</h1>
-                <div class="page-content">
-                    <div class="card">
-                        <div class="card__content">
-                        <h2 class="title">警醒按鈕</h2>
-                        <p class="copy">會議主辦人可設定警醒按鈕顯示之間隔以及按鈕顯示持續時間，當時間到時並顯示警醒按鈕在參加會議者畫面任意處供點擊簽到。</p>
-                        <button class="btn" id="choose-1">選擇</button>
-                        </div>
+            <div class="page-content overflow-auto">
+                <div class="card">
+                    <div class="card__content">
+                    <h1 class="title">警醒按鈕</h2>
+                    <p class="copy">會議主辦人可設定警醒按鈕顯示之間隔以及按鈕顯示持續時間，當時間到時並顯示警醒按鈕在參加會議者畫面任意處供點擊簽到。</p>
+                    <button class="btn" id="choose-1">選擇</button>
                     </div>
-                    <div class="card">
-                        <div class="card__content">
-                        <h2 class="title">選擇題警醒</h2>
-                        <p class="copy">搭配警醒按鈕，附加選擇題，從一組選項當中，選出一個作為正確的答案，並完成警醒簽到。</p>
-                        <button class="btn" id="choose-2">選擇</button>
-                        </div>
+                </div>
+                <div class="card">
+                    <div class="card__content">
+                    <h1 class="title">選擇題警醒</h2>
+                    <p class="copy">搭配警醒按鈕，附加選擇題，從一組選項當中，選出一個作為正確的答案，並完成警醒簽到。</p>
+                    <button class="btn" id="choose-2">選擇</button>
                     </div>
-                    <div class="card">
-                        <div class="card__content">
-                        <h2 class="title">問答題警醒</h2>
-                        <p class="copy">搭配警醒按鈕，附加問答題，讓會議者簡述回答問題，並完成警醒簽到。</p>
-                        <button class="btn" id="choose-3">選擇</button>
-                        </div>
+                </div>
+                <div class="card">
+                    <div class="card__content">
+                    <h1 class="title">問答題警醒</h2>
+                    <p class="copy">搭配警醒按鈕，附加問答題，讓會議者簡述回答問題，並完成警醒簽到。</p>
+                    <button class="btn" id="choose-3">選擇</button>
                     </div>
-                    <div class="card">
-                        <div class="card__content">
-                        <h2 class="title">投票式警醒</h2>
-                        <p class="copy">搭配警醒按鈕，附加投票，典型的手法讓群體經過討論或辯論後，在特定紙張上標示出投票者的立場，並完成警醒簽到。</p>
-                        <button class="btn" id="choose-4">選擇</button>
-                        </div>
+                </div>
+                <div class="card">
+                    <div class="card__content">
+                    <h1 class="title">投票式警醒</h2>
+                    <p class="copy">搭配警醒按鈕，附加投票，典型的手法讓群體經過討論或辯論後，在特定紙張上標示出投票者的立場，並完成警醒簽到。</p>
+                    <button class="btn" id="choose-4">選擇</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="alert-step-progress button-setting close">
-            <div class="alert_icon_buttons" id="alert-btn-return" style="left: 15px;">
-                <i class="bx bx-arrow-back"></i>
-            </div>
-            <div class="container">
-                <h1 class="class-modal__title">警醒按鈕設定</h1>
-                <fieldset>
-                    <legend>警醒</legend>
-                    <div class="error-text"></div>
-                    <label for="alert-interval">警醒間隔:</label>
-                    <div class="field">
-                        <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
-                        <label for="alert-interval">分鐘</label>
-                    </div>
-                    <label for="alert-time">警醒持續時間:</label>
-                    <div class="field">
-                        <input id="alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
-                        <label for="alert-time">分鐘</label>
-                    </div>
-                </fieldset>
-                <div class="center-btn">
-                    <button type="button" id="alert-btn-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
-                </div>
-            </div>
-        </div>
+        <div class="alert-step-progress button-setting overflow-auto" hidden></div>
 
-        <div class="alert-step-progress multiple-choice-setting close">
-            <div class="container">
-                <h1 class="class-modal__title">設定選擇題流程</h1>
-                <div class="process-bar">
-                    <div class="step">
-                        <p>問題</p>
-                        <div class="bullet">
-                            <span>1</span>
-                        </div>
-                        <i class='bx bx-check check'></i>
-                    </div>
-                    <div class="step">
-                        <p>選項</p>
-                        <div class="bullet">
-                            <span>2</span>
-                        </div>
-                        <i class='bx bx-check check'></i>
-                    </div>
-                    <div class="step">
-                        <p>警醒</p>
-                        <div class="bullet">
-                            <span>3</span>
-                        </div>
-                        <i class='bx bx-check check'></i>
-                    </div>
-                </div>
-                <div class="form-outer">
-                    <div class="form-inner">
-                        <div class="page slidepage">
-                            <div class="title">輸入題目問題</div>
-                            <div class="field">
-                                <div class="label">Question:</div>
-                                <div class="error-text" ></div>
-                            </div>
-                            <div class="field">
-                                <textarea class="qst_text" cols="45" rows="10" maxlength="50"></textarea>
-                            </div>
-                            <div class="field btns">
-                                <button class="prev-1 prev">返回</button>
-                                <button class="next-1 next">下一步</button>
-                            </div>
-                        </div>
-                        <div class="page page-2">
-                            <div class="title">輸入選項</div>
+        <div class="alert-step-progress multiple-choice-setting overflow-auto" hidden></div>
 
-                            <div class="field">
-                                <div class="error-text"></div>
-                            </div>
+        <div class="alert-step-progress essay-question-setting overflow-auto" hidden></div>
 
-                            <div class="options">
-                                <div class="field add">
-                                    <button class="add_options">新增選項</button>
-                                </div>
-                            </div>
-
-                            <div class="field btns">
-                                <button class="prev-2 prev">上一步</button>
-                                <button class="next-2 next">下一步</button>
-                            </div>
-                        </div>
-                        <div class="page">
-                            <div class="title">警醒設定</div>
-                            <div class="field">
-                                <div class="error-text"></div>
-                            </div>
-                            <div class="field alert">
-                                <label for="alert-interval">警醒間隔:</label>
-                                <div class="field">
-                                    <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" min="10" max="50">
-                                    <label for="alert-interval">分鐘</label>
-                                </div>
-                                <label for="alert-time">警醒持續時間:</label>
-                                <div class="field">
-                                    <input id="alert-time" class="alert-time" name="alert-time" type="number" min="1" max="3">
-                                    <label for="alert-time">分鐘</label>
-                                </div>
-                            </div>
-                            <div class="field btns">
-                                <button class="prev-3 prev">上一步</button>
-                                <button class="next-3 next">完成</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="alert-step-progress essay-question close">
-
-            <div class="alert_icon_buttons" id="alert-essay-question-return">
-                <i class="bx bx-arrow-back"></i>
-            </div>
-
-            <div class="container">
-                <h1 class="class-modal__title">設定問答題</h1>
-
-                <div class="error-text"></div>
-
-                <fieldset>
-                    <legend>問答題</legend>
-                    <label for="alert-interval">Question:</label>
-
-                    <div class="field">
-                        <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>警醒</legend>
-                    <label for="alert-interval">警醒間隔:</label>
-                    <div class="field">
-                        <input id="essay-question__alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
-                        <label for="alert-interval">分鐘</label>
-                    </div>
-                    <label for="alert-time">警醒持續時間:</label>
-                    <div class="field">
-                        <input id="essay-question__alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
-                        <label for="alert-time">分鐘</label>
-                    </div>
-                </fieldset>
-                <div class="center-btn">
-                    <button type="button" id="essay-question-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="alert-step-progress vote-setting close">
-
-            <div class="alert_icon_buttons" id="vote-setting-return">
-                <i class="bx bx-arrow-back"></i>
-            </div>
-
-            <div class="container">
-
-                <h1 class="class-modal__title">設定投票警醒</h1>
-                <div class="error-text"></div>
-
-                <fieldset>
-                    <legend>投票</legend>
-                    <label for="alert-interval">輸入投票題目:</label>
-
-                    <div class="field">
-                        <textarea id="vote__qst" cols="25" rows="5" maxlength="50"></textarea>
-                    </div>
-
-                    <div class="field">
-                        <label for="alert-interval">輸入投票回答:</label>
-                        <select name="options" id="option-selected">
-                            <option value="" selected >請選擇投票數量</option>
-                            <option value="2" >2</option>
-                            <option value="3" >3</option>
-                            <option value="4" >4</option>
-                        </select>
-                    </div>
-
-                    <div class="field options"></div>
-
-                </fieldset>
-
-                <fieldset>
-                    <legend>警醒</legend>
-                    <label for="alert-interval">警醒間隔:</label>
-                    <div class="field">
-                        <input id="vote-setting__alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
-                        <label for="alert-interval">分鐘</label>
-                    </div>
-                    <label for="alert-time">警醒持續時間:</label>
-                    <div class="field">
-                        <input id="vote-setting__alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
-                        <label for="alert-time">分鐘</label>
-                    </div>
-                </fieldset>
-
-                <div class="center-btn">
-                    <button type="button" id="vote-setting-finish" class="margin-inline-start-auto btn-primary">設定完成</button>
-                </div>
-
-            </div>
-
-        </div>
+        <div class="alert-step-progress vote-setting overflow-auto" hidden></div>
     </div>
