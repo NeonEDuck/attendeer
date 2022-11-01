@@ -13,6 +13,7 @@
 
 #class-main {
     display: flex;
+    gap: 1em;
     flex-direction: column;
     padding: 1em;
 }
@@ -264,7 +265,109 @@ $post-gap: 4em;
     }
 }
 
+#feature-tab{
+    display: flex;
+    border-radius: 1.9em;
+    overflow: hidden;
+    margin: 0;
+    box-shadow:0 0 0 5px var(--clr-shadow-300);
+
+
+    nav{
+        position: relative;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: row;
+        align-items:center;
+        background: var( --clr-component-500);
+        justify-content: space-around;
+
+        label{
+            position: relative;
+            padding: 1em;
+            display: block;
+            text-align: center;
+            cursor: pointer;
+            color: var(--clr-text-500);
+            z-index:1;
+            flex-basis: 0;
+            flex-grow: 1;
+        }
+
+        .slider{
+            position: absolute;
+            background: var(--clr-component-500-reverse);
+            height: 100%;
+            width: 25%;
+            border-radius: 1em;
+            z-index: 0; //index數字越大，圖層越上面
+            transition: all 0.3s ease;
+        }
+    }
+}
+#write-tab:checked ~ nav .slider{
+    left: 0%;
+}
+#chat-tab:checked ~ nav .slider{
+    left: 25%;
+}
+#alert-tab:checked ~ nav .slider{
+    left: 50%;
+}
+#entire-tab:checked ~ nav .slider{
+    left: 75%;
+}
+
+#write-tab:checked ~ nav label.write-tab,
+#chat-tab:checked ~ nav label.chat-tab,
+#alert-tab:checked ~ nav label.alert-tab,
+#entire-tab:checked ~ nav label.entire-tab{
+    color:var(--clr-text-700-reverse);
+}
+
+input[type="radio"]{
+    display: none;
+}
+
 #back-to-top-tab {
-    position: sticky;
-    top: 4em;
+    display: none;
+    position: fixed;
+    bottom: 1.25em;
+    right:1.25em;
+    font-size:2em;
+}
+#back-to-top-tab:hover, #back-to-top-tab:focus {
+    background-color: #333;
+    color: #fff;
+}
+.btnEntrance{
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+    animation-name: btnEntrance;
+}
+
+@keyframes btnEntrance {
+    from{
+        opacity:0;
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+    to{
+        opacity: 1;
+    }
+}
+
+.btnExit{
+    animation-duration: 0.25s;
+    animation-fill-mode: both;
+    animation-name: btnExit;
+}
+
+@keyframes btnExit {
+    from{
+        opacity: 1;
+    }
+    to{
+        opacity:0;
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
 }

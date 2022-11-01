@@ -136,21 +136,38 @@
             </div>
 
             <div id="class-main" data-current-catagory="entire">
-                <div id="bulletin-horizontal-tab-container">
+                {# <div id="bulletin-horizontal-tab-container">
                     {% if isHost %}
                         <button id="write-tab" data-catagory="write" class="btn-tab-top">新增貼文</button>
                     {% endif %}
                     <button id="chat-tab" data-catagory="chat" class="btn-tab-top">聊天紀錄</button>
                     <button id="alert-tab" data-catagory="alert" class="btn-tab-top">警醒紀錄</button>
-                </div>
+                </> #}
+
+                <ul id="feature-tab">
+                    <input data-catagory="write" type="radio" name="slider" id="write-tab" checked>
+                    <input data-catagory="chat" type="radio" name="slider" id="chat-tab">
+                    <input data-catagory="alert" type="radio" name="slider" id="alert-tab">
+                    <input data-catagory="entire"type="radio" name="slider" id="entire-tab">
+                    {# <input type="radio" name="slider" id="homework"> #}
+
+                        <nav>
+                            <div class="slider"></div>
+                            <label for="write-tab" class="write-tab" >新增貼文</label>
+                            <label for="chat-tab" class="chat-tab" >聊天紀錄</label>
+                            <label for="alert-tab" class="alert-tab" >警醒紀錄</label>
+                            <label for="entire-tab" class="entire-tab" >公告</label>
+                        </nav>
+                </ul>
+
 
                 <div id="class-secondary">
-                    <div id="bulletin-vertical-tab-container">
+                    {# <div id="bulletin-vertical-tab-container">
                         <button id="write-tab" data-catagory="write" class="btn-tab-right" hidden>新增貼文</button>
                         <button id="entire-tab" data-catagory="entire" class="btn-tab-right">公告</button>
                         <button id="homework-tab" data-catagory="homework" class="btn-tab-right" hidden>作業</button>
                         <button id="back-to-top-tab" class="btn-tab-right btn-primary">回到最上面</button>
-                    </div>
+                    </div> #}
 
                     <div id="bulletin" class="flex-item-1">
                         <div data-catagory="write" hidden>
@@ -263,6 +280,12 @@
                 </div>
             </div>
         </div>
+
+        <button id="back-to-top-tab"><i class='bx bx-arrow-from-bottom icon arrow-from-bottom'></i></button>
+
+
+
+
 
         {% include "util/class_modal.njk" %}
     </main>

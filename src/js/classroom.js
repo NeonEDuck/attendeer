@@ -1,6 +1,7 @@
 import { prefab } from './prefab.js';
 import { ClassModal } from './classModel.js';
 import { htmlToElement, fetchData, apiCall, getUser, getUserData, delay, setIntervalImmediately, SECOND, AlertTypeEnum } from './util.js';
+import './backtotopbtn.js'
 
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
@@ -29,11 +30,11 @@ const scheduleCancelBtn = document.querySelector('#class-schedule__cancel');
 const scheduleSaveBtn   = document.querySelector('#class-schedule__save');
 const scheduleEditBtn   = document.querySelector('#class-schedule__edit');
 
-const tabs              = document.querySelectorAll(':where(#bulletin-horizontal-tab-container, #bulletin-vertical-tab-container) button');
+const tabs              = document.querySelectorAll(':where(#feature-tab) button');
 const writeTab          = document.querySelector('#write-tab');
 const backToTopTab      = document.querySelector('#back-to-top-tab');
-const entireTab         = document.querySelector('#bulletin-vertical-tab-container > [data-catagory="entire"]');
-const catagoryTabs      = document.querySelectorAll(':where(#bulletin-horizontal-tab-container, #bulletin-vertical-tab-container) [data-catagory]');
+const entireTab         = document.querySelector('#entire-tab');
+const catagoryTabs      = document.querySelectorAll(':where(#feature-tab) [data-catagory]');
 const pages             = document.querySelectorAll('#bulletin > [data-catagory]');
 const postDetail        = document.querySelector('#bulletin > [data-catagory="detail"]');
 
