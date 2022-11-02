@@ -201,9 +201,14 @@ router.post('/api/addPostReply', checkAuth, async (req, res) => {
     res.send(result);
 });
 
-router.post('/api/getUserInfo', async (req, res) => {
+router.post('/api/getUserInfoDepercated', async (req, res) => {
     const { email } = req.body;
-    res.send((await getUserInfo(email))[0]);
+    res.send((await getUserInfoDepercated(email))[0] || {});
+});
+
+router.post('/api/getUserInfo', async (req, res) => {
+    const { userId } = req.body;
+    res.send((await getUserInfo(userId))[0] || {});
 });
 
 router.post('/api/getClassMessages', checkAuth, async (req, res) => {

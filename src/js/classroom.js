@@ -1,6 +1,6 @@
 import { prefab } from './prefab.js';
 import { ClassModal } from './classModel.js';
-import { htmlToElement, fetchData, apiCall, getUser, getUserData, delay, setIntervalImmediately, SECOND, AlertTypeEnum } from './util.js';
+import { htmlToElement, fetchData, apiCall, getUser, getUserDataDepercated, delay, setIntervalImmediately, SECOND, AlertTypeEnum } from './util.js';
 
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
@@ -537,7 +537,7 @@ async function populateReply(post, count) {
 
     replyContainer.innerHTML = '';
     for (const reply of replys) {
-        const user = await getUserData(reply.Email);
+        const user = await getUserDataDepercated(reply.Email);
         const replyElement = postreplyPrefab.cloneNode(true);
         replyElement.querySelector('.post__name').innerHTML = user.UserName;
         replyElement.querySelector('.post__picture').src = user.PhotoURL;

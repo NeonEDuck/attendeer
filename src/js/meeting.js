@@ -3,7 +3,7 @@ import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, timeToMinutes } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserDataDepercated, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, timeToMinutes, apiCall, AlertTypeEnum } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
@@ -46,13 +46,17 @@ const chat                  = document.querySelector('#chat');
 const chatRoom              = document.querySelector('#chat__room')
 const msgInput              = document.querySelector('#msg-input');
 const callId                = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+const userId                = document.querySelector('#user-id')?.value?.trim() || document.querySelector('#user-id').innerHTML?.trim();
+const userName              = document.querySelector('#user-name')?.value?.trim() || document.querySelector('#user-name').innerHTML?.trim();
+const photoURL              = document.querySelector('#photo-URL')?.value?.trim() || document.querySelector('#photo-URL').innerHTML?.trim();
+const hostId                = document.querySelector('#host-id')?.value?.trim() || document.querySelector('#host-id').innerHTML?.trim();
 
 // Audio
 const notificationSound = new Audio('/audio/notification_sound.wav');
 
 // Global variable
-let isHost = false;
-let localUserId = null;
+let isHost = userId === hostId;
+let localUserId = userId;
 let webcamStream = null;
 const localStreams = {
     'webcam': null,
@@ -104,27 +108,12 @@ const callDoc = doc(calls, callId);
 const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
 
-export let alertDocCurrently;
-
 document.onreadystatechange = async () => {
-    const user = await getUser();
-
-    console.log('checking permission');
-    try {
-        const callDocSnapshot = await getDoc(callDoc);
-        const { name } = callDocSnapshot.data();
-        document.querySelector('.sidebar__class-name').innerHTML = name;
-        document.querySelector('.sidebar__class-id').innerHTML = callId;
-    }
-    catch (err) {
-        console.log('no permission');
-        return;
-    }
-    localUserId = user.uid;
     Peer.localUserId = localUserId;
-    localCams.webcam.name.innerHTML = user.displayName;
-    localCams.webcam.profile.src = user.photoURL;
-    localCams.screenShare.name.innerHTML = user.displayName;
+    const user = {};
+    localCams.webcam.name.innerHTML = userName;
+    localCams.webcam.profile.src = photoURL;
+    localCams.screenShare.name.innerHTML = userName;
     localCams.screenShare.profile.hidden = true;
     micBtn.disabled = false;
     webcamBtn.disabled = false;
@@ -509,25 +498,29 @@ enterBtn.addEventListener('click', async () => {
 
     if (isHost) {
         console.log('您是會議主辦人');
+        
+        // DELETE FROM AlertRecords WHERE ClassId = :classId and Finished = 0 (true?)
+        await apiCall('deleteAlertRecords', {classId: callId})
+        console.log('del alert');
 
-        const q1 = query(alertRecords, where('done', '==', false ));
-        const snapshot1 = await getDocs(q1);
+        // const q1 = query(alertRecords, where('done', '==', false ));
+        // const snapshot1 = await getDocs(q1);
 
-        snapshot1.forEach(async (alert) => {;
-            const alertDoc  =   doc(alertRecords, alert.id);
-            await deleteDoc(alertDoc);
-            console.log('del alert');
-        });
+        // snapshot1.forEach(async (alert) => {;
+        //     const alertDoc  =   doc(alertRecords, alert.id);
+        //     await deleteDoc(alertDoc);
+            
+        // });
+        apiCall('updateClassAlert', {classId: callId, interval, duration})
+        // let dataAlert = {
+        //     alert: {
+        //         interval: interval,
+        //         time: duration,
+        //     },
+        // }
+        // await updateDoc(callDoc, dataAlert);
 
-        let dataAlert = {
-            alert: {
-                interval: interval,
-                time: duration,
-            },
-        }
-        await updateDoc(callDoc, dataAlert);
-
-        globalAlertType = 'click';
+        globalAlertType = AlertTypeEnum.Click;
         globalInterval = interval;
         globalTime = duration;
 
@@ -892,34 +885,39 @@ export async function setupAlertScheduler() {
 async function startAlert() {
     alertSchedulerVersion++;
     const currentAlertSchedulerVersion = alertSchedulerVersion;
+    
+    //UPDATE AlertRecords SET Outdated = 1 WHERE ClassId = :classId and Finished = 0
+    await apiCall('updateAlertRecords', {classId: callId})
 
-    const q1 = query(alertRecords, where('done', '==', false ));
-    const snapshot1 = await getDocs(q1);
-    snapshot1.forEach(async (alert) => {;
-        const alertDoc  =   doc(alertRecords, alert.id);
-        await updateDoc(alertDoc, {outdated: true});
-    });
+    // const q1 = query(alertRecords, where('done', '==', false ));
+    // const snapshot1 = await getDocs(q1);
+    // snapshot1.forEach(async (alert) => {;
+    //     const alertDoc  =   doc(alertRecords, alert.id);
+    //     await updateDoc(alertDoc, {outdated: true});
+    // });
 
     while (true) {
         try {
 
-            alertDocCurrently = doc(alertRecords);
+            // alertDocCurrently = doc(alertRecords);
 
             let dataNormal = {
-                timestamp: new Date(),
-                duration: globalTime, //時長
-                alertType: globalAlertType,
-                interval: globalInterval,
-                started: false,
-                done: false,
-                outdated: false,
+                classId: callId, 
+                AlertType:globalAlertType, 
+                Interval:globalInterval, 
+                Duration:globalTime, 
+                Start: false, 
+                Finished: false, 
+                Outdated: false
             };
 
-            if( globalAlertType != 'click' ) {
+            if( globalAlertType != AlertTypeEnum.Click ) {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
-            setDoc(alertDocCurrently, dataNormal);
+            await apiCall('addAlertRecord', dataNormal)
+
+            // setDoc(alertDocCurrently, dataNormal);
 
             console.log('add alert');
 
@@ -927,7 +925,9 @@ async function startAlert() {
 
             await delay( globalInterval * MINUTE );
 
-            updateDoc(alertPrevious, {started: true});
+            await apiCall('UpdateAlertRecord', {classId: callId,})
+
+            // updateDoc(alertPrevious, {started: true});
 
             console.log('alert started');
 
@@ -948,7 +948,7 @@ async function startAlert() {
                 }
                 updateDoc(callDoc, dataAlert);
 
-                globalAlertType = 'click'
+                globalAlertType = AlertTypeEnum.Click
             }
 
         } catch (error) {
@@ -962,6 +962,10 @@ async function startAlert() {
             break;
         }
     }
+}
+
+async function listenToAlert(data) {
+    const response = await apiCall('addAlertRecordReacts', {recordId: data.RecordId});
 }
 
 export function setupAlertListener() {
@@ -993,7 +997,7 @@ export function setupAlertListener() {
                         alertShow.classList.add('alert-show')
                         alertModule.appendChild(alertShow);
 
-                        if(alertType === 'multiple choice') {
+                        if(alertType === AlertTypeEnum.MultipleChoice) {
                             const textarea = document.createElement('textarea');
                             textarea.setAttribute("readonly", "readonly");
                             textarea.classList.add('qst_show')
@@ -1021,7 +1025,7 @@ export function setupAlertListener() {
                                     span.classList.toggle("chosen");
                                 });
                             }
-                        }else if(alertType === 'essay question') {
+                        }else if(alertType === AlertTypeEnum.EssayQuestion) {
                             const textarea = document.createElement('textarea');
                             textarea.setAttribute("readonly", "readonly");
                             textarea.classList.add('qst_show')
@@ -1032,7 +1036,7 @@ export function setupAlertListener() {
                             const textarea1 = document.createElement('textarea');
                             textarea1.classList.add('qst_show_answear')
                             div.appendChild(textarea1);
-                        }else if(alertType === 'vote') {
+                        }else if(alertType === AlertTypeEnum.Vote) {
                             const textarea = document.createElement('textarea');
                             textarea.setAttribute("readonly", "readonly");
                             textarea.classList.add('qst_show')
@@ -1080,12 +1084,12 @@ export function setupAlertListener() {
                             let DoneClick = false;
                             let data;
 
-                            if(alertType === 'click') {
+                            if(alertType === AlertTypeEnum.Click) {
                                 data = {
                                     click : true,
                                     timestamp: new Date()
                                 }
-                            }else if(alertType === 'multiple choice') {
+                            }else if(alertType === AlertTypeEnum.MultipleChoice) {
                                 if(answearChosen != null) {
 
                                     DoneClick = true;
@@ -1095,7 +1099,7 @@ export function setupAlertListener() {
                                         timestamp: new Date(),
                                     }
                                 }
-                            }else if(alertType === 'essay question') {
+                            }else if(alertType === AlertTypeEnum.EssayQuestion) {
                                 if(qstShowAnswear.value != '') {
                                     DoneClick = true;
                                     data = {
@@ -1104,7 +1108,7 @@ export function setupAlertListener() {
                                         timestamp: new Date(),
                                     }
                                 }
-                            }else if(alertType === 'vote') {
+                            }else if(alertType === AlertTypeEnum.Vote) {
                                 const radio = document.querySelector(".radios").querySelectorAll('input');
                                 for (let x = 0; x < radio.length; x ++) {
                                     if (radio[x].checked) {
@@ -1224,7 +1228,7 @@ async function addMessageToChat(msgData) {
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }else {
-            const { name } = await getUserData(user) || { name: "???" };
+            const { name } = await getUserDataDepercated(user) || { name: "???" };
             const msg = msgPrefab.cloneNode(true);
             const msgUser = msg.querySelector('.msg__user');
             const msgTime = msg.querySelector('.msg__timestamp');

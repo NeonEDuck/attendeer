@@ -326,8 +326,12 @@ export function getUserId(email) {
     return query(`SELECT UserId FROM Users WHERE email = :email`, { email });
 }
 
-export function getUserInfo(email) {
+export function getUserInfoDepercated(email) {
     return query(`SELECT Email, UserName, PhotoURL FROM Users WHERE Email = :email`, {email});
+}
+
+export function getUserInfo(userId) {
+    return query(`SELECT UserId, Email, UserName, PhotoURL FROM Users WHERE UserId = :userId`, {userId});
 }
 
 export function getClassMessages(classId) {

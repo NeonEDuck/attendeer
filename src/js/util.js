@@ -134,12 +134,24 @@ export function getUser() {
 
 const userDict = {};
 
-export async function getUserData(email) {
+export async function getUserDataDepercated(email) {
     if (!userDict[email]) {
-        const response = await apiCall('getUserInfo', {email});
+        const response = await apiCall('getUserInfoDepercated', {email});
         const user = await response.json();
         userDict[email] = user;
     }
 
     return userDict[email];
+}
+
+export async function getUserData(userId) {
+    if (!userDict[userId]) {
+        const response = await apiCall('getUserInfo', {userId});
+        const user = await response.json();
+        if (user) {
+            userDict[userId] = user;
+        }
+    }
+
+    return userDict[userId] || {};
 }
