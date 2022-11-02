@@ -1,7 +1,7 @@
 import { prefab } from './prefab.js';
 import { ClassModal } from './classModel.js';
 import { htmlToElement, fetchData, apiCall, getUser, getUserData, delay, setIntervalImmediately, SECOND, AlertTypeEnum } from './util.js';
-import './backtotopbtn.js'
+import './back-to-top.js'
 
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
 const hwPostPrefab      = prefab.querySelector('.post[data-catagory="homework"]');
@@ -30,9 +30,11 @@ const scheduleCancelBtn = document.querySelector('#class-schedule__cancel');
 const scheduleSaveBtn   = document.querySelector('#class-schedule__save');
 const scheduleEditBtn   = document.querySelector('#class-schedule__edit');
 
-const tabs              = document.querySelectorAll(':where(#feature-tab) button');
+const tabGroup          = document.querySelector('#tab-group');
+const tabGroupTabs      = tabGroup.querySelectorAll('input[type="radio"]');
+const tabGroupLabels    = tabGroup.querySelectorAll('label');
+const tabGroupSlider    = tabGroup.querySelector('.slider');
 const writeTab          = document.querySelector('#write-tab');
-const backToTopTab      = document.querySelector('#back-to-top-tab');
 const entireTab         = document.querySelector('#entire-tab');
 const catagoryTabs      = document.querySelectorAll(':where(#feature-tab) [data-catagory]');
 const pages             = document.querySelectorAll('#bulletin > [data-catagory]');
@@ -62,6 +64,7 @@ let editingSchedule = false;
 document.addEventListener('readystatechange', async () => {
     entireTab.click();
 });
+
 
 async function generateAlertLog() {
     alertLog.innerHTML = '';
@@ -316,10 +319,28 @@ scheduleEditBtn?.addEventListener('click', () => {
 });
 
 let generator = null;
+let currentIndex = 0;
+tabGroup.style.setProperty('--length', tabGroupTabs.length);
+tabGroupLabels.forEach((e, idx) => {
+    e.addEventListener('mouseleave', () => {
+        tabGroupSlider.style.setProperty('--offset', '0');
+    });
+    e.addEventListener('mouseenter', () => {
+        const offset = Math.sign(idx - currentIndex);
+        tabGroupSlider.style.setProperty('--offset', offset);
+    });
+});
+tabGroupTabs.forEach((tab, idx) => {
 
-for (const tab of catagoryTabs) {
     tab.addEventListener('click', async () => {
-        turnOnTab(tab);
+        currentIndex = idx;
+        tabGroupSlider.style.setProperty('--index', currentIndex);
+        tabGroupSlider.style.setProperty('--offset', 0);
+        tabGroupLabels.forEach((e) => {
+            e.classList.remove('checked');
+        });
+        tabGroupLabels[currentIndex].classList.add('checked');
+
         const catagory = tab.dataset.catagory;
         pages.forEach((p) => {p.hidden = true});
         const targetPage = document.querySelector(`#bulletin > [data-catagory="${catagory}"]`);
@@ -375,10 +396,6 @@ for (const tab of catagoryTabs) {
             generateAlertLog();
         }
     });
-}
-
-backToTopTab.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 writeSubmitBtn.addEventListener('click', async () => {
@@ -476,13 +493,6 @@ async function refreshSchedule() {
         cell.classList.add('on');
     }
 
-}
-
-function turnOnTab(target) {
-    for (const tab of tabs) {
-        tab.classList.remove('btn-on');
-    }
-    target?.classList?.add('btn-on');
 }
 
 async function generatePost(post) {

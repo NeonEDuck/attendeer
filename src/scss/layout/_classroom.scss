@@ -265,90 +265,88 @@ $post-gap: 4em;
     }
 }
 
-#feature-tab{
+#tab-group {
+    --length: 4;
     display: flex;
-    border-radius: 1.9em;
+    border-radius: $bulletin-pad;
     overflow: hidden;
     margin: 0;
-    box-shadow:0 0 0 5px var(--clr-shadow-300);
+    background: var( --clr-component-500);
+    box-shadow: var(--box-shadow-500);
+    height: $bulletin-pad * 2;
+    padding: 0.5em;
 
+    input[type="radio"] {
+        display: none;
+    }
 
-    nav{
+    nav {
         position: relative;
         flex-grow: 1;
         display: flex;
         flex-direction: row;
-        align-items:center;
-        background: var( --clr-component-500);
+        align-items: center;
         justify-content: space-around;
+        height: 100%;
 
-        label{
+        label {
             position: relative;
-            padding: 1em;
-            display: block;
-            text-align: center;
-            cursor: pointer;
-            color: var(--clr-text-500);
-            z-index:1;
+            display: grid;
+            place-items: center;
             flex-basis: 0;
             flex-grow: 1;
+            height: 100%;
+            color: var(--clr-text-500);
+            cursor: pointer;
+            z-index: 1;
+
+            &.checked {
+                color: var(--clr-text-700-reverse);
+            }
         }
 
         .slider{
+            --index: 0;
+            --offset: 0;
             position: absolute;
             background: var(--clr-component-500-reverse);
             height: 100%;
-            width: 25%;
-            border-radius: 1em;
+            width: calc(1 / var(--length) * 100%);
+            left: calc(var(--index) / var(--length) * 100%);
+            transform: translateX(calc(var(--offset) * 5%));
+            border-radius: 100000px;
             z-index: 0; //index數字越大，圖層越上面
-            transition: all 0.3s ease;
+            transition: left var(--transition-timing), transform var(--transition-timing);
         }
     }
 }
-#write-tab:checked ~ nav .slider{
-    left: 0%;
-}
-#chat-tab:checked ~ nav .slider{
-    left: 25%;
-}
-#alert-tab:checked ~ nav .slider{
-    left: 50%;
-}
-#entire-tab:checked ~ nav .slider{
-    left: 75%;
-}
 
-#write-tab:checked ~ nav label.write-tab,
-#chat-tab:checked ~ nav label.chat-tab,
-#alert-tab:checked ~ nav label.alert-tab,
-#entire-tab:checked ~ nav label.entire-tab{
-    color:var(--clr-text-700-reverse);
-}
-
-input[type="radio"]{
-    display: none;
-}
-
-#back-to-top-tab {
-    display: none;
+#back-to-top-btn {
     position: fixed;
-    bottom: 1.25em;
-    right:1.25em;
-    font-size:2em;
-}
-#back-to-top-tab:hover, #back-to-top-tab:focus {
-    background-color: #333;
-    color: #fff;
-}
-.btnEntrance{
-    animation-duration: 0.5s;
-    animation-fill-mode: both;
-    animation-name: btnEntrance;
+    bottom: 1em;
+    right: 1em;
+    font-size: 1.5em;
+
+    &.btn-enter {
+        animation-duration: var(--transition-duration);
+        animation-fill-mode: forwards;
+        animation-name: btnEnter;
+    }
+
+    &.btn-exit{
+        animation-duration: var(--transition-duration);
+        animation-fill-mode: forwards;
+        animation-name: btnExit;
+    }
+
+    &:hover, &:focus {
+        background-color: var(--clr-component-500-reverse);
+    }
 }
 
-@keyframes btnEntrance {
+@keyframes btnEnter {
     from{
-        opacity:0;
+        opacity: 0;
         transform: scale3d(0.3, 0.3, 0.3);
     }
     to{
@@ -356,18 +354,12 @@ input[type="radio"]{
     }
 }
 
-.btnExit{
-    animation-duration: 0.25s;
-    animation-fill-mode: both;
-    animation-name: btnExit;
-}
-
 @keyframes btnExit {
     from{
         opacity: 1;
     }
     to{
-        opacity:0;
+        opacity: 0;
         transform: scale3d(0.3, 0.3, 0.3);
     }
 }

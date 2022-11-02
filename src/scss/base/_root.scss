@@ -61,7 +61,7 @@
     /* ====== here ====== */
     --clr-body: hsl(215 46% 93%);
 
-    --clr-component-300: rgb(235, 247, 255);
+    --clr-component-300: rgb(235 247 255);
     --clr-component-500: hsl(206 23% 94%);
     --clr-component-700: hsl(0 0% 68%);
     --clr-component-300-reverse: hsl(210 5% 30%);
@@ -102,7 +102,8 @@
     --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
     --box-shadow-700: 0.3rem 0.3rem 1rem var(--clr-shadow-700), -0.3rem -0.3rem 1rem var(--clr-shadow-700);
 
-    --transition-timing: 250ms ease;
+    --transition-duration: 250ms;
+    --transition-timing: var(--transition-duration) ease;
     --transition-color: color var(--transition-timing), background-color var(--transition-timing);
     --transition-inset: inset var(--transition-timing);
 }
@@ -149,7 +150,7 @@
         --clr-component-300: hsl(210 5% 30%);
         --clr-component-500: hsl(210 6% 16%);
         --clr-component-700: hsl(210 4% 12%);
-        --clr-component-300-reverse: rgb(235, 247, 255);
+        --clr-component-300-reverse: rgb(235 247 255);
         --clr-component-500-reverse: hsl(206 23% 94%);
         --clr-component-700-reverse: hsl(0 0% 68%);
 
