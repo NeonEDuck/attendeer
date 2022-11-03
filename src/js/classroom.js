@@ -1,6 +1,6 @@
 import { prefab } from './prefab.js';
 import { ClassModal } from './classModel.js';
-import { htmlToElement, fetchData, apiCall, getUser, getUserData, delay, setIntervalImmediately, SECOND, AlertTypeEnum } from './util.js';
+import { htmlToElement, fetchData, apiCall, getUser, delay, setIntervalImmediately, SECOND, AlertTypeEnum } from './util.js';
 import './back-to-top.js'
 
 const anPostPrefab      = prefab.querySelector('.post[data-catagory="announce"]');
@@ -56,7 +56,7 @@ const alertLog               = document.querySelector('#alert-log');
 const alertDetailLog         = document.querySelector('#alert-detail-log');
 const alertLookupDetail      = document.querySelector('#alert-lookup__detail');
 
-const callId = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
+const classId = document.querySelector('#class-id')?.value?.trim() || document.querySelector('#class-id').innerHTML?.trim();
 
 const classModal = new ClassModal();
 let editingSchedule = false;
@@ -68,7 +68,7 @@ document.addEventListener('readystatechange', async () => {
 
 async function generateAlertLog() {
     alertLog.innerHTML = '';
-    const response = await apiCall('getAlertRecords', {classId: callId});
+    const response = await apiCall('getAlertRecords', {classId});
     if (response.status !== 200) {
         return;
     }
@@ -116,7 +116,7 @@ async function generateAlertLog() {
             });
             alertLookupDetail.appendChild(alertDetail);
 
-            const response = await apiCall('getAlertRecordReacts', {classId: callId, recordId: alertRecord.RecordId})
+            const response = await apiCall('getAlertRecordReacts', {classId, recordId: alertRecord.RecordId})
             const alertReacts = await response.json();
 
             generateAlertSummary(alertRecord, alertReacts);
@@ -211,6 +211,10 @@ alertSearch.addEventListener('keyup', () => {
     }
 })
 
+settingBtn.addEventListener('click', async (e) => {
+    classModal.openModifyModal(classId);
+});
+
 classModal.oldSubmitForm = classModal._submitForm;
 classModal._submitForm = async (e) => {
     if (await classModal.oldSubmitForm(e)) {
@@ -219,7 +223,7 @@ classModal._submitForm = async (e) => {
 }
 
 callBtn.addEventListener('click', () => {
-    window.location.href = `/${callId}/meeting`
+    window.location.href = `/${classId}/meeting`
 });
 
 function toggleScheduleCell(cell) {
@@ -269,7 +273,7 @@ calendarSaveBtn?.addEventListener('click', async () => {
     const date = calendar.dataset.curDate;
     const text = calendarDetailEdit.value.trim();
 
-    const response = await apiCall('updateClassCalendar', {classId: callId, date, text});
+    const response = await apiCall('updateClassCalendar', {classId, date, text});
     if (response.status === 204) {
         calendar.querySelector('.current-selected-day').dataset.detail = text;
         calendarDetailText.innerHTML = text || '無行程';
@@ -305,7 +309,8 @@ scheduleSaveBtn?.addEventListener('click', async () => {
 
     const cells = classSchedule.querySelectorAll('.on[data-weekday]');
     const schedules = [...cells].map(e => {return {weekday: e.dataset.weekday, period: e.dataset.period}});
-    await apiCall('setClassSchedules', {classId: callId, schedules});
+    const response = await apiCall('setClassSchedules', {classId, schedules});
+    console.log(response.status);
     refreshSchedule();
 });
 
@@ -350,7 +355,7 @@ tabGroupTabs.forEach((tab, idx) => {
         if (catagory === 'entire') {
             const generatedPosts = []
             generator = setIntervalImmediately(async () => {
-                const response = await apiCall('getClassPosts', {classId: callId});
+                const response = await apiCall('getClassPosts', {classId});
                 if (response.status !== 200) {
                     return;
                 }
@@ -377,7 +382,7 @@ tabGroupTabs.forEach((tab, idx) => {
         }
         else if (catagory === 'chat') {
             chatLog.innerHTML = '';
-            const response = await apiCall('getClassMessages', {classId: callId});
+            const response = await apiCall('getClassMessages', {classId});
             if (response.status !== 200) {
                 return;
             }
@@ -411,7 +416,7 @@ writeSubmitBtn.addEventListener('click', async () => {
         //     timestamp: new Date(),
         // }
 
-        await apiCall('addClassPost', {classId: callId, title, content})
+        await apiCall('addClassPost', {classId, title, content})
 
         // await addDoc(posts, data);
     }
@@ -425,7 +430,7 @@ downloadChatBtn.addEventListener('click', async () => {
     downloadChatBtn.disabled = true;
     downloadChatBtn.innerHTML = '載入中';
     const element = document.createElement('a');
-    const response = await apiCall('getChatLog', {classId: callId});
+    const response = await apiCall('getChatLog', {classId});
     const chatLogString = await response.text();
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(chatLogString));
     element.setAttribute('download', 'chatLog.txt');
@@ -462,7 +467,7 @@ downloadAlertBtn.addEventListener('click', async () => {
     downloadAlertBtn.disabled = true;
     downloadAlertBtn.innerHTML = '載入中';
 
-    const response = await apiCall('getAlertLog', {classId: callId});
+    const response = await apiCall('getAlertLog', {classId});
     const b64file = await response.text();
     const blob = b64toBlob(b64file, 'application/vnd.ms-excel');
 
@@ -477,7 +482,7 @@ downloadAlertBtn.addEventListener('click', async () => {
 });
 
 async function refreshSchedule() {
-    const response = await apiCall('getClassSchedules', {classId: callId});
+    const response = await apiCall('getClassSchedules', {classId});
     const schedules = await response.json();
 
     const rows = classSchedule.querySelector('tbody').querySelectorAll('tr');
@@ -489,8 +494,8 @@ async function refreshSchedule() {
     }
 
     for (const schedule of schedules) {
-        const cell = classSchedule.querySelector(`td[data-period="${schedule.PeriodId}"][data-weekday="${schedule.WeekdayId}"]`)
-        cell.classList.add('on');
+        const cell = classSchedule.querySelector(`td[data-period="${schedule.Period}"][data-weekday="${schedule.WeekdayId}"]`)
+        cell && cell.classList.add('on');
     }
 
 }
@@ -512,7 +517,7 @@ async function generatePost(post) {
         const text = submitInput.value.trim();
         if (text.length > 0) {
             submitInput.value = '';
-            apiCall('addPostReply', {classId: callId, postId: post.PostId, content: text}).then((response) => {
+            apiCall('addPostReply', {classId, postId: post.PostId, content: text}).then((response) => {
                 if (response.status !== 201) {
                     console.log(response.status);
                     return;
@@ -543,15 +548,14 @@ async function generatePost(post) {
 
 async function populateReply(post, count) {
     const replyContainer = post.querySelector('.post-reply-container');
-    const response = await apiCall('getPostReplys', {classId: callId, postId: post.dataset.postId, limit: count});
+    const response = await apiCall('getPostReplys', {classId, postId: post.dataset.postId, limit: count});
     const replys = await response.json();
 
     replyContainer.innerHTML = '';
     for (const reply of replys) {
-        const user = await getUserData(reply.Email);
         const replyElement = postreplyPrefab.cloneNode(true);
-        replyElement.querySelector('.post__name').innerHTML = user.UserName;
-        replyElement.querySelector('.post__picture').src = user.PhotoURL;
+        replyElement.querySelector('.post__name').innerHTML = reply.UserName;
+        replyElement.querySelector('.post__picture').src = reply.PhotoURL;
         replyElement.querySelector('.post__date').innerHTML = (new Date(reply.Timestamp)).toLocaleString();
         replyElement.querySelector('.post-reply__content').innerHTML = reply.Content;
 
@@ -585,7 +589,7 @@ async function generateCalendar(month, year) {
     if (year == undefined) year = currDate.getFullYear()
 
     const calendarEvents = {};
-    const response = await apiCall('getClassCalendars', {classId: callId});
+    const response = await apiCall('getClassCalendars', {classId});
     const calendars = await response.json();
 
     calendar_days.innerHTML = ''

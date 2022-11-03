@@ -129,7 +129,11 @@ router.post('/api/getSchools', async (req, res) => {
 
 router.post('/api/getSchoolPeriods', async (req, res) => {
     const { schoolId } = req.body;
-    res.send(await getSchoolPeriods(schoolId));
+    res.send((await getSchoolPeriods(schoolId)).map((e) => {
+        e.StartTime = new Date(e.StartTime);
+        e.EndTime = new Date(e.EndTime);
+        return e;
+    }));
 });
 
 router.post('/api/getClassSchedules', checkAuth, async (req, res) => {
@@ -202,8 +206,8 @@ router.post('/api/addPostReply', checkAuth, async (req, res) => {
 });
 
 router.post('/api/getUserInfo', async (req, res) => {
-    const { email } = req.body;
-    res.send((await getUserInfo(email))[0]);
+    const { userId, email } = req.body;
+    res.send((await getUserInfo(userId, email))[0] || {});
 });
 
 router.post('/api/getClassMessages', checkAuth, async (req, res) => {

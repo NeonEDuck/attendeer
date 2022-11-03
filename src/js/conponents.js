@@ -1,5 +1,5 @@
 import { prefab } from './prefab.js';
-import { getUserData, debounce } from './util.js';
+import { debounce, getUserData } from './util.js';
 
 const camPrefab = prefab.querySelector('.cam');
 
@@ -103,10 +103,10 @@ export class Cam {
 
             this.name.innerHTML = userId;
             console.log(userId);
-            getUserData(userId).then((data) => {
-                if (data) {
-                    this.name.innerHTML = data.name;
-                    this.profile.src = data.photo;
+            getUserData(userId).then((user) => {
+                if (user.UserName) {
+                    this.name.innerHTML = user.UserName;
+                    this.profile.src = user.PhotoURL;
                 }
             });
             this.pinBtn.addEventListener('click', () => {
@@ -183,7 +183,8 @@ export class Peer {
     static localStreams = null;
     static socket = null;
 
-    static init(localStreams, socket) {
+    static init(localUserId, localStreams, socket) {
+        Peer.localUserId = localUserId;
         Peer.localStreams = localStreams;
         Peer.socket = socket;
     }

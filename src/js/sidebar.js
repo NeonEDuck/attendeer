@@ -1,9 +1,9 @@
 import { firestore } from './firebase-config.js';
 import { collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import 'webrtc-adapter';
-import { getUser } from './util.js';
+import { AlertTypeEnum, getUser } from './util.js';
 import { prefab } from './prefab.js';
-import { setupAlertScheduler, alertDocCurrently, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice } from './meeting.js';
+import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice } from './meeting.js';
 
 // HTML elements
 
@@ -70,8 +70,8 @@ let localUserId = null;
 
 // Firestore
 const calls   = collection(firestore, 'calls');
-const callId  = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
-const callDoc = doc(calls, callId);
+const classId  = document.querySelector('#class-id')?.value?.trim() || document.querySelector('#class-id').innerHTML?.trim();
+const callDoc = doc(calls, classId);
 
 //開關sidebar
 toggle.addEventListener("click", () =>{
@@ -110,7 +110,7 @@ export function sidebarListener() {
             let navText = navBtn[index].querySelector('.nav-text').innerHTML;
             fltCntr.hidden = false;
             hiddenAllFloating();
-            
+
             if(navText === '警醒資訊') {
                 const { host } = (await getDoc(callDoc)).data();
                 const user = await getUser();
@@ -175,7 +175,7 @@ async function closeModalForm() {
     centerBtns[1].hidden = true;
 
     floatingAlert.style.opacity = 1;
-                    
+
     infoType.innerHTML = globalAlertType;
     infoInterval.value = globalInterval;
     infoTime.value     = globalTime;
@@ -218,10 +218,10 @@ async function closeModalForm() {
                 spanNo.classList.toggle('answear');
             }
         }
-    }else if(globalAlertType === 'essay question') {
+    }else if(globalAlertType === AlertTypeEnum.EssayQuestion) {
         legend.innerHTML = '問答題';
         label.innerHTML = '問題:';
-    }else if(globalAlertType === 'vote') {
+    }else if(globalAlertType === AlertTypeEnum.Vote) {
         legend.innerHTML = '投票';
         label.innerHTML = '投票題目:';
         const div = document.createElement('div');
@@ -260,10 +260,10 @@ settingBtn.addEventListener('click', async () => {
     infoInterval.removeAttribute('readonly');
     infoTime.removeAttribute('readonly');
 
-    if( globalAlertType != 'click' ) {
+    if( globalAlertType != AlertTypeEnum.Click ) {
         textarea.removeAttribute('readonly');
     }
-    if( globalAlertType === 'multiple choice' ) {
+    if( globalAlertType === AlertTypeEnum.MultipleChoice ) {
         optionsTotal = 0;
         input.forEach(input => {
             input.removeAttribute('readonly');
@@ -384,9 +384,9 @@ settingBtn.addEventListener('click', async () => {
         if(optionsTotal >= 5){
             button.style.display = "none";
         }
-    }else if( globalAlertType === 'essay question' ) {
+    }else if( globalAlertType === AlertTypeEnum.EssayQuestion ) {
         textarea.removeAttribute('readonly');
-    }else if( globalAlertType === 'vote' ) {
+    }else if( globalAlertType === AlertTypeEnum.Vote ) {
         textarea.removeAttribute('readonly');
         let i = 0;
         input.forEach(input => {
@@ -447,7 +447,7 @@ submitSettingBtn.addEventListener('click', async () => {
     }else if( Number(infoTime.value) < 1 || Number(infoTime.value) > 3) {
         alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
     }else {
-        if (alertType === 'multiple choice') {
+        if (alertType === AlertTypeEnum.MultipleChoice) {
             let x = 0;
             for(let i = 0; i < optionInput.length; i++){
                 if(optionInput[i].value != ''){
@@ -474,22 +474,22 @@ submitSettingBtn.addEventListener('click', async () => {
                 multipleChoice = Object.values(multipleChoiceDict);
 
                 dataMultipleChoice = {
-                    question: question,
-                    answear: answearID,
-                    multipleChoice: multipleChoice,
+                    Question: question,
+                    Answear: answearID,
+                    MultipleChoice: multipleChoice,
                 }
             }
-        }else if(alertType === 'essay question') {
+        }else if(alertType === AlertTypeEnum.EssayQuestion) {
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
             }else {
                 question = infoTextarea.value;
                 dataMultipleChoice = {
-                    question: question,
+                    Question: question,
                 }
             }
-        }else if(alertType === 'vote') {
+        }else if(alertType === AlertTypeEnum.Vote) {
             const optionSelected = alertInfo.querySelector("#option-selected");
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
@@ -516,8 +516,8 @@ submitSettingBtn.addEventListener('click', async () => {
             multipleChoice = Object.values(multipleChoiceDict);
 
             dataMultipleChoice = {
-                question: question,
-                multipleChoice: multipleChoice,
+                Question: question,
+                MultipleChoice: multipleChoice,
             }
         }
 
@@ -534,7 +534,7 @@ submitSettingBtn.addEventListener('click', async () => {
                 time,
             },
         }
-        const callDoc = doc(calls, callId);
+        const callDoc = doc(calls, classId);
         await updateDoc(callDoc, data);
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
@@ -589,17 +589,17 @@ choose1.addEventListener('click', () => {
             errorText.innerHTML = '持續時間範圍：1 ~ 3';
             return;
         }else {
-            alertType = 'click';
+            alertType = AlertTypeEnum.Click;
             interval = Number(alertInterval.value);
             time     = Number(alertTime.value);
-        
+
             const data = {
                 alert: {
                     interval:interval,
                     time:time,
                 },
             }
-            const callDoc = doc(calls, callId);
+            const callDoc = doc(calls, classId);
             await updateDoc(callDoc, data);
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -705,9 +705,9 @@ choose2.addEventListener('click', () => {
             errorText.innerHTML = '請選擇答案選項！'
         }
     });
-    
+
     next3.addEventListener('click', async () => {
-    
+
         if ( Number(alertInterval.value) < 10 || Number(alertInterval.value) >50 ) {
             errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
             return;
@@ -730,14 +730,14 @@ choose2.addEventListener('click', () => {
             question = qstText[0].value;
             interval = Number(alertInterval.value);
             time     = Number(alertTime.value);
-            alertType = 'multiple choice';
+            alertType = AlertTypeEnum.MultipleChoice;
 
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
             dataMultipleChoice = {
-                question: globalQuestion,
-                answear: globalAnswear,
-                multipleChoice: globalMultipleChoice,
+                Question: globalQuestion,
+                Answear: globalAnswear,
+                MultipleChoice: globalMultipleChoice,
             }
             let dataAlert = {
                 alert: {
@@ -745,15 +745,15 @@ choose2.addEventListener('click', () => {
                     time: globalTime,
                 },
             }
-            const callDoc = doc(calls, callId);
+            const callDoc = doc(calls, classId);
             await updateDoc(callDoc, dataAlert);
 
             current = 0;
             optionsTotal = 0;
-    
+
             alertInfo.classList.remove("close");
             multipleChoiceSetting.hidden = true;
-    
+
             AlertReplace();
             closeModalForm();
             container.remove();
@@ -852,25 +852,25 @@ choose3.addEventListener('click', () => {
             return;
         }
 
-        alertType = 'essay question';
+        alertType = AlertTypeEnum.EssayQuestion;
         interval = Number(alertInterval.value);
         time     = Number(alertTime.value);
 
         question = qstText.value;
-    
+
         dataMultipleChoice = {
-            question: question,
+            Question: question,
         }
-    
+
         let dataAlert = {
             alert: {
                 interval: interval,
                 time: time,
             },
         }
-        const callDoc = doc(calls, callId);
+        const callDoc = doc(calls, classId);
         await updateDoc(callDoc, dataAlert);
-    
+
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
         alertInfo.classList.remove("close");
@@ -960,33 +960,33 @@ choose4.addEventListener('click', () => {
             return;
         }
 
-        alertType = 'vote';
+        alertType = AlertTypeEnum.Vote;
         interval = Number(alertInterval.value);
         time     = Number(alertTime.value);
         question = qstText.value;
-    
+
         let multipleChoiceDict = {};
         for(let i=0; i < optionInput.length; i++){
             multipleChoiceDict[i] = optionInput[i].value;
         }
         multipleChoice = Object.values(multipleChoiceDict);
-    
+
         dataMultipleChoice = {
-            question: question,
-            multipleChoice: multipleChoice,
+            Question: question,
+            MultipleChoice: multipleChoice,
         }
-    
+
         let dataAlert = {
             alert: {
                 interval: interval,
                 time: time,
             },
         }
-    
-        const callDoc = doc(calls, callId);
+
+        const callDoc = doc(calls, classId);
         await updateDoc(callDoc, dataAlert);
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
-    
+
         voteSetting.hidden = true;
         alertInfo.classList.remove("close");
         AlertReplace();

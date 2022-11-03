@@ -20,28 +20,12 @@ export function getRandom(x){
     return Math.floor(Math.random() * x);
 };
 
-export function randomLowerCaseString(length) {
-    let randomString = '';
-    for (let i = 0; i < length; i++) {
-        randomString += LOWER_CASE.charAt(getRandom(LOWER_CASE.length));
-    }
-    return randomString;
-}
-
-export function generateCallId() {
-    return randomLowerCaseString(3) + '-' + randomLowerCaseString(3);
-}
-
 export function replaceAll(str, find, replace) {
     return str.replace(find, replace);
 }
 
 export function dateToMinutes(date) {
     return date.getHours() * 60 + date.getMinutes();
-}
-
-export function timeToMinutes({hour, minute}) {
-    return hour * 60 + minute;
 }
 
 export function htmlToElement(html) {
@@ -134,12 +118,14 @@ export function getUser() {
 
 const userDict = {};
 
-export async function getUserData(email) {
-    if (!userDict[email]) {
-        const response = await apiCall('getUserInfo', {email});
+export async function getUserData(userId) {
+    if (!userDict[userId]) {
+        const response = await apiCall('getUserInfo', {userId});
         const user = await response.json();
-        userDict[email] = user;
+        if (user) {
+            userDict[userId] = user;
+        }
     }
 
-    return userDict[email];
+    return userDict[userId] || {};
 }

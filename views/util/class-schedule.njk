@@ -13,14 +13,15 @@
             </tr>
         </thead>
         <tbody id="class-schedule__tbody">
-            {% for periodId, period in schedule %}
+            {% for period in schedule %}
+                {% set i = loop.index-1 %}
                 <tr>
                     <td>
                         {{ period.periodName }}
                     </td>
-                    {% for i in range(1, 8) %}
-                        <td data-weekday="{{ i }}" data-period="{{ periodId }}"
-                            {% if period.week[i-1] %}
+                    {% for j in range(1, 8) %}
+                        <td data-period="{{ i }}" data-weekday="{{ j }}"
+                            {% if period.week[j-1] %}
                                 class="on"
                             {% endif %}
                         >
