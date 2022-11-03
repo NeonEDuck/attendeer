@@ -13,7 +13,7 @@
 .class-card {
     @extend .class-card-template;
     padding: 0.5em;
-
+    transition: transform var(--transition-timing), box-shadow var(--transition-timing);
     &__name {
         font-size: 2rem;
     }
@@ -24,5 +24,12 @@
         display: flex;
         flex-direction: row;
         gap: 0.5em;
+    }
+
+    &:hover {
+        box-shadow: var(--box-shadow-700);
+        transform: perspective(500px) translateZ(10px);
+        z-index: 50;
+
     }
 }

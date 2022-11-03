@@ -13,6 +13,7 @@
 
 #class-main {
     display: flex;
+    gap: 1em;
     flex-direction: column;
     padding: 1em;
 }
@@ -264,7 +265,101 @@ $post-gap: 4em;
     }
 }
 
-#back-to-top-tab {
-    position: sticky;
-    top: 4em;
+#tab-group {
+    --length: 4;
+    display: flex;
+    border-radius: $bulletin-pad;
+    overflow: hidden;
+    margin: 0;
+    background: var( --clr-component-500);
+    box-shadow: var(--box-shadow-500);
+    height: $bulletin-pad * 2;
+    padding: 0.5em;
+
+    input[type="radio"] {
+        display: none;
+    }
+
+    nav {
+        position: relative;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        height: 100%;
+
+        label {
+            position: relative;
+            display: grid;
+            place-items: center;
+            flex-basis: 0;
+            flex-grow: 1;
+            height: 100%;
+            color: var(--clr-text-500);
+            cursor: pointer;
+            z-index: 1;
+
+            &.checked {
+                color: var(--clr-text-700-reverse);
+            }
+        }
+
+        .slider{
+            --index: 0;
+            --offset: 0;
+            position: absolute;
+            background: var(--clr-component-500-reverse);
+            height: 100%;
+            width: calc(1 / var(--length) * 100%);
+            left: calc(var(--index) / var(--length) * 100%);
+            transform: translateX(calc(var(--offset) * 5%));
+            border-radius: 100000px;
+            z-index: 0; //index數字越大，圖層越上面
+            transition: left var(--transition-timing), transform var(--transition-timing);
+        }
+    }
+}
+
+#back-to-top-btn {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    font-size: 1.5em;
+
+    &.btn-enter {
+        animation-duration: var(--transition-duration);
+        animation-fill-mode: forwards;
+        animation-name: btnEnter;
+    }
+
+    &.btn-exit{
+        animation-duration: var(--transition-duration);
+        animation-fill-mode: forwards;
+        animation-name: btnExit;
+    }
+
+    &:hover, &:focus {
+        background-color: var(--clr-component-500-reverse);
+    }
+}
+
+@keyframes btnEnter {
+    from{
+        opacity: 0;
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+    to{
+        opacity: 1;
+    }
+}
+
+@keyframes btnExit {
+    from{
+        opacity: 1;
+    }
+    to{
+        opacity: 0;
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
 }
