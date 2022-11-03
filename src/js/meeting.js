@@ -3,7 +3,7 @@ import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getUser, getUserDataDepercated, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, timeToMinutes, apiCall, AlertTypeEnum } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
@@ -45,18 +45,17 @@ const toolbar               = document.querySelector('#toolbar');
 const chat                  = document.querySelector('#chat');
 const chatRoom              = document.querySelector('#chat__room')
 const msgInput              = document.querySelector('#msg-input');
-const callId                = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
-const userId                = document.querySelector('#user-id')?.value?.trim() || document.querySelector('#user-id').innerHTML?.trim();
+const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
+const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
 const userName              = document.querySelector('#user-name')?.value?.trim() || document.querySelector('#user-name').innerHTML?.trim();
 const photoURL              = document.querySelector('#photo-URL')?.value?.trim() || document.querySelector('#photo-URL').innerHTML?.trim();
-const hostId                = document.querySelector('#host-id')?.value?.trim() || document.querySelector('#host-id').innerHTML?.trim();
+const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
 
 // Audio
 const notificationSound = new Audio('/audio/notification_sound.wav');
 
 // Global variable
-let isHost = userId === hostId;
-let localUserId = userId;
+let isHost = localUserId === hostId;
 let webcamStream = null;
 const localStreams = {
     'webcam': null,
@@ -64,7 +63,7 @@ const localStreams = {
     'audio': null,
 };
 Cam.init(camArea, camContainer, pinnedCamContainer);
-Peer.init(localStreams, socket);
+Peer.init(localUserId, localStreams, socket);
 let unmute = true;
 let webcamOn = false;
 const localCams = {
@@ -72,7 +71,7 @@ const localCams = {
     'screenShare': new Cam('local', 'screen-share', cpCamContainer),
 }
 const dismissTimePadding = 10;
-let schoolData;
+let schoolPeriods;
 let notifyDismissCoolDownTimeInMinute = 1;
 let inNotifyDismissCoolDown = false;
 let dismissedClasses = [];
@@ -99,18 +98,15 @@ localCams.webcam.node.querySelector('.cam__menu').hidden = true;
 localCams.screenShare.node.hidden = true;
 localCams.screenShare.video.muted = true;
 
-let userAbove = '';
 export let intervalID;
 
 // Firestore
 const calls = collection(firestore, 'calls');
-const callDoc = doc(calls, callId);
+const callDoc = doc(calls, classId);
 const alertRecords = collection(callDoc, 'alertRecords');
 let messages = collection(callDoc, 'messages');
 
 document.onreadystatechange = async () => {
-    Peer.localUserId = localUserId;
-    const user = {};
     localCams.webcam.name.innerHTML = userName;
     localCams.webcam.profile.src = photoURL;
     localCams.screenShare.name.innerHTML = userName;
@@ -240,15 +236,11 @@ notifyDismissBtn.addEventListener('click', async () => {
 });
 
 enterBtn.addEventListener('click', async () => {
-    const { alert, host, school } = (await getDoc(callDoc)).data();
-    const { interval, time: duration } = alert;
-    isHost = localUserId === host;
-    const data = await fetchData('/school_time_table.json');
-    console.log(data);
-    console.log(school);
-    schoolData = data.find(item => item.id === school);
-    console.log(schoolData);
-
+    const response1 = await apiCall('getClass', {classId});
+    const classData = response1.json();
+    const { Interval: interval, Duration: duration } = classData;
+    const response2 = await apiCall('getSchoolPeriods', {schoolId: classData.SchoolId});
+    schoolPeriods = await response2.json();
 
     socket.on('user-connected', async (socketId, userId) => {
         console.log(`user connected: ${userId}`);
@@ -379,8 +371,8 @@ enterBtn.addEventListener('click', async () => {
         dismissedClasses = data.dismissedClasses;
         if (dismissedClasses.length > 0) {
             const recentDismiss = dismissedClasses[dismissedClasses.length-1];
-            const classTimeInfo = schoolData.data.find(item => item.name === recentDismiss.name);
-            const recentDismissTimeInMinute = timeToMinutes(classTimeInfo.end) - timeToMinutes(classTimeInfo.start);
+            const classTimeInfo = schoolPeriods.data.find(item => item.PeriodName === recentDismiss.name);
+            const recentDismissTimeInMinute = dateToMinutes(classTimeInfo.EndTime) - dateToMinutes(classTimeInfo.StartTime);
             const recentDismissEndTime = new Date(new Date(recentDismiss.time).getTime() + recentDismissTimeInMinute * MINUTE);
 
             if (recentDismissEndTime - (new Date()) > 0) {
@@ -408,9 +400,6 @@ enterBtn.addEventListener('click', async () => {
         }, 1000);
         // }, 60 - (new Date()).getSeconds());
     });
-
-    //! 沒有延展性
-    document.querySelector('.li-4 .name').innerHTML = (isHost)?'開始下課':'提醒下課';
 
     if (isHost) {
         socket.on('catch-notify-dismiss', async (data) => {
@@ -454,8 +443,8 @@ enterBtn.addEventListener('click', async () => {
         socket.emit('throw-request-status');
     }
 
-    console.log(`join call: ${callId} as ${localUserId}`);
-    socket.emit('join-call', callId, localUserId);
+    console.log(`join call: ${classId} as ${localUserId}`);
+    socket.emit('join-call', classId, localUserId);
 
     let chatInit = true;
 
@@ -498,9 +487,9 @@ enterBtn.addEventListener('click', async () => {
 
     if (isHost) {
         console.log('您是會議主辦人');
-        
+
         // DELETE FROM AlertRecords WHERE ClassId = :classId and Finished = 0 (true?)
-        await apiCall('deleteAlertRecords', {classId: callId})
+        await apiCall('deleteAlertRecords', {classId})
         console.log('del alert');
 
         // const q1 = query(alertRecords, where('done', '==', false ));
@@ -509,9 +498,9 @@ enterBtn.addEventListener('click', async () => {
         // snapshot1.forEach(async (alert) => {;
         //     const alertDoc  =   doc(alertRecords, alert.id);
         //     await deleteDoc(alertDoc);
-            
+
         // });
-        apiCall('updateClassAlert', {classId: callId, interval, duration})
+        apiCall('updateClassAlert', {classId, interval, duration})
         // let dataAlert = {
         //     alert: {
         //         interval: interval,
@@ -676,10 +665,10 @@ async function refreshStream() {
 }
 
 function getStartAndEndTimeOfTheDay() {
-    const start = schoolData.data[0].start;
-    const end = schoolData.data[schoolData.data.length-1].end;
+    const start = schoolPeriods[0].StartTime;
+    const end = schoolPeriods[schoolPeriods.length-1].EndTime;
 
-    return [start.hour * 60 + start.minute, end.hour * 60 + end.minute]
+    return [dateToMinutes(start), dateToMinutes(end)]
 }
 
 function inCanNotifyTime() {
@@ -691,9 +680,9 @@ function inCanNotifyTime() {
         return true;
     }
 
-    for (const classTime of schoolData.data) {
-        const startTime = timeToMinutes(classTime.start);
-        const endTime   = timeToMinutes(classTime.end);
+    for (const period of schoolPeriods) {
+        const startTime = dateToMinutes(period.StartTime);
+        const endTime   = dateToMinutes(period.EndTime);
         if (minuteOfToday >= startTime + dismissTimePadding && minuteOfToday < endTime) {
             return false;
         }
@@ -710,11 +699,11 @@ function inClassTime() {
         return true;
     }
 
-    for (const classTime of schoolData.data) {
-        const startTime = timeToMinutes(classTime.start);
-        const endTime   = timeToMinutes(classTime.end);
+    for (const period of schoolPeriods) {
+        const startTime = dateToMinutes(period.StartTime);
+        const endTime   = dateToMinutes(period.EndTime);
         if (minuteOfToday >= startTime && minuteOfToday < endTime) {
-            console.log(`現在是第${classTime.name}節課`);
+            console.log(`現在是第${period.PeriodName}節課`);
             return true;
         }
     }
@@ -727,10 +716,9 @@ function getDismissTime() {
 
     let prevEndTime = 0;
     let prevName = '';
-    for (let i = 0; i < schoolData.data.length; i++) {
-        const classTime = schoolData.data[i];
-        const startTime = timeToMinutes(classTime.start);
-        const endTime   = timeToMinutes(classTime.end);
+    schoolPeriods.forEach((period, i) => {
+        const startTime = dateToMinutes(period.StartTime);
+        const endTime   = dateToMinutes(period.EndTime);
         if (minuteOfToday >= startTime && minuteOfToday < endTime) {
             const percentage = (minuteOfToday - startTime) / (endTime - startTime);
             if (percentage < 0.5) {
@@ -742,11 +730,11 @@ function getDismissTime() {
             else {
                 if (endTime - minuteOfToday < dismissTimePadding) {
                     // console.log(`現在下課會是第${classTime.name}節下課`);
-                    if (i < schoolData.data.length - 1) {
-                        const nextStartTime = timeToMinutes(schoolData.data[i+1].start);
-                        return [classTime.name, nextStartTime - endTime];
+                    if (i < schoolPeriods.length - 1) {
+                        const nextStartTime = dateToMinutes(schoolPeriods[i+1].StartTime);
+                        return [period.PeriodName, nextStartTime - endTime];
                     }
-                    return [classTime.name, 24 * 60 - endTime];
+                    return [period.PeriodName, 24 * 60 - endTime];
                 }
             }
             // console.log(`現在是第${classTime.name}節上課`);
@@ -760,8 +748,8 @@ function getDismissTime() {
             }
         }
         prevEndTime = endTime;
-        prevName = classTime.name;
-    }
+        prevName = period.PeriodName;
+    });
 
     // console.log(`現在放學了`);
     return [null, 0];
@@ -885,9 +873,9 @@ export async function setupAlertScheduler() {
 async function startAlert() {
     alertSchedulerVersion++;
     const currentAlertSchedulerVersion = alertSchedulerVersion;
-    
+
     //UPDATE AlertRecords SET Outdated = 1 WHERE ClassId = :classId and Finished = 0
-    await apiCall('updateAlertRecords', {classId: callId})
+    await apiCall('updateAlertRecords', {classId})
 
     // const q1 = query(alertRecords, where('done', '==', false ));
     // const snapshot1 = await getDocs(q1);
@@ -902,12 +890,12 @@ async function startAlert() {
             // alertDocCurrently = doc(alertRecords);
 
             let dataNormal = {
-                classId: callId, 
-                AlertType:globalAlertType, 
-                Interval:globalInterval, 
-                Duration:globalTime, 
-                Start: false, 
-                Finished: false, 
+                classId,
+                AlertType:globalAlertType,
+                Interval:globalInterval,
+                Duration:globalTime,
+                Start: false,
+                Finished: false,
                 Outdated: false
             };
 
@@ -925,7 +913,7 @@ async function startAlert() {
 
             await delay( globalInterval * MINUTE );
 
-            await apiCall('UpdateAlertRecord', {classId: callId,})
+            await apiCall('UpdateAlertRecord', {classId,})
 
             // updateDoc(alertPrevious, {started: true});
 
@@ -1188,6 +1176,8 @@ export function setupAlertListener() {
 
 window.onresize = () => {Cam.resizeAll()};
 
+let userAbove = '';
+
 async function addMessageToChat(msgData) {
     const { user, text, timestamp } = msgData;
     const date = new Date(timestamp.seconds * 1000);
@@ -1228,7 +1218,7 @@ async function addMessageToChat(msgData) {
             msgText.innerHTML = text;
             chatRoom.appendChild(msg);
         }else {
-            const { name } = await getUserDataDepercated(user) || { name: "???" };
+            const { name } = await getUserData(user) || { name: "???" };
             const msg = msgPrefab.cloneNode(true);
             const msgUser = msg.querySelector('.msg__user');
             const msgTime = msg.querySelector('.msg__timestamp');

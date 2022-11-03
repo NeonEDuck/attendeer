@@ -9,7 +9,10 @@ router.get('/:classId/meeting', async (req, res) => {
     const { id: userId, displayName, photos } = req.session?.passport?.user || {};
     const photoURL = photos?.[0]?.value;
 
-    if (isAuth) {
+    if (!userId) {
+        res.redirect('/auth/google');
+    }
+    else if (isAuth) {
         const [ classInfo ] = await getClass(classId);
         res.render('meeting', { userId, displayName, photoURL, hostId: classInfo.HostId, classId, isHost: classInfo.HostId === userId });
     }

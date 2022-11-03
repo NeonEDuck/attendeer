@@ -70,8 +70,8 @@ let localUserId = null;
 
 // Firestore
 const calls   = collection(firestore, 'calls');
-const callId  = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
-const callDoc = doc(calls, callId);
+const classId  = document.querySelector('#class-id')?.value?.trim() || document.querySelector('#class-id').innerHTML?.trim();
+const callDoc = doc(calls, classId);
 
 //開關sidebar
 toggle.addEventListener("click", () =>{
@@ -110,7 +110,7 @@ export function sidebarListener() {
             let navText = navBtn[index].querySelector('.nav-text').innerHTML;
             fltCntr.hidden = false;
             hiddenAllFloating();
-            
+
             if(navText === '警醒資訊') {
                 const { host } = (await getDoc(callDoc)).data();
                 const user = await getUser();
@@ -175,7 +175,7 @@ async function closeModalForm() {
     centerBtns[1].hidden = true;
 
     floatingAlert.style.opacity = 1;
-                    
+
     infoType.innerHTML = globalAlertType;
     infoInterval.value = globalInterval;
     infoTime.value     = globalTime;
@@ -534,7 +534,7 @@ submitSettingBtn.addEventListener('click', async () => {
                 time,
             },
         }
-        const callDoc = doc(calls, callId);
+        const callDoc = doc(calls, classId);
         await updateDoc(callDoc, data);
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
@@ -592,14 +592,14 @@ choose1.addEventListener('click', () => {
             alertType = AlertTypeEnum.Click;
             interval = Number(alertInterval.value);
             time     = Number(alertTime.value);
-        
+
             const data = {
                 alert: {
                     interval:interval,
                     time:time,
                 },
             }
-            const callDoc = doc(calls, callId);
+            const callDoc = doc(calls, classId);
             await updateDoc(callDoc, data);
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -705,9 +705,9 @@ choose2.addEventListener('click', () => {
             errorText.innerHTML = '請選擇答案選項！'
         }
     });
-    
+
     next3.addEventListener('click', async () => {
-    
+
         if ( Number(alertInterval.value) < 10 || Number(alertInterval.value) >50 ) {
             errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
             return;
@@ -745,15 +745,15 @@ choose2.addEventListener('click', () => {
                     time: globalTime,
                 },
             }
-            const callDoc = doc(calls, callId);
+            const callDoc = doc(calls, classId);
             await updateDoc(callDoc, dataAlert);
 
             current = 0;
             optionsTotal = 0;
-    
+
             alertInfo.classList.remove("close");
             multipleChoiceSetting.hidden = true;
-    
+
             AlertReplace();
             closeModalForm();
             container.remove();
@@ -857,20 +857,20 @@ choose3.addEventListener('click', () => {
         time     = Number(alertTime.value);
 
         question = qstText.value;
-    
+
         dataMultipleChoice = {
             Question: question,
         }
-    
+
         let dataAlert = {
             alert: {
                 interval: interval,
                 time: time,
             },
         }
-        const callDoc = doc(calls, callId);
+        const callDoc = doc(calls, classId);
         await updateDoc(callDoc, dataAlert);
-    
+
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
         alertInfo.classList.remove("close");
@@ -964,29 +964,29 @@ choose4.addEventListener('click', () => {
         interval = Number(alertInterval.value);
         time     = Number(alertTime.value);
         question = qstText.value;
-    
+
         let multipleChoiceDict = {};
         for(let i=0; i < optionInput.length; i++){
             multipleChoiceDict[i] = optionInput[i].value;
         }
         multipleChoice = Object.values(multipleChoiceDict);
-    
+
         dataMultipleChoice = {
             Question: question,
             MultipleChoice: multipleChoice,
         }
-    
+
         let dataAlert = {
             alert: {
                 interval: interval,
                 time: time,
             },
         }
-    
-        const callDoc = doc(calls, callId);
+
+        const callDoc = doc(calls, classId);
         await updateDoc(callDoc, dataAlert);
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
-    
+
         voteSetting.hidden = true;
         alertInfo.classList.remove("close");
         AlertReplace();

@@ -10,10 +10,49 @@ const pool = createPool({
     timezone: 'utc',
 });
 
-export function query(sqlString, values) {
+export async function transactionQuery(cb) {
+    return new Promise((resolve, reject) => {
+        pool.getConnection(async (err, conn) => {
+            try {
+                if (err) {
+                    throw err;
+                };
+                await new Promise((resolve, reject) => {
+                    conn.beginTransaction(async (err) => {
+                        if (err) {
+                            reject(err);
+                        }
+                        try {
+                            await cb((sqlString, values) => {query(sqlString, values, conn)});
+                            conn.commit((err) => {
+                                if (err) {
+                                    throw err;
+                                }
+                                conn.release();
+                                resolve();
+                            });
+                        }
+                        catch (err) {
+                            reject(err);
+                        }
+                    });
+                });
+                resolve();
+            }
+            catch (err) {
+                conn.rollback(() => {
+                    conn.release();
+                });
+                reject(err);
+            }
+        });
+    });
+}
+
+export function query(sqlString, values, conn) {
     const options = queryBuilder(sqlString, values)
     return new Promise((resolve, reject) => {
-        pool.query(options, (err, results, fields) => {
+        (conn || pool).query(options, (err, results, fields) => {
             if (err) {
                 reject(err);
             }
@@ -62,100 +101,64 @@ export async function addClass(userId, className, schoolId, interval, duration, 
     }
 
     try {
-        await query(`
-            INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, 1, :interval, :duration)
-        `, { classId, className, userId, schoolId, interval, duration });
+        await transactionQuery(async (query) => {
+            await query(`
+                INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, 1, :interval, :duration)
+            `, { classId, className, userId, schoolId, interval, duration });
+
+
+            const promises = []
+            for (const attendee of attendees) {
+                promises.push(new Promise(async (resolve, reject) => {
+                    try {
+                        const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
+                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
+                        resolve();
+                    }
+                    catch (err) {
+                        reject(err);
+                    }
+                }));
+            }
+
+            await Promise.all(promises);
+        })
+
     }
     catch (err) {
         return {"code": 400, "message": "Body contains invaild data."};
-    }
-
-    const promises = []
-    for (const attendee of attendees) {
-        promises.push(new Promise(async (resolve, reject) => {
-            try {
-                const [ { UserId: userId } ] = await getUserId(attendee);
-                await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
-                resolve();
-            }
-            catch (err) {
-                reject(err);
-            }
-        }));
-    }
-
-    try {
-        await Promise.all(promises);
-    }
-    catch (err) {
-        await query(`DELETE FROM Classes WHERE ClassId = :classId`, { classId });
-        return {"code": 400, "message": "Data 'attendees' contains invaild user."};
     }
     return {"code": 201, "message": "Request has been successfully fulfilled."};
 }
 
 export async function updateClass(classId, className, schoolId, interval, duration, attendees) {
-    let oldClassData;
-    let oldClassAttendees;
-
     try {
-        oldClassData      = await query(`SELECT * FROM Classes WHERE ClassId = :classId`, {classId});
-        oldClassAttendees = await query(`SELECT * FROM ClassAttendees WHERE ClassId = :classId`, {classId});
-        await query(`
-            UPDATE Classes SET ClassName = :className, SchoolId = :schoolId, \`Interval\` = :interval, Duration = :duration
-            WHERE ClassId = :classId
-        `, {classId, className, schoolId, interval, duration});
-    }
-    catch (err) {
-        console.log(err);
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
+        await transactionQuery(async (query) => {
+            await query(`
+                UPDATE Classes SET ClassName = :className, SchoolId = :schoolId, \`Interval\` = :interval, Duration = :duration
+                WHERE ClassId = :classId
+            `, {classId, className, schoolId, interval, duration});
 
-    const promises = []
-    for (const attendee of attendees) {
-        promises.push(new Promise(async (resolve, reject) => {
-            try {
-                const [ { UserId: userId } ] = await getUserId(attendee);
-                await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
-                resolve();
-            }
-            catch (err) {
-                reject(err);
-            }
-        }));
-    }
+            await query(`DELETE FROM ClassAttendees WHERE ClassId = :classId`, { classId });
 
-    try {
-        await query(`DELETE FROM ClassAttendees WHERE ClassId = :classId`, { classId });
-        await Promise.all(promises);
-    }
-    catch (err) {
-        await query(`
-            UPDATE Classes SET ClassName = :className, SchoolId = :schoolId, \`Interval\` = :interval, Duration = :duration
-            WHERE ClassId = :classId
-        `, {
-            classId: oldClassData.ClassId,
-            className: oldClassData.ClassName,
-            schoolId: oldClassData.SchoolId,
-            interval: oldClassData.Interval,
-            duration: oldClassData.Duration,
+            const promises = []
+            for (const attendee of attendees) {
+                promises.push(new Promise(async (resolve, reject) => {
+                    try {
+                        const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
+                        await query(conn, `INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
+                        resolve();
+                    }
+                    catch (err) {
+                        reject(err);
+                    }
+                }));
+            }
+
+            await Promise.all(promises);
         });
-
-        await query(`DELETE FROM ClassAttendees WHERE ClassId = :classId`, { classId });
-        const promises = []
-        for (const attendee of oldClassAttendees) {
-            promises.push(new Promise(async (resolve, reject) => {
-                try {
-                    await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId: attendee.UserId });
-                    resolve();
-                }
-                catch (err) {
-                    reject(err);
-                }
-            }));
-        }
-        await Promise.all(promises);
-
+    }
+    catch (err) {
         return {"code": 400, "message": "Data 'attendees' contains invaild user."};
     }
     return {"code": 201, "message": "Request has been successfully fulfilled."};
@@ -173,7 +176,7 @@ export async function deleteClass(classId) {
 
 export function getClassAttendees(classId) {
     return query(`
-        SELECT Classes.*, Users.UserName, Users.Email FROM Classes
+        SELECT Classes.*, Users.* FROM Classes
         JOIN ClassAttendees ON Classes.ClassId = ClassAttendees.ClassId
         LEFT JOIN Users ON ClassAttendees.UserId = Users.UserId
         WHERE Classes.ClassId = :classId
@@ -185,49 +188,50 @@ export function getSchools() {
 }
 
 export function getSchoolPeriods(schoolId) {
-    return query(`SELECT * FROM Periods WHERE SchoolId = :schoolId`, {schoolId});
+    return query(`
+        SELECT Periods.*, (PeriodId - FirstPeriodId) AS Period FROM Periods
+        CROSS JOIN (
+            SELECT PeriodId AS FirstPeriodId FROM Periods
+            WHERE SchoolId = :schoolId
+            ORDER BY StartTime ASC
+            LIMIT 1
+        ) AS tmp
+        WHERE SchoolId = :schoolId
+        ORDER BY StartTime ASC
+    `, {schoolId});
 }
 
 export function getClassSchedules(classId) {
-    return query(`SELECT * FROM Schedules WHERE ClassId = :classId`, {classId});
+    return query(`
+        SELECT * FROM Schedules WHERE ClassId = :classId
+    `, {classId});
 }
 
 export async function setClassSchedules(classId, schedules) {
-
-    const oldDatas = await query(`SELECT * FROM Schedules WHERE ClassId = :classId`, { classId });
-    await query(`DELETE FROM Schedules WHERE ClassId = :classId`, { classId });
-    const promises = [];
-    for (const schedule of schedules) {
-        promises.push(new Promise(async (resolve, reject) => {
-            try {
-                await query(
-                    `INSERT INTO Schedules VALUES (:classId, :periodId, :weekdayId)`,
-                    {classId, periodId: schedule.period, weekdayId: schedule.weekday}
-                )
-                resolve()
-            }
-            catch (err) {
-                reject(err)
-            }
-        }));
-    }
-
     try {
-        await Promise.all(promises);
+        await transactionQuery(async (query) => {
+            await query(`DELETE FROM Schedules WHERE ClassId = :classId`, { classId });
+
+            const promises = [];
+            for (const schedule of schedules) {
+                promises.push(new Promise(async (resolve, reject) => {
+                    try {
+                        await query(
+                            `INSERT INTO Schedules VALUES (:classId, :period, :weekdayId)`,
+                            {classId, period: schedule.period, weekdayId: schedule.weekday}
+                        )
+                        resolve()
+                    }
+                    catch (err) {
+                        reject(err)
+                    }
+                }));
+            }
+
+            await Promise.all(promises);
+        });
     }
     catch (err) {
-        await query(`DELETE FROM Schedules WHERE ClassId = :classId`, { classId });
-        const promises = [];
-        for (const data of oldDatas) {
-            promises.push(new Promise(async (resolve, reject) => {
-                await query(
-                    `INSERT INTO Schedules VALUES (:classId, :periodId, :weekdayId)`,
-                    {classId, periodId: data.PeriodId, weekdayId: data.WeekdayId}
-                );
-                resolve();
-            }))
-        }
-        await Promise.all(promises);
         return {"code": 400, "message": "Body contains invaild data."};
     }
     return {"code": 201, "message": "Request has been successfully fulfilled."};
@@ -288,7 +292,7 @@ export function getPostReplys(postId, limit) {
         return query(`
             SELECT * FROM
             (
-                SELECT Email, Content, Timestamp FROM Replys
+                SELECT Users.*, Content, Timestamp FROM Replys
                 JOIN Users ON Replys.UserId = Users.UserId
                 WHERE PostId = :postId
                 ORDER BY Timestamp DESC
@@ -300,7 +304,7 @@ export function getPostReplys(postId, limit) {
     return query(`
         SELECT * FROM
         (
-            SELECT Email, Content, Timestamp FROM Replys
+            SELECT Users.*, Content, Timestamp FROM Replys
             JOIN Users ON Replys.UserId = Users.UserId
             WHERE PostId = :postId
             ORDER BY Timestamp DESC
@@ -322,21 +326,13 @@ export function addPostReply(postId, userId, content) {
     return {"code": 201, "message": "Request has been successfully fulfilled."};
 }
 
-export function getUserId(email) {
-    return query(`SELECT UserId FROM Users WHERE email = :email`, { email });
-}
-
-export function getUserInfoDepercated(email) {
-    return query(`SELECT Email, UserName, PhotoURL FROM Users WHERE Email = :email`, {email});
-}
-
-export function getUserInfo(userId) {
-    return query(`SELECT UserId, Email, UserName, PhotoURL FROM Users WHERE UserId = :userId`, {userId});
+export function getUserInfo(userId, email) {
+    return query(`SELECT * FROM Users WHERE ${(userId)?'UserId = :userId' : 'Email = :email'}`, {userId, email});
 }
 
 export function getClassMessages(classId) {
     return query(`
-        SELECT UserName, Content, Timestamp FROM Messages
+        SELECT Users.*, Content, Timestamp FROM Messages
         LEFT JOIN Users ON Messages.UserId = Users.UserId
         WHERE ClassId = :classId
         ORDER BY Timestamp ASC
@@ -364,7 +360,7 @@ export async function getAlertRecords(classId) {
 
 export async function getAlertRecordReacts(classId, recordId) {
     return await query(`
-        SELECT ReactId, UserName, Clicked, Answer, Timestamp FROM ClassAttendees
+        SELECT ReactId, Users.UserId, UserName, Clicked, Answer, Timestamp FROM ClassAttendees
         LEFT JOIN Users
         ON ClassAttendees.UserId = Users.UserId
         LEFT JOIN AlertRecordReacts
@@ -376,7 +372,7 @@ export async function getAlertRecordReacts(classId, recordId) {
 
 export async function getAlertReacts(classId) {
     return await query(`
-        SELECT Reference.RecordId, UserName, Clicked, Answer, Timestamp FROM (
+        SELECT Reference.RecordId, Users.UserId, UserName, Clicked, Answer, Timestamp FROM (
             SELECT UserId, RecordId FROM ClassAttendees
             CROSS JOIN (
                 SELECT DISTINCT RecordId FROM AlertRecords

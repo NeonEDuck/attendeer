@@ -1,5 +1,5 @@
 import { prefab } from './prefab.js';
-import { getUserDataDepercated, debounce, getUserData } from './util.js';
+import { debounce, getUserData } from './util.js';
 
 const camPrefab = prefab.querySelector('.cam');
 
@@ -183,7 +183,8 @@ export class Peer {
     static localStreams = null;
     static socket = null;
 
-    static init(localStreams, socket) {
+    static init(localUserId, localStreams, socket) {
+        Peer.localUserId = localUserId;
         Peer.localStreams = localStreams;
         Peer.socket = socket;
     }
