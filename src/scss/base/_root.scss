@@ -125,7 +125,7 @@
     --transition-inset: inset var(--transition-timing);
 }
 
-.dark {
+:root.dark {
     &,
     ::after,
     ::before {

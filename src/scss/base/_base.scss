@@ -46,10 +46,6 @@ legend {
     width: 100%;
 }
 
-main {
-    padding: 1rem;
-}
-
 table {
     background-color: var(--clr-gray-300);
     th {
@@ -89,6 +85,7 @@ label {
 }
 
 
-path, circle {
+path, circle, polygon {
     fill: var(--clr-text-500);
+    background-color: var(--clr-text-500);
 }

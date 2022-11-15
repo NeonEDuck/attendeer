@@ -14,5 +14,3 @@ setIntervalImmediately(() => {
         textarea.classList.add('settle');
     }
 }, 500);
-
-document.querySelector('body').classList.add(localStorage.getItem('color-scheme') || '');

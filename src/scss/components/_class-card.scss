@@ -81,8 +81,9 @@
         }
 
         svg {
-            path, circle {
+            path, circle, polygon {
                 fill: var(--clr-text-700-reverse);
+                background-color: var(--clr-text-700-reverse);
             }
         }
 

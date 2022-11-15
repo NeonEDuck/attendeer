@@ -1,4 +1,3 @@
-const body       = document.querySelector('body');
 const profile    = document.querySelector('#navbar-profile');
 const profilePic = document.querySelector('#navbar-profile__picture');
 const loginText  = document.querySelector('#login-text');
@@ -35,12 +34,12 @@ if (document.querySelector('#navbar') !== null) {
         modeSwitch.classList.toggle("open");
 
         if (modeSwitch.classList.contains("open")){
-            body.classList.add("dark");
+            document.documentElement.classList.add("dark");
             localStorage.setItem('color-scheme', 'dark');
             modeText.innerHTML = "燈光模式";
         }
         else{
-            body.classList.remove("dark");
+            document.documentElement.classList.remove("dark");
             localStorage.setItem('color-scheme', 'light');
             modeText.innerHTML = "黑暗模式";
         }
