@@ -320,27 +320,27 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
     res.send(XLSX.write(workbook, {type: 'base64'}));
 });
 
-router.post('/api/addAlertRecord', checkHost, async () => {
+router.post('/api/addAlertRecord', checkHost, async (req, res) => {
     const { classId, alertType, interval, duration, Question: question, MultipleChoice: multipleChoice, Answear: answer } = req.body;
-    return await addAlertRecord(classId, alertType, interval, duration, question, answer, multipleChoice);
+    res.send(await addAlertRecord(classId, alertType, interval, duration, question, answer, multipleChoice));
 });
 
-router.post('/api/deleteUnfinishedRecords', checkHost, async () => {
+router.post('/api/deleteUnfinishedRecords', checkHost, async (req, res) => {
     const { classId } = req.body;
-    return await deleteUnfinishedRecords(classId);
+    res.send(await deleteUnfinishedRecords(classId));
 });
 
-router.post('/api/expireUnfinishedRecords', checkHost, async () => {
+router.post('/api/expireUnfinishedRecords', checkHost, async (req, res) => {
     const { classId } = req.body;
-    return await expireUnfinishedRecords(classId);
+    res.send(await expireUnfinishedRecords(classId));
 });
 
-router.post('/api/turnOnRecord', checkHost, async () => {
+router.post('/api/turnOnRecord', checkHost, async (req, res) => {
     const { recordId } = req.body;
-    return await turnOnRecord(recordId);
+    res.send(await turnOnRecord(recordId));
 });
 
-router.post('/api/finishRecord', checkHost, async () => {
+router.post('/api/finishRecord', checkHost, async (req, res) => {
     const { recordId } = req.body;
     const result = await finishRecord(recordId);
     res.statusCode = result.code;
