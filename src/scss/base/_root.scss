@@ -59,14 +59,31 @@
     --tran-05: all 0.5s ease;
 
     /* ====== here ====== */
+    --clr-class-1:  hsl(49 68% 23%);
+    --clr-class-2:  hsl(79 40% 23%);
+    --clr-class-3:  hsl(122 35% 42%);
+    --clr-class-4:  hsl(195 76% 30%);
+    --clr-class-5:  hsl(238 34% 39%);
+    --clr-class-6:  hsl(226 82% 11%);
+    --clr-class-7:  hsl(292 60% 20%);
+    --clr-class-8:  hsl(349 89% 17%);
+    --clr-class-9:  hsl(358 74% 30%);
+    --clr-class-10: hsl(332 72% 35%);
+
     --clr-body: hsl(215 46% 93%);
 
-    --clr-component-300: rgb(235 247 255);
-    --clr-component-500: hsl(206 23% 94%);
-    --clr-component-700: hsl(0 0% 68%);
-    --clr-component-300-reverse: hsl(210 5% 30%);
-    --clr-component-500-reverse: hsl(210 6% 16%);
-    --clr-component-700-reverse: hsl(210 4% 12%);
+    --hsl-component-300: 204 54% 88%;
+    --hsl-component-500: 206 23% 94%;
+    --hsl-component-700: 0 0% 68%;
+    --hsl-component-300-reverse: 210 5% 30%;
+    --hsl-component-500-reverse: 210 6% 16%;
+    --hsl-component-700-reverse: 210 4% 12%;
+    --clr-component-300: hsl(var(--hsl-component-300));
+    --clr-component-500: hsl(var(--hsl-component-500));
+    --clr-component-700: hsl(var(--hsl-component-700));
+    --clr-component-300-reverse: hsl(var(--hsl-component-300-reverse));
+    --clr-component-500-reverse: hsl(var(--hsl-component-500-reverse));
+    --clr-component-700-reverse: hsl(var(--hsl-component-700-reverse));
 
     --clr-primary-300: hsl(265 90% 65%);
     --clr-primary-500: hsl(245 99% 68%);
@@ -108,7 +125,7 @@
     --transition-inset: inset var(--transition-timing);
 }
 
-.dark {
+:root.dark {
     &,
     ::after,
     ::before {
@@ -147,12 +164,18 @@
 
         --clr-body: hsl(210, 4%, 10%);
 
-        --clr-component-300: hsl(210 5% 30%);
-        --clr-component-500: hsl(210 6% 16%);
-        --clr-component-700: hsl(210 4% 12%);
-        --clr-component-300-reverse: rgb(235 247 255);
-        --clr-component-500-reverse: hsl(206 23% 94%);
-        --clr-component-700-reverse: hsl(0 0% 68%);
+        --hsl-component-300: 210 5% 30%;
+        --hsl-component-500: 210 6% 16%;
+        --hsl-component-700: 210 4% 12%;
+        --hsl-component-300-reverse: 204 100% 96%;
+        --hsl-component-500-reverse: 206 23% 94%;
+        --hsl-component-700-reverse: 0 0% 68%;
+        --clr-component-300: hsl(var(--hsl-component-300));
+        --clr-component-500: hsl(var(--hsl-component-500));
+        --clr-component-700: hsl(var(--hsl-component-700));
+        --clr-component-300-reverse: hsl(var(--hsl-component-300-reverse));
+        --clr-component-500-reverse: hsl(var(--hsl-component-500-reverse));
+        --clr-component-700-reverse: hsl(var(--hsl-component-700-reverse));
 
         --clr-primary-300: hsl(194 80% 43%);
         --clr-primary-500: hsl(210 73% 44%);

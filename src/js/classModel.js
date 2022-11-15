@@ -9,6 +9,8 @@ const classModalTitle    = classModal.querySelector('#class-modal__title');
 
 const className          = document.querySelector('#class-modal__class-name');
 const schoolSelect       = document.querySelector('#class-modal__school-select');
+const colorGroup         = document.querySelector('#class-modal__color-group');
+const colorGroupLabels   = colorGroup.querySelectorAll('nav label');
 const alertInterval      = document.querySelector('#class-modal__alert-interval');
 const alertTime          = document.querySelector('#class-modal__alert-time');
 
@@ -60,10 +62,21 @@ export class ClassModal {
         attendeeInput.addEventListener('keydown', (e) => {
             this._attendeeInput(e);
         });
+        colorGroup.querySelectorAll('input[type="radio"]').forEach((r) => {
+            const label = colorGroup.querySelector(`nav label[for="${r.id}"]`);
+            r.addEventListener('click', (_) => {
+                colorGroupLabels.forEach((e) => {
+                    e.classList.remove('checked');
+                })
+                label.classList.add('checked');
+            })
+        });
     }
 
     resetModal() {
         className.value     = '';
+        schoolSelect.value  = '';
+        colorGroup.querySelector('input[type="radio"]:first-child').click();
         alertInterval.value = '';
         alertTime.value     = '';
         attendeeInput.value = '';
@@ -89,6 +102,7 @@ export class ClassModal {
 
         className.value     = classInfo.ClassName;
         schoolSelect.value  = classInfo.SchoolId;
+        colorGroup.querySelectorAll('input[type="radio"]')?.[classInfo.ClassColor-1]?.click();
         alertInterval.value = classInfo.Interval;
         alertTime.value     = classInfo.Duration;
         attendeeInput.value = '';
@@ -163,12 +177,14 @@ export class ClassModal {
 
         const name     = className.value.trim();
         const schoolId = schoolSelect.value;
+        const color    = colorGroup.querySelector('input[type="radio"]:checked').value;
         const interval = Number(alertInterval.value);
         const duration = Number(alertTime.value);
 
         const data = {
             classId: this.classId,
             className: name,
+            classColor: color,
             schoolId,
             interval,
             duration,
@@ -193,6 +209,7 @@ export class ClassModal {
                 submitClassBtn.disabled = false;
                 submitSettingBtn.disabled = false;
                 this._showErrorMessage(attendeeTable, '鍵入的資料有錯誤');
+                console.error(await response.json())
                 return false;
             }
         }

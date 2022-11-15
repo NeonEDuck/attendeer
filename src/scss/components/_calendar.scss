@@ -45,6 +45,7 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 0em;
     color: var(--clr-text-500);
+    z-index: 50;
 }
 
 .calendar-days div {
@@ -53,46 +54,65 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5em;
+    margin: 0.25em;
     position: relative;
     cursor: pointer;
-    animation: to-top 0.5s forwards;
+    outline-width: 0;
+    outline-style: solid;
+    outline-color: var(--clr-primary-300);
+    outline-offset: 0em;
     border-radius: 50%;
-    transition: var(--transition-color);
+    animation: hover-in var(--transition-duration) forwards;
+    transition: var(--transition-color),
+                outline var(--transition-timing),
+                outline-color var(--transition-timing),
+                outline-offset var(--transition-timing);
 }
 
 .calendar-days div:hover {
-    background-color: var(--clr-component-300);
+    animation: hover-out var(--transition-duration) forwards;
+    background-color: hsl(var(--hsl-component-300) / 0.5);
+    z-index: 50;
 }
 
 .calendar-days .current-selected-day{
     background-color: var(--clr-primary-500);
     color: var(--clr-text-white);
     border-radius: 50%;
+    outline: 0.25em solid var(--clr-primary-500);
+    outline-width: 0.25em;
+    outline-color: var(--clr-primary-500);
+    outline-offset: 0.125em;
     &:hover  {
         background-color: var(--clr-primary-300);
+        outline-color: var(--clr-primary-300);
     }
 }
+
 
 .calendar-days .curr-date,
 .calendar-days .curr-date:hover {
     background-color: var(--clr-primary-300);
+    outline-color: var(--clr-primary-300);
     color: var(--clr-text-white);
     border-radius: 50%;
 
     &.current-selected-day {
         background-color: var(--clr-primary-700);
+        outline-color: var(--clr-primary-700);
     }
 }
 
 .calendar-days .detailed-date,
 .calendar-days .detailed-date:hover {
     background-color: var(--clr-primary-300);
+    outline-color: var(--clr-primary-300);
     color: var(--white);
     border-radius: 50%;
 
     &.current-selected-day {
         background-color: var(--clr-primary-700);
+        outline-color: var(--clr-primary-700);
     }
 }
 
@@ -120,8 +140,11 @@ span#month {
     margin-inline: 0.25em;
     cursor: pointer;
     user-select: none;
+    animation: hover-in var(--transition-duration) forwards;
+    transition: var(--transition-color);
 
     &:hover {
+        animation: hover-out var(--transition-duration) forwards;
         background-color: var(--clr-component-300);
     }
 }
@@ -184,5 +207,22 @@ span#month {
     100% {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@keyframes hover-out {
+    0% {
+        transform: perspective(500px) translateZ(0px);
+    }
+    100% {
+        transform: perspective(500px) translateZ(100px);
+    }
+}
+@keyframes hover-in {
+    0% {
+        transform: perspective(500px) translateZ(100px);
+    }
+    100% {
+        transform: perspective(500px) translateZ(0px);
     }
 }

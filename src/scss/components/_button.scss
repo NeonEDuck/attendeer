@@ -1,8 +1,9 @@
 @mixin content-color($color) {
     color: $color;
 
-    path, circle {
+    path, circle, polygon {
         fill: $color;
+        background-color: $color;
     }
 }
 

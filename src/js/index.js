@@ -16,13 +16,18 @@ async function refreshClasses() {
         e.remove();
     });
     for (const classData of classes) {
-        const classCard = classCardPrefab.cloneNode(true);
+        const classCard     = classCardPrefab.cloneNode(true);
         const classCardName = classCard.querySelector('.class-card__name');
-        const classCardId   = classCard.querySelector('.class-card__id');
-        const classCardLink = classCard.querySelector('.class-card__link');
+        const classCardLink = classCard.querySelector('.class-card__button');
+        const classCardHour = classCard.querySelector('.class-card__hour');
+        const classCardHost = classCard.querySelector('.class-card__host');
+        classCard.style.setProperty('--class-color', `var(--clr-class-${classData.ClassColor})`);
         classCardName.innerHTML = classData.ClassName;
-        classCardId.innerHTML   = classData.ClassId;
         classCardLink.href      = `/${classData.ClassId}`;
+        classCardHour.innerHTML = classData.ClassHour;
+        classCardHost.innerHTML = classData.HostName;
+
+        console.log(classData);
 
         classList.insertBefore(classCard, addClassTemplate);
     }

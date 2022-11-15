@@ -1,5 +1,9 @@
-#logo-title {
-    margin-block-start: 20vh;
-    width: 100%;
-    max-width: 30em;
+#logo {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    height: calc(100vh - var(--navbar-height));
+    padding: 0;
+    aspect-ratio: 1 / 1;
+    padding-block-start: 20vh;
 }

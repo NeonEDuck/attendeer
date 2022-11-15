@@ -1,7 +1,7 @@
 #class-grid {
     display: grid;
     grid-template-columns: 20em 1fr;
-    padding: 1em;
+    padding: 1em 2em;
     gap: 2em;
 }
 
@@ -11,15 +11,30 @@
     gap: 1em;
 }
 
+#class-info {
+    width: 100%;
+    background-color: var(--clr-component-500);
+    border-radius: 1.2em;
+    overflow: hidden;
+
+    header {
+        background-color: var(--class-color, var(--clr-class-1));
+        padding: 0.75em 1.5em;
+        width: 100%;
+        * {
+            color: var(--clr-text-white);
+        }
+    }
+
+    main {
+        padding: 0.75em 1.5em;
+    }
+}
+
 #class-main {
     display: flex;
     gap: 1em;
     flex-direction: column;
-    padding: 1em;
-}
-#class-secondary {
-    display: flex;
-    flex-direction: row-reverse;
 }
 
 $bulletin-pad: 2em;
@@ -337,10 +352,6 @@ $post-gap: 4em;
         animation-duration: var(--transition-duration);
         animation-fill-mode: forwards;
         animation-name: btnExit;
-    }
-
-    &:hover, &:focus {
-        background-color: var(--clr-component-500-reverse);
     }
 }
 

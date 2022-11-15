@@ -6,33 +6,56 @@
 
 {% block prefab %}
     <div class="class-card">
-        <p class="class-card__name"></p>
-        <p class="class-card__id"></p>
-        <div class="class-card__btn-group">
-            <a class="class-card__link btn btn-round btn-primary" data-tooltip="查看">{% include 'svg/right_arrow.svg' %}</a>
+        <header>
+            <h6>上課時數</h6>
+            <h2><span class="class-card__hour"></span> 小時</h2>
+            <p>教師: <span class="class-card__host"></span></p>
+        </header>
+
+        <div class="class-card__content">
+            <h2 class="class-card__name">{{ class.ClassName }}</h2>
+            <a class="class-card__button">
+                {% include 'svg/right_arrow.svg' %}
+                <span>查看</span>
+            </a>
         </div>
     </div>
 {% endblock prefab %}
 
 {% block content %}
     <main>
-        <div class="class-list">
-            {% for class in classes %}
-                <div class="class-card">
-                    <p class="class-card__name">{{ class.ClassName }}</p>
-                    <p class="class-card__id">{{ class.ClassId }}</p>
-                    <div class="class-card__btn-group">
-                        <a href="/{{ class.ClassId }}" class="class-card__link btn btn-round btn-primary" data-tooltip="查看">{% include 'svg/right_arrow.svg' %}</a>
-                    </div>
-                </div>
-            {% endfor %}
+        {% if displayName %}
+            <div class="class-list">
+                {% for class in classes %}
+                    <div class="class-card" style="--class-color: var(--clr-class-{{ class.ClassColor }})">
 
-            {% if displayName %}
+                        <header>
+                            <h6>上課時數</h6>
+                            <h2><span class="class-card__hour">{{ class.ClassHour }}</span> 小時</h2>
+                            <p>教師: <span class="class-card__host">{{ class.HostName }}</span></p>
+                        </header>
+
+                        <div class="class-card__content">
+                            <h2>{{ class.ClassName }}</h2>
+                            <a class="class-card__button" href="/{{ class.ClassId }}">
+                                {% include 'svg/right_arrow.svg' %}
+                                <span>查看</span>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+
                 <div id="add-class-template" class="class-card-template flex-center flex-row">
-                    <button id="add-class-btn" class="btn-round btn-primary">新增課程</button>
+                    <button id="add-class-btn" class="btn-round">+</button>
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% else %}
+            <div class="flex flex-center">
+                <div id="logo">
+                    {% include 'svg/attendeer.svg' %}
+                </div>
+            </div>
+        {% endif %}
 
         {% include "util/class_modal.njk" %}
     </main>

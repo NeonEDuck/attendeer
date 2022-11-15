@@ -273,8 +273,9 @@
         .nav-btn {
             color: var(--clr-text-500);
 
-            path, circle {
+            path, circle, polygon {
                 fill: var(--clr-text-500);
+                background-color: var(--clr-text-500);
             }
             &.open {
                 background: var(--primary-color);
@@ -456,7 +457,7 @@ body.dark {
                 .fieldset {
                     .div-label {
                         display: flex;
-                        label {    
+                        label {
                             width: 88%;
                             display: flex;
                             align-items: center;
@@ -506,7 +507,7 @@ body.dark {
                         background-color: var(--white) !important;
                         color: var(--clr-text-black) !important;
                     }
-                }            
+                }
             }
             .alert-choose {
                 width: 100%;
@@ -798,7 +799,7 @@ body.dark {
                                 font-weight: 500;
                                 padding: 5px;
                             }
-                            .field {    
+                            .field {
                                 button {
                                     width: 90%;
                                     height: 45px;
