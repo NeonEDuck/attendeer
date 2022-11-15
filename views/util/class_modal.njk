@@ -18,28 +18,55 @@
                 <legend>資訊</legend>
                 <div class="field">
                     <label for="class-modal__class-name">課程名稱:</label>
-                    <input id="class-modal__class-name" name="class-name" type="text" autocomplete="off" required>
+                    <input id="class-modal__class-name" class="flex-item-1" name="class-name" type="text" autocomplete="off" required>
                 </div>
                 <div class="field">
                     <label for="class-modal__school-select">時課表:</label>
-                    <select id="class-modal__school-select" name="school-select">
+                    <select id="class-modal__school-select" class="flex-item-1" name="school-select">
                         <option value="" selected disabled></option>
                         {% for school in schools %}
                             <option value="{{ school.SchoolId }}">{{ school.SchoolName }}</option>
                         {% endfor %}
                     </select>
                 </div>
+                <div class="field">
+                    <p>選擇課程卡片顏色:</p>
+                    <div id="class-modal__color-group">
+                        <input id="class-modal__class-color--1"  name="class-color" type="radio" value="1" checked>
+                        <input id="class-modal__class-color--2"  name="class-color" type="radio" value="2">
+                        <input id="class-modal__class-color--3"  name="class-color" type="radio" value="3">
+                        <input id="class-modal__class-color--4"  name="class-color" type="radio" value="4">
+                        <input id="class-modal__class-color--5"  name="class-color" type="radio" value="5">
+                        <input id="class-modal__class-color--6"  name="class-color" type="radio" value="6">
+                        <input id="class-modal__class-color--7"  name="class-color" type="radio" value="7">
+                        <input id="class-modal__class-color--8"  name="class-color" type="radio" value="8">
+                        <input id="class-modal__class-color--9"  name="class-color" type="radio" value="9">
+                        <input id="class-modal__class-color--10" name="class-color" type="radio" value="10">
+                        <nav>
+                            <label for="class-modal__class-color--1"  style="color: var(--clr-class-1)" class="checked"></label>
+                            <label for="class-modal__class-color--2"  style="color: var(--clr-class-2)"></label>
+                            <label for="class-modal__class-color--3"  style="color: var(--clr-class-3)"></label>
+                            <label for="class-modal__class-color--4"  style="color: var(--clr-class-4)"></label>
+                            <label for="class-modal__class-color--5"  style="color: var(--clr-class-5)"></label>
+                            <label for="class-modal__class-color--6"  style="color: var(--clr-class-6)"></label>
+                            <label for="class-modal__class-color--7"  style="color: var(--clr-class-7)"></label>
+                            <label for="class-modal__class-color--8"  style="color: var(--clr-class-8)"></label>
+                            <label for="class-modal__class-color--9"  style="color: var(--clr-class-9)"></label>
+                            <label for="class-modal__class-color--10" style="color: var(--clr-class-10)"></label>
+                        </nav>
+                    </div>
+                </div>
             </fieldset>
             <fieldset>
                 <legend>警醒</legend>
                 <div class="field">
                     <label for="class-modal__alert-interval">警醒間隔:</label>
-                    <input id="class-modal__alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                    <input id="class-modal__alert-interval" class="flex-item-1" name="alert-interval" type="number" min="5" max="50" required>
                     <label for="class-modal__alert-interval">分鐘</label>
                 </div>
                 <div class="field">
                     <label for="class-modal__alert-time">警醒持續時間:</label>
-                    <input id="class-modal__alert-time" name="alert-time" type="number" min="1" max="3" required>
+                    <input id="class-modal__alert-time" class="flex-item-1" name="alert-time" type="number" min="1" max="3" required>
                     <label for="class-modal__alert-time">分鐘</label>
                 </div>
             </fieldset>
@@ -47,7 +74,7 @@
                 <legend>參與者</legend>
                 <div class="field">
                     <label for="attendee-input">Email:</label>
-                    <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
+                    <input id="attendee-input" class="flex-item-1" name="attendee-input" type="text" autocomplete="off">
                     <button type="button" id="add-attendee-btn" class="btn-primary">新增參與者</button>
                 </div>
                 <table id="attendee-table">

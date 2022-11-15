@@ -97,8 +97,8 @@ router.post('/api/getClass', checkAuth, async (req, res) => {
 });
 
 router.post('/api/updateClass', checkHost, async (req, res) => {
-    const {classId, className, schoolId, interval, duration, attendees} = req.body;
-    const result = await updateClass(classId, className, schoolId, interval, duration, attendees);
+    const {classId, className, classColor, schoolId, interval, duration, attendees} = req.body;
+    const result = await updateClass(classId, className, schoolId, classColor, interval, duration, attendees);
     res.statusCode = result.code;
     res.send(result);
 });
@@ -117,8 +117,8 @@ router.post('/api/getClassAttendees', checkHost, async (req, res) => {
 
 router.post('/api/addClass', async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
-    const { className, schoolId, interval, duration, attendees } = req.body;
-    const result = await addClass(userId, className, schoolId, interval, duration, attendees);
+    const { className, schoolId, classColor, interval, duration, attendees } = req.body;
+    const result = await addClass(userId, className, schoolId, classColor, interval, duration, attendees);
     res.statusCode = result.code;
     res.send(result);
 });

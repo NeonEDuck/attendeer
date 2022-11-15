@@ -117,15 +117,21 @@
     <main class="light">
         <div id="class-grid">
             <div id="class-sidebar">
-                <h1 id="class-name">{{ classInfo.ClassName }}</h1>
-                <div class="flex flex-row flex-align flex-wrap">
-                    <p style="text-wrap: no-wrap;">{{ classInfo.ClassId }}</p>
-                    <div class="flex flex-row margin-inline-start-auto gap-2">
-                        {% if isHost %}
-                            <button id="setting-btn" class="btn-transparent btn-round btn-round" data-tooltip="設定">{% include 'svg/setting.svg' %}</button>
-                        {% endif %}
-                        <a href="/{{ classInfo.ClassId }}/meeting" id="call-btn" class="btn btn-primary">進入會議</a>
-                    </div>
+                <div id="class-info" style="--class-color: var(--clr-class-{{ classInfo.ClassColor }})">
+                    <header>
+                        <h1 id="class-name">{{ classInfo.ClassName }}</h1>
+                    </header>
+                    <main>
+                        <div class="flex flex-row flex-align flex-wrap">
+                            <p style="text-wrap: no-wrap;">{{ classInfo.ClassId }}</p>
+                            <div class="flex flex-row margin-inline-start-auto gap-2">
+                                {% if isHost %}
+                                    <button id="setting-btn" class="btn-transparent btn-round btn-round" data-tooltip="設定">{% include 'svg/setting.svg' %}</button>
+                                {% endif %}
+                                <a href="/{{ classInfo.ClassId }}/meeting" id="call-btn" class="btn btn-primary">進入會議</a>
+                            </div>
+                        </div>
+                    </main>
                 </div>
                 <div class="flex flex-center">
                     {% include "util/calendar.njk" %}
@@ -152,120 +158,118 @@
                 </div>
 
 
-                <div id="class-secondary">
-                    <div id="bulletin" class="flex-item-1">
-                        <div data-catagory="write" hidden>
-                            <div class="post">
-                                <h1>新增貼文</h1>
-                                <div class="flex flex-row gap-4">
-                                    <div class="flex flex-column gap-4" hidden>
-                                        <p>種類</p>
-                                        <select name="write-catagory" id="write-catagory">
-                                            <option value="announce">公告</option>
-                                            <option value="homework">作業</option>
-                                        </select>
-                                    </div>
-                                    <div class="flex flex-column gap-4 flex-item-1">
-                                        <p>標題</p>
-                                        <input type="text" id="write-title">
-                                    </div>
+                <div id="bulletin" class="flex-item-1">
+                    <div data-catagory="write" hidden>
+                        <div class="post">
+                            <h1>新增貼文</h1>
+                            <div class="flex flex-row gap-4">
+                                <div class="flex flex-column gap-4" hidden>
+                                    <p>種類</p>
+                                    <select name="write-catagory" id="write-catagory">
+                                        <option value="announce">公告</option>
+                                        <option value="homework">作業</option>
+                                    </select>
                                 </div>
-                                <p>內容</p>
-                                <textarea type="text" id="write-content" style="height: 11em; resize: vertical;"></textarea>
-                                <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
-                            </div>
-                        </div>
-
-                        <div data-catagory="chat" hidden>
-                            <div class="flex flex-column gap-4">
-                                <div class="flex flex-row flex-align gap-4 flex-item-1">
-                                    <h1>聊天紀錄</h1>
-                                    <button id="download-chat-btn">下載</button>
+                                <div class="flex flex-column gap-4 flex-item-1">
+                                    <p>標題</p>
+                                    <input type="text" id="write-title">
                                 </div>
-                                <ul id="chat-log">
-                                </ul>
                             </div>
+                            <p>內容</p>
+                            <textarea type="text" id="write-content" style="height: 11em; resize: vertical;"></textarea>
+                            <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
                         </div>
+                    </div>
 
-                        <div data-catagory="alert" hidden>
-                            <div class="flex flex-column gap-4">
-                                <div class="flex flex-row flex-align gap-4 flex-item-1">
-                                    <h1>警醒紀錄</h1>
-                                    <button id="download-alert-btn">下載</button>
-                                </div>
-                                {% if isHost %}
-                                    <div id="alert-lookup">
-
-                                        <input type="text" id="alert-lookup__search" class="search" placeholder="Search for the keyword..">
-
-                                        <div id="alert-lookup__detail" hidden></div>
-
-                                        <div id="alert-lookup__list" class="flex">
-                                            <table class="alert-lookup__table" data-type="alert">
-                                                <thead>
-                                                    <tr>
-                                                        <th>警醒類型</th>
-                                                        <th>警醒間隔</th>
-                                                        <th>持續時間</th>
-                                                        <th>建立時間</th>
-                                                        <th>問題內容</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="alert-log">
-                                                </tbody>
-                                            </table>
-
-                                            <table class="alert-lookup__table" data-type="alert-detail" hidden>
-                                                <thead>
-                                                    <tr>
-                                                        <th>姓名</th>
-                                                        <th>點擊狀態</th>
-                                                        <th>回答</th>
-                                                        <th>完成時間</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="alert-detail-log">
-                                                </tbody>
-                                            </table>
-
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <h2>目前僅提供老師端查看警醒紀錄</h1>
-                                {% endif %}
+                    <div data-catagory="chat" hidden>
+                        <div class="flex flex-column gap-4">
+                            <div class="flex flex-row flex-align gap-4 flex-item-1">
+                                <h1>聊天紀錄</h1>
+                                <button id="download-chat-btn">下載</button>
                             </div>
+                            <ul id="chat-log">
+                            </ul>
                         </div>
+                    </div>
 
-                        <div data-catagory="entire" hidden>
-                        </div>
+                    <div data-catagory="alert" hidden>
+                        <div class="flex flex-column gap-4">
+                            <div class="flex flex-row flex-align gap-4 flex-item-1">
+                                <h1>警醒紀錄</h1>
+                                <button id="download-alert-btn">下載</button>
+                            </div>
+                            {% if isHost %}
+                                <div id="alert-lookup">
 
-                        <div data-catagory="homework" hidden>
-                        </div>
+                                    <input type="text" id="alert-lookup__search" class="search" placeholder="Search for the keyword..">
 
-                        <div data-catagory="detail" hidden>
-                            <div class="flex flex-row flex-align gap-2">
-                                <div class="flex flex-column padding-inline-start-2 flex-item-1">
-                                    <h3 class="post__title">Title</h3>
-                                    <div class="flex flex-row gap-2">
-                                        <p class="post__catagory">公告</p>
-                                        <p class="post__date">2022/1/1</p>
-                                    </div>
-                                    <div class="user-records">
+                                    <div id="alert-lookup__detail" hidden></div>
+
+                                    <div id="alert-lookup__list" class="flex">
+                                        <table class="alert-lookup__table" data-type="alert">
+                                            <thead>
+                                                <tr>
+                                                    <th>警醒類型</th>
+                                                    <th>警醒間隔</th>
+                                                    <th>持續時間</th>
+                                                    <th>建立時間</th>
+                                                    <th>問題內容</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="alert-log">
+                                            </tbody>
+                                        </table>
+
+                                        <table class="alert-lookup__table" data-type="alert-detail" hidden>
+                                            <thead>
+                                                <tr>
+                                                    <th>姓名</th>
+                                                    <th>點擊狀態</th>
+                                                    <th>回答</th>
+                                                    <th>完成時間</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="alert-detail-log">
+                                            </tbody>
+                                        </table>
 
                                     </div>
                                 </div>
+                            {% else %}
+                                <h2>目前僅提供老師端查看警醒紀錄</h1>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div data-catagory="entire" hidden>
+                    </div>
+
+                    <div data-catagory="homework" hidden>
+                    </div>
+
+                    <div data-catagory="detail" hidden>
+                        <div class="flex flex-row flex-align gap-2">
+                            <div class="flex flex-column padding-inline-start-2 flex-item-1">
+                                <h3 class="post__title">Title</h3>
+                                <div class="flex flex-row gap-2">
+                                    <p class="post__catagory">公告</p>
+                                    <p class="post__date">2022/1/1</p>
+                                </div>
+                                <div class="user-records">
+
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="loading">
-                            <p style="text-align: center">讀取中...</p>
-                        </div>
+                    <div class="loading">
+                        <p style="text-align: center">讀取中...</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <button id="back-to-top-btn" hidden><i class='bx bx-arrow-from-bottom icon arrow-from-bottom'></i></button>
+        <button id="back-to-top-btn" hidden>{% include 'svg/up_arrow.svg' %}</button>
 
         {% include "util/class_modal.njk" %}
     </main>

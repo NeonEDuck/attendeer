@@ -79,9 +79,16 @@ function generateClassId() {
 
 export function getClasses(userId) {
     return query(`
-        SELECT DISTINCT Classes.* FROM Classes
+        SELECT DISTINCT Classes.*, IFNULL(ClassHour, 0) as ClassHour, Users.UserName as HostName FROM Classes
         LEFT JOIN ClassAttendees
         ON Classes.ClassId = ClassAttendees.ClassId
+        LEFT JOIN Users
+        ON Classes.HostId = Users.userId
+        LEFT JOIN (
+            SELECT ClassId, COUNT(*) as ClassHour FROM Schedules
+            GROUP BY ClassId
+        ) as tmp
+        ON Classes.ClassId = tmp.ClassId
         WHERE Classes.HostId = :userId
         OR ClassAttendees.UserId = :userId
     `, {userId});
@@ -94,7 +101,7 @@ export function getClass(classId) {
     `, {classId});
 }
 
-export async function addClass(userId, className, schoolId, interval, duration, attendees) {
+export async function addClass(userId, className, schoolId, classColor, interval, duration, attendees) {
     let classId;
     while ((await getClass(classId = generateClassId())).length > 0) {
         // 生成隨機ClassId，如果有與已存在的課程ClassId衝突到，重新再生成
@@ -103,8 +110,8 @@ export async function addClass(userId, className, schoolId, interval, duration, 
     try {
         await transactionQuery(async (query) => {
             await query(`
-                INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, 1, :interval, :duration)
-            `, { classId, className, userId, schoolId, interval, duration });
+                INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, :classColor, 1, :interval, :duration)
+            `, { classId, className, userId, schoolId, classColor, interval, duration });
 
 
             const promises = []
@@ -131,13 +138,13 @@ export async function addClass(userId, className, schoolId, interval, duration, 
     return {"code": 201, "message": "Request has been successfully fulfilled."};
 }
 
-export async function updateClass(classId, className, schoolId, interval, duration, attendees) {
+export async function updateClass(classId, className, schoolId, classColor, interval, duration, attendees) {
     try {
         await transactionQuery(async (query) => {
             await query(`
-                UPDATE Classes SET ClassName = :className, SchoolId = :schoolId, \`Interval\` = :interval, Duration = :duration
+                UPDATE Classes SET ClassName = :className, SchoolId = :schoolId, ClassColor = :classColor, \`Interval\` = :interval, Duration = :duration
                 WHERE ClassId = :classId
-            `, {classId, className, schoolId, interval, duration});
+            `, {classId, className, schoolId, classColor, interval, duration});
 
             await query(`DELETE FROM ClassAttendees WHERE ClassId = :classId`, { classId });
 
@@ -146,7 +153,7 @@ export async function updateClass(classId, className, schoolId, interval, durati
                 promises.push(new Promise(async (resolve, reject) => {
                     try {
                         const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
-                        await query(conn, `INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
+                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
                         resolve();
                     }
                     catch (err) {
@@ -159,6 +166,7 @@ export async function updateClass(classId, className, schoolId, interval, durati
         });
     }
     catch (err) {
+        console.error(err);
         return {"code": 400, "message": "Data 'attendees' contains invaild user."};
     }
     return {"code": 201, "message": "Request has been successfully fulfilled."};

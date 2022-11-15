@@ -1,35 +1,98 @@
 .class-card-template {
+
     display: flex;
-    flex-direction: column;
-    aspect-ratio: 8 / 5;
+    flex-direction: row;
+    aspect-ratio: 3 / 1;
 
     background-color: var(--clr-component-500);
     box-shadow: var(--box-shadow-500);
 
-    position: relative;
     border-radius: 1em;
+    overflow: hidden;
+    transition: transform var(--transition-timing), box-shadow var(--transition-timing);
+
+    button {
+        font-size: 4rem;
+        color: var(--clr-text-500-reverse);
+        background-color: var(--clr-component-500-reverse);
+        &:hover {
+            background-color: var(--clr-component-700-reverse);
+        }
+    }
+
+    &:hover{
+        box-shadow: 0 10px 15px rgb(0, 0, 0, 0.4);
+        transform: perspective(50em) translateZ(1em);
+        z-index: 50;
+    }
 }
 
 .class-card {
     @extend .class-card-template;
-    padding: 0.5em;
-    transition: transform var(--transition-timing), box-shadow var(--transition-timing);
-    &__name {
-        font-size: 2rem;
+
+    header {
+        display: flex;
+        flex-direction: column;
+        min-width: 10em;
+        height: 100%;
+        background-color: var(--class-color, var(--clr-class-1));
+        padding: 1em;
+        * {
+            color: #fff;
+        }
+        :last-child {
+            margin-top: auto;
+        }
     }
 
-    &__btn-group {
-        margin-block-start: auto;
-        margin-inline-start: auto;
+    &__content {
+        position: relative;
+        padding: 2em;
+        width: 100%;
+    }
+
+    &__button {
+        --side-length: 2em;
+        --padding: 0.5em;
+
         display: flex;
         flex-direction: row;
-        gap: 0.5em;
-    }
+        align-items: center;
+        justify-content: space-between;
+        position: absolute;
+        right: 1em;
+        bottom: 1em;
+        padding: var(--padding);
+        height: var(--side-length);
+        width: var(--side-length);
+        overflow: hidden;
+        background-color: var(--clr-component-500-reverse) ;
+        border-radius: calc(var(--side-length) / 3);
+        text-decoration: none;
 
-    &:hover {
-        box-shadow: var(--box-shadow-700);
-        transform: perspective(500px) translateZ(10px);
-        z-index: 50;
+        cursor: pointer;
+        transition: width var(--transition-timing);
 
+        span {
+            max-width: 0%;
+            color: transparent;
+            word-break: keep-all;
+            transition: color var(--transition-timing), max-width var(--transition-timing);
+        }
+
+        svg {
+            path, circle {
+                fill: var(--clr-text-700-reverse);
+            }
+        }
+
+        &:hover {
+            width: 5em;
+
+            span {
+                max-width: 100%;
+                color: var(--clr-text-700-reverse);
+            }
+        }
     }
 }

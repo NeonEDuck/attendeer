@@ -5,6 +5,7 @@ html, body {
 body {
     background-color: var(--clr-body);
     color: var(--clr-text-500);
+    transition: var(--transition-color);
 }
 
 html, body, input, button, textarea {
