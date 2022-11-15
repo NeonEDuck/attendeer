@@ -497,7 +497,7 @@ enterBtn.addEventListener('click', async () => {
         console.log('您是會議主辦人');
 
         // DELETE FROM AlertRecords WHERE ClassId = :classId and Finished = 0 (true?)
-        await apiCall('deleteAlertRecords', {classId})
+        await apiCall('deleteUnfinishedRecords', {classId})
         console.log('del alert');
 
         // const q1 = query(alertRecords, where('done', '==', false ));
@@ -508,7 +508,7 @@ enterBtn.addEventListener('click', async () => {
         //     await deleteDoc(alertDoc);
 
         // });
-        
+
         // let dataAlert = {
         //     alert: {
         //         interval: interval,
@@ -883,7 +883,7 @@ async function startAlert() {
     const currentAlertSchedulerVersion = alertSchedulerVersion;
 
     //UPDATE AlertRecords SET Outdated = 1 WHERE ClassId = :classId and Finished = 0
-    await apiCall('updateAlertRecords', {classId})
+    await apiCall('expireUnfinishedRecords', {classId})
 
     // const q1 = query(alertRecords, where('done', '==', false ));
     // const snapshot1 = await getDocs(q1);
@@ -891,7 +891,7 @@ async function startAlert() {
     //     const alertDoc  =   doc(alertRecords, alert.id);
     //     await updateDoc(alertDoc, {outdated: true});
     // });
-    
+
     while (true) {
         console.log('123123')
         try {
@@ -900,12 +900,9 @@ async function startAlert() {
 
             let dataNormal = {
                 classId,
-                AlertType:globalAlertType,
-                Interval:globalInterval,
-                Duration:globalTime,
-                Start: false,
-                Finished: false,
-                Outdated: false
+                alertType: globalAlertType,
+                interval: globalInterval,
+                duration: globalTime,
             };
 
             if( globalAlertType != AlertTypeEnum.Click ) {
@@ -914,17 +911,17 @@ async function startAlert() {
 
             //INSERT INTO AlertRecords VALUES (dataNormal)
             const response = await apiCall('addAlertRecord', dataNormal)
-            const { insertedId: recordId, Outdated: outdated } = await response.json();
+            const { insertedId: recordId } = await response.json();
 
             // setDoc(alertDocCurrently, dataNormal);
 
             console.log('add alert');
-            
+
             // let alertPrevious = alertDocCurrently;
             console.log(MINUTE);
             await delay( globalInterval * MINUTE );
 
-            await apiCall('UpdateAlertRecord', { classId, recordId, start: true })
+            await apiCall('turnOnRecord', { classId, recordId })
 
             // updateDoc(alertPrevious, {started: true});
 
@@ -932,17 +929,23 @@ async function startAlert() {
 
             await delay( globalTime * MINUTE );
 
-            if (outdated === true) {
-                await apiCall('DeleteAlertRecord', { classId, recordId })
+            const response2 = await apiCall('finishRecord', { classId, recordId })
+            if (response2.status === 201) { // finished
+                globalAlertType = AlertTypeEnum.Click;
             }
-            else {
-                await apiCall('UpdateAlertRecord', { classId, recordId, finished: true})
-    
-                console.log('alert done');
+            else if (response2.status === 204) { // outdated
 
-                globalAlertType = AlertTypeEnum.Click
             }
-            
+            // if (outdated === true) {
+            //     await apiCall('DeleteAlertRecord', { classId, recordId })
+            // }
+            // else {
+            //     await apiCall('UpdateAlertRecord', { classId, recordId, finished: true})
+
+            //     console.log('alert done');
+            //     globalAlertType = AlertTypeEnum.Click
+            // }
+
             // if ((await getDoc(alertPrevious))?.outdated === true) {
             //     deleteDoc(alertPrevious);
             // }

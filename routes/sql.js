@@ -172,6 +172,19 @@ export async function updateClass(classId, className, schoolId, classColor, inte
     return {"code": 201, "message": "Request has been successfully fulfilled."};
 }
 
+export async function updateClassAlertRecord(classId, interval, duration) {
+    try {
+        await query(`
+            UPDATE Classes SET Interval = :interval, Duration = :duration
+            WHERE ClassId = :classId
+        `, { classId, interval, duration });
+    }
+    catch (e) {
+        return {"code": 400, "message": "Body contains invaild data."};
+    }
+    return {"code": 201, "message": "Request has been successfully fulfilled."};
+}
+
 export async function deleteClass(classId) {
     try {
         await query(`DELETE FROM Classes WHERE ClassId = :classId`, { classId });
@@ -393,6 +406,64 @@ export async function getAlertReacts(classId) {
         LEFT JOIN AlertRecordReacts
         ON Reference.RecordId = AlertRecordReacts.RecordId AND Reference.UserId = AlertRecordReacts.UserId
     `, {classId});
+}
+
+export async function addAlertRecord(classId, alertType, interval, duration, question, multipleChoice, answer) {
+    return await query(`
+        INSERT INTO AlertRecords (ClassId, AlertType, Interval, Duration, Question, MultipleChoice, Answer) VALUES
+        (:classId, :alertType, :interval, :duration)
+    `, {classId, alertType, interval, duration, question, multipleChoice, answer});
+}
+
+export async function deleteUnfinishedRecords(classId) {
+    return await query(`
+        DELETE FROM AlertRecords
+        WHERE ClassId = :classId
+        AND Finished = false
+    `, {classId});
+}
+
+export async function expireUnfinishedRecords(classId) {
+    return await query(`
+        DELETE FROM AlertRecords
+        WHERE ClassId = :classId
+        AND Finished = false
+    `, {classId});
+}
+
+export async function turnOnRecord(recordId) {
+    return await query(`
+        UPDATE AlertRecords SET Start = true
+        WHERE RecordId = :recordId
+    `, {recordId});
+}
+
+export async function finishRecord(recordId) {
+    try {
+        await transactionQuery(async (query) => {
+            const [{Outdated: outdated}] = await query(`
+                SELECT Outdated FROM AlertRecords
+                WHERE RecordId = :recordId
+            `);
+            if (outdated) {
+                await query(`
+                    DELETE FROM AlertRecords
+                    WHERE RecordId = :recordId
+                `);
+                return {"code": 204, "message": "Record has been deleted."};
+            }
+            else {
+                await query(`
+                    UPDATE AlertRecords SET Finished = true
+                    WHERE RecordId = :recordId
+                `, {recordId});
+                return {"code": 201, "message": "Request has been successfully fulfilled."};
+            }
+        });
+    }
+    catch (e) {
+        return {"code": 400, "message": "Body contains invaild data."};
+    }
 }
 
 export async function uploadSQL() {

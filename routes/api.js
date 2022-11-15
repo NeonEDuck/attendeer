@@ -38,6 +38,12 @@ import {
     getAlertRecords,
     getAlertRecordReacts,
     getAlertReacts,
+    addAlertRecord,
+    deleteUnfinishedRecords,
+    expireUnfinishedRecords,
+    turnOnRecord,
+    finishRecord,
+    updateClassAlertRecord,
 } from './sql.js';
 
 const router = Router();
@@ -99,6 +105,13 @@ router.post('/api/getClass', checkAuth, async (req, res) => {
 router.post('/api/updateClass', checkHost, async (req, res) => {
     const {classId, className, classColor, schoolId, interval, duration, attendees} = req.body;
     const result = await updateClass(classId, className, schoolId, classColor, interval, duration, attendees);
+    res.statusCode = result.code;
+    res.send(result);
+});
+
+router.post('/api/updateClassAlertRecord', checkHost, async (req, res) => {
+    const {classId, interval, duration} = req.body;
+    const result = await updateClassAlertRecord(classId, interval, duration);
     res.statusCode = result.code;
     res.send(result);
 });
@@ -305,6 +318,33 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
 
     // XLSX.writeFile(workbook, './test.xlsx', {type: 'base64'})
     res.send(XLSX.write(workbook, {type: 'base64'}));
+});
+
+router.post('/api/addAlertRecord', checkHost, async () => {
+    const { classId, alertType, interval, duration, Question: question, MultipleChoice: multipleChoice, Answear: answer } = req.body;
+    return await addAlertRecord(classId, alertType, interval, duration, question, answer, multipleChoice);
+});
+
+router.post('/api/deleteUnfinishedRecords', checkHost, async () => {
+    const { classId } = req.body;
+    return await deleteUnfinishedRecords(classId);
+});
+
+router.post('/api/expireUnfinishedRecords', checkHost, async () => {
+    const { classId } = req.body;
+    return await expireUnfinishedRecords(classId);
+});
+
+router.post('/api/turnOnRecord', checkHost, async () => {
+    const { recordId } = req.body;
+    return await turnOnRecord(recordId);
+});
+
+router.post('/api/finishRecord', checkHost, async () => {
+    const { recordId } = req.body;
+    const result = await finishRecord(recordId);
+    res.statusCode = result.code;
+    res.send(result);
 });
 
 router.post('/api/_uploadSQL', async (req, res) => {

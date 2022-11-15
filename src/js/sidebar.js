@@ -530,11 +530,11 @@ submitSettingBtn.addEventListener('click', async () => {
 
         const data = {
             classId,
-            Interval:interval,
-            Duration:time,
+            interval:interval,
+            duration:time,
         }
         // UPDATE Classes SET Interval = :interval, Duration= :time WHERE ClassId = :classId
-        await apiCall('updateClass', data)
+        await apiCall('updateClassAlertRecord', data)
         // const callDoc = doc(calls, classId);
         // await updateDoc(callDoc, data);
 
@@ -602,14 +602,14 @@ choose1.addEventListener('click', () => {
             // }
             // const callDoc = doc(calls, classId);
             // await updateDoc(callDoc, data);
-                
+
             const data = {
                 classId,
                 Interval:interval,
                 Duration:time,
             }
             await apiCall('updateClass', data)
-    
+
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
             alertInfo.classList.remove("close");
@@ -756,14 +756,14 @@ choose2.addEventListener('click', () => {
             // }
             // const callDoc = doc(calls, classId);
             // await updateDoc(callDoc, dataAlert);
-            
+
             const data = {
                 classId,
                 Interval:interval,
                 Duration:time,
             }
             await apiCall('updateClass', data)
-    
+
 
             current = 0;
             optionsTotal = 0;
@@ -887,7 +887,7 @@ choose3.addEventListener('click', () => {
         // }
         // const callDoc = doc(calls, classId);
         // await updateDoc(callDoc, dataAlert);
-        
+
         const data = {
             classId,
             Interval:interval,
@@ -1009,7 +1009,7 @@ choose4.addEventListener('click', () => {
 
         // const callDoc = doc(calls, classId);
         // await updateDoc(callDoc, dataAlert);
-        
+
         const data = {
             classId,
             Interval:interval,
