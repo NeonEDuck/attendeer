@@ -893,7 +893,6 @@ async function startAlert() {
     // });
 
     while (true) {
-        console.log('123123')
         try {
 
             // alertDocCurrently = doc(alertRecords);
@@ -911,7 +910,7 @@ async function startAlert() {
 
             //INSERT INTO AlertRecords VALUES (dataNormal)
             const response = await apiCall('addAlertRecord', dataNormal)
-            const { insertedId: recordId } = await response.json();
+            const { insertId: recordId } = await response.json();
 
             // setDoc(alertDocCurrently, dataNormal);
 

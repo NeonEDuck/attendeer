@@ -1,7 +1,7 @@
 import { firestore } from './firebase-config.js';
 import { collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import 'webrtc-adapter';
-import { AlertTypeEnum, getUser } from './util.js';
+import { getKeyByValue, apiCall, AlertTypeEnum } from './util.js';
 import { prefab } from './prefab.js';
 import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice } from './meeting.js';
 
@@ -55,6 +55,10 @@ const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
       choose3                  = floatingAlert.querySelector('#choose-3'),
       choose4                  = floatingAlert.querySelector('#choose-4');
 
+const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
+const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
+const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
+
 // Global variable
 let current = 0;
 let optionsTotal = 0;
@@ -65,13 +69,7 @@ let question;
 let answearID;
 let multipleChoice;
 export let dataMultipleChoice = {};
-
-let localUserId = null;
-
-// Firestore
-const calls   = collection(firestore, 'calls');
-const classId  = document.querySelector('#class-id')?.value?.trim() || document.querySelector('#class-id').innerHTML?.trim();
-const callDoc = doc(calls, classId);
+let isHost = localUserId === hostId;
 
 //開關sidebar
 toggle.addEventListener("click", () =>{
@@ -112,11 +110,11 @@ export function sidebarListener() {
             hiddenAllFloating();
 
             if(navText === '警醒資訊') {
-                const { host } = (await getDoc(callDoc)).data();
-                const user = await getUser();
-                localUserId = user.uid;
+                // const { host } = (await getDoc(callDoc)).data();
+                // const user = await getUser();
+
                 floatingAlert.hidden = false;
-                if (localUserId === host){
+                if (isHost){
                     console.log('會議主辦人警醒資訊');
                     closeModalForm();
                 }else {
@@ -176,7 +174,7 @@ async function closeModalForm() {
 
     floatingAlert.style.opacity = 1;
 
-    infoType.innerHTML = globalAlertType;
+    infoType.innerHTML = getKeyByValue(AlertTypeEnum, globalAlertType);
     infoInterval.value = globalInterval;
     infoTime.value     = globalTime;
     fieldset.innerHTML = '';
@@ -476,7 +474,7 @@ submitSettingBtn.addEventListener('click', async () => {
                 dataMultipleChoice = {
                     Question: question,
                     Answear: answearID,
-                    MultipleChoice: multipleChoice,
+                    MultipleChoice: multipleChoice.toString(),
                 }
             }
         }else if(alertType === AlertTypeEnum.EssayQuestion) {
@@ -517,7 +515,7 @@ submitSettingBtn.addEventListener('click', async () => {
 
             dataMultipleChoice = {
                 Question: question,
-                MultipleChoice: multipleChoice,
+                MultipleChoice: multipleChoice.toString(),
             }
         }
 
@@ -605,10 +603,10 @@ choose1.addEventListener('click', () => {
 
             const data = {
                 classId,
-                Interval:interval,
-                Duration:time,
+                interval:interval,
+                duration:time,
             }
-            await apiCall('updateClass', data)
+            await apiCall('updateClassAlertRecord', data)
 
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -746,7 +744,7 @@ choose2.addEventListener('click', () => {
             dataMultipleChoice = {
                 Question: globalQuestion,
                 Answear: globalAnswear,
-                MultipleChoice: globalMultipleChoice,
+                MultipleChoice: globalMultipleChoice.toString(),
             }
             // let dataAlert = {
             //     alert: {
@@ -759,10 +757,10 @@ choose2.addEventListener('click', () => {
 
             const data = {
                 classId,
-                Interval:interval,
-                Duration:time,
+                interval:interval,
+                duration:time,
             }
-            await apiCall('updateClass', data)
+            await apiCall('updateClassAlertRecord', data)
 
 
             current = 0;
@@ -890,10 +888,10 @@ choose3.addEventListener('click', () => {
 
         const data = {
             classId,
-            Interval:interval,
-            Duration:time,
+            interval:interval,
+            duration:time,
         }
-        await apiCall('updateClass', data)
+        await apiCall('updateClassAlertRecord', data)
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -997,7 +995,7 @@ choose4.addEventListener('click', () => {
 
         dataMultipleChoice = {
             Question: question,
-            MultipleChoice: multipleChoice,
+            MultipleChoice: multipleChoice.toString(),
         }
 
         // let dataAlert = {
@@ -1012,10 +1010,10 @@ choose4.addEventListener('click', () => {
 
         const data = {
             classId,
-            Interval:interval,
-            Duration:time,
+            interval:interval,
+            duration:time,
         }
-        await apiCall('updateClass', data)
+        await apiCall('updateClassAlertRecord', data)
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 

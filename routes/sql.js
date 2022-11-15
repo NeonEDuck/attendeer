@@ -17,19 +17,19 @@ export async function transactionQuery(cb) {
                 if (err) {
                     throw err;
                 };
-                await new Promise((resolve, reject) => {
+                const result = await new Promise((resolve, reject) => {
                     conn.beginTransaction(async (err) => {
                         if (err) {
                             reject(err);
                         }
                         try {
-                            await cb((sqlString, values) => {query(sqlString, values, conn)});
+                            const result = await cb((sqlString, values) => {return query(sqlString, values, conn)});
                             conn.commit((err) => {
                                 if (err) {
                                     throw err;
                                 }
                                 conn.release();
-                                resolve();
+                                resolve(result);
                             });
                         }
                         catch (err) {
@@ -37,7 +37,7 @@ export async function transactionQuery(cb) {
                         }
                     });
                 });
-                resolve();
+                resolve(result);
             }
             catch (err) {
                 conn.rollback(() => {
@@ -172,12 +172,12 @@ export async function updateClass(classId, className, schoolId, classColor, inte
     return {"code": 201, "message": "Request has been successfully fulfilled."};
 }
 
-export async function updateClassAlertRecord(classId, interval, duration) {
+export async function updateClassAlertRecord(classId, interval, time) {
     try {
         await query(`
-            UPDATE Classes SET Interval = :interval, Duration = :duration
+            UPDATE Classes SET \`Interval\` = :interval, Duration = :time
             WHERE ClassId = :classId
-        `, { classId, interval, duration });
+        `, { classId, interval, time });
     }
     catch (e) {
         return {"code": 400, "message": "Body contains invaild data."};
@@ -410,8 +410,8 @@ export async function getAlertReacts(classId) {
 
 export async function addAlertRecord(classId, alertType, interval, duration, question, multipleChoice, answer) {
     return await query(`
-        INSERT INTO AlertRecords (ClassId, AlertType, Interval, Duration, Question, MultipleChoice, Answer) VALUES
-        (:classId, :alertType, :interval, :duration)
+        INSERT INTO AlertRecords (ClassId, AlertType, \`Interval\`, Duration, Question, MultipleChoice, Answer) VALUES
+        (:classId, :alertType, :interval, :duration, :question, :multipleChoice, :answer)
     `, {classId, alertType, interval, duration, question, multipleChoice, answer});
 }
 
@@ -440,16 +440,16 @@ export async function turnOnRecord(recordId) {
 
 export async function finishRecord(recordId) {
     try {
-        await transactionQuery(async (query) => {
+        return await transactionQuery(async (query) => {
             const [{Outdated: outdated}] = await query(`
                 SELECT Outdated FROM AlertRecords
                 WHERE RecordId = :recordId
-            `);
+            `, {recordId});
             if (outdated) {
                 await query(`
                     DELETE FROM AlertRecords
                     WHERE RecordId = :recordId
-                `);
+                `, {recordId});
                 return {"code": 204, "message": "Record has been deleted."};
             }
             else {

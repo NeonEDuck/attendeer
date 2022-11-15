@@ -322,7 +322,7 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
 
 router.post('/api/addAlertRecord', checkHost, async (req, res) => {
     const { classId, alertType, interval, duration, Question: question, MultipleChoice: multipleChoice, Answear: answer } = req.body;
-    res.send(await addAlertRecord(classId, alertType, interval, duration, question, answer, multipleChoice));
+    res.send(await addAlertRecord(classId, alertType, interval, duration, question, multipleChoice, answer));
 });
 
 router.post('/api/deleteUnfinishedRecords', checkHost, async (req, res) => {
