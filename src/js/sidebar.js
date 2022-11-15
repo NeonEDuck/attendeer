@@ -186,7 +186,7 @@ async function closeModalForm() {
     const label = document.createElement('label');
     const textarea = document.createElement('textarea');
 
-    if(globalAlertType === 'click') {
+    if(globalAlertType === AlertTypeEnum.Click) {
         fieldset.hidden = true;
     }else {
         fieldset.hidden = false;
@@ -199,7 +199,7 @@ async function closeModalForm() {
         textarea.innerHTML = globalQuestion;
         fieldset.appendChild(textarea);
     }
-    if(globalAlertType === 'multiple choice') {
+    if(globalAlertType === AlertTypeEnum.MultipleChoice) {
         legend.innerHTML = '選擇題';
         label.innerHTML = '問題:';
 
@@ -529,13 +529,14 @@ submitSettingBtn.addEventListener('click', async () => {
         alertType = globalAlertType;
 
         const data = {
-            alert: {
-                interval,
-                time,
-            },
+            classId,
+            Interval:interval,
+            Duration:time,
         }
-        const callDoc = doc(calls, classId);
-        await updateDoc(callDoc, data);
+        // UPDATE Classes SET Interval = :interval, Duration= :time WHERE ClassId = :classId
+        await apiCall('updateClass', data)
+        // const callDoc = doc(calls, classId);
+        // await updateDoc(callDoc, data);
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -593,14 +594,22 @@ choose1.addEventListener('click', () => {
             interval = Number(alertInterval.value);
             time     = Number(alertTime.value);
 
+            // const data = {
+            //     alert: {
+            //         interval:interval,
+            //         time:time,
+            //     },
+            // }
+            // const callDoc = doc(calls, classId);
+            // await updateDoc(callDoc, data);
+                
             const data = {
-                alert: {
-                    interval:interval,
-                    time:time,
-                },
+                classId,
+                Interval:interval,
+                Duration:time,
             }
-            const callDoc = doc(calls, classId);
-            await updateDoc(callDoc, data);
+            await apiCall('updateClass', data)
+    
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
             alertInfo.classList.remove("close");
@@ -739,14 +748,22 @@ choose2.addEventListener('click', () => {
                 Answear: globalAnswear,
                 MultipleChoice: globalMultipleChoice,
             }
-            let dataAlert = {
-                alert: {
-                    interval: globalInterval,
-                    time: globalTime,
-                },
+            // let dataAlert = {
+            //     alert: {
+            //         interval: globalInterval,
+            //         time: globalTime,
+            //     },
+            // }
+            // const callDoc = doc(calls, classId);
+            // await updateDoc(callDoc, dataAlert);
+            
+            const data = {
+                classId,
+                Interval:interval,
+                Duration:time,
             }
-            const callDoc = doc(calls, classId);
-            await updateDoc(callDoc, dataAlert);
+            await apiCall('updateClass', data)
+    
 
             current = 0;
             optionsTotal = 0;
@@ -862,14 +879,21 @@ choose3.addEventListener('click', () => {
             Question: question,
         }
 
-        let dataAlert = {
-            alert: {
-                interval: interval,
-                time: time,
-            },
+        // let dataAlert = {
+        //     alert: {
+        //         interval: interval,
+        //         time: time,
+        //     },
+        // }
+        // const callDoc = doc(calls, classId);
+        // await updateDoc(callDoc, dataAlert);
+        
+        const data = {
+            classId,
+            Interval:interval,
+            Duration:time,
         }
-        const callDoc = doc(calls, classId);
-        await updateDoc(callDoc, dataAlert);
+        await apiCall('updateClass', data)
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -976,15 +1000,23 @@ choose4.addEventListener('click', () => {
             MultipleChoice: multipleChoice,
         }
 
-        let dataAlert = {
-            alert: {
-                interval: interval,
-                time: time,
-            },
-        }
+        // let dataAlert = {
+        //     alert: {
+        //         interval: interval,
+        //         time: time,
+        //     },
+        // }
 
-        const callDoc = doc(calls, classId);
-        await updateDoc(callDoc, dataAlert);
+        // const callDoc = doc(calls, classId);
+        // await updateDoc(callDoc, dataAlert);
+        
+        const data = {
+            classId,
+            Interval:interval,
+            Duration:time,
+        }
+        await apiCall('updateClass', data)
+
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
         voteSetting.hidden = true;

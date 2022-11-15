@@ -237,10 +237,18 @@ notifyDismissBtn.addEventListener('click', async () => {
 
 enterBtn.addEventListener('click', async () => {
     const response1 = await apiCall('getClass', {classId});
-    const classData = response1.json();
+    const classData = await response1.json();
     const { Interval: interval, Duration: duration } = classData;
+    console.log(classData);
+    console.log(classData.Interval);
+    console.log(interval);
     const response2 = await apiCall('getSchoolPeriods', {schoolId: classData.SchoolId});
     schoolPeriods = await response2.json();
+    schoolPeriods = schoolPeriods.map((e) => {
+        e.StartTime = new Date(e.StartTime);
+        e.EndTime = new Date(e.EndTime);
+        return e;
+    })
 
     socket.on('user-connected', async (socketId, userId) => {
         console.log(`user connected: ${userId}`);
@@ -500,7 +508,7 @@ enterBtn.addEventListener('click', async () => {
         //     await deleteDoc(alertDoc);
 
         // });
-        apiCall('updateClassAlert', {classId, interval, duration})
+        
         // let dataAlert = {
         //     alert: {
         //         interval: interval,
@@ -805,7 +813,7 @@ let alertSchedulerVersion = 0;
 export async function setupAlertScheduler() {
     console.log('setupAlertScheduler');
 
-    startAlert();
+    await startAlert();
 
     // intervalID = setIntervalImmediately(async () => {
 
@@ -883,8 +891,9 @@ async function startAlert() {
     //     const alertDoc  =   doc(alertRecords, alert.id);
     //     await updateDoc(alertDoc, {outdated: true});
     // });
-
+    
     while (true) {
+        console.log('123123')
         try {
 
             // alertDocCurrently = doc(alertRecords);
@@ -903,17 +912,19 @@ async function startAlert() {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
-            await apiCall('addAlertRecord', dataNormal)
+            //INSERT INTO AlertRecords VALUES (dataNormal)
+            const response = await apiCall('addAlertRecord', dataNormal)
+            const { insertedId: recordId, Outdated: outdated } = await response.json();
 
             // setDoc(alertDocCurrently, dataNormal);
 
             console.log('add alert');
-
-            let alertPrevious = alertDocCurrently;
-
+            
+            // let alertPrevious = alertDocCurrently;
+            console.log(MINUTE);
             await delay( globalInterval * MINUTE );
 
-            await apiCall('UpdateAlertRecord', {classId,})
+            await apiCall('UpdateAlertRecord', { classId, recordId, start: true })
 
             // updateDoc(alertPrevious, {started: true});
 
@@ -921,23 +932,34 @@ async function startAlert() {
 
             await delay( globalTime * MINUTE );
 
-            if ((await getDoc(alertPrevious))?.data()?.outdated === true) {
-                deleteDoc(alertPrevious);
+            if (outdated === true) {
+                await apiCall('DeleteAlertRecord', { classId, recordId })
             }
             else {
-                updateDoc(alertPrevious, {done: true});
+                await apiCall('UpdateAlertRecord', { classId, recordId, finished: true})
+    
                 console.log('alert done');
-
-                let dataAlert = {
-                    alert: {
-                        interval: globalInterval,
-                        time: globalTime,
-                    },
-                }
-                updateDoc(callDoc, dataAlert);
 
                 globalAlertType = AlertTypeEnum.Click
             }
+            
+            // if ((await getDoc(alertPrevious))?.outdated === true) {
+            //     deleteDoc(alertPrevious);
+            // }
+            // else {
+            //     updateDoc(alertPrevious, {done: true});
+            //     console.log('alert done');
+
+            //     let dataAlert = {
+            //         alert: {
+            //             interval: globalInterval,
+            //             time: globalTime,
+            //         },
+            //     }
+            //     updateDoc(callDoc, dataAlert);
+
+            //     globalAlertType = AlertTypeEnum.Click
+            // }
 
         } catch (error) {
 
