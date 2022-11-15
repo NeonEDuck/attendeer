@@ -526,7 +526,13 @@ enterBtn.addEventListener('click', async () => {
     else {
         console.log('您不是會議主辦人');
 
-        setupAlertListener();
+        socket.on('catch-alert-start', async (recordId) => {
+            const response = await apiCall('getAlertRecord', {classId, recordId});
+            const alertRecord = await response.json();
+
+        });
+
+        // setupAlertListener();
     }
 
     confirmPanel.remove();
@@ -920,7 +926,8 @@ async function startAlert() {
             console.log(MINUTE);
             await delay( globalInterval * MINUTE );
 
-            await apiCall('turnOnRecord', { classId, recordId })
+            await apiCall('turnOnRecord', { classId, recordId });
+            socket.emit('throw-alert-start', {recordId});
 
             // updateDoc(alertPrevious, {started: true});
 

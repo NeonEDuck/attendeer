@@ -44,6 +44,7 @@ import {
     turnOnRecord,
     finishRecord,
     updateClassAlertRecord,
+    getAlertRecord,
 } from './sql.js';
 
 const router = Router();
@@ -252,6 +253,14 @@ router.post('/api/getAlertRecords', checkHost, async (req, res) => {
         x.MultipleChoice = JSON.parse(x.MultipleChoice);
         return x;
     }));
+});
+
+router.post('/api/getAlertRecord', checkHost, async (req, res) => {
+    const { recordId } = req.body;
+    res.send((await getAlertRecord(recordId)).map((x) => {
+        x.MultipleChoice = JSON.parse(x.MultipleChoice);
+        return x;
+    })?.[0] || {});
 });
 
 router.post('/api/getAlertRecordReacts', checkHost, async (req, res) => {

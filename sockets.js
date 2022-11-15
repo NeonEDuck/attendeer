@@ -50,6 +50,11 @@ export default function(io) {
                 socket.to(socketId).emit('catch-inform-status', data);
             });
 
+            socket.on('throw-alert-start', (recordId) => {
+                console.log(`throw-alert-start`)
+                socket.broadcast.to(classId).emit('catch-alert-start', recordId);
+            });
+
             socket.on('disconnect', () => {
                 socket.broadcast.to(classId).emit('user-disconnected', userId);
             });

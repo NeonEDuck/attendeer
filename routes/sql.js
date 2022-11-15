@@ -373,10 +373,18 @@ export async function addClassMessage(classId, userId, content) {
 
 export async function getAlertRecords(classId) {
     return await query(`
-        SELECT RecordId, AlertType.AlertId as AlertTypeId, AlertType.AlertName as AlertType, \`Interval\`, Duration, Finished, Question, MultipleChoice, Answer, Timestamp FROM AlertRecords
+        SELECT RecordId, AlertType.AlertId as AlertTypeId, AlertType.AlertName as AlertType, \`Interval\`, Duration, Start, Finished, Question, MultipleChoice, Answer, Timestamp FROM AlertRecords
         LEFT JOIN AlertType ON AlertRecords.AlertType = AlertType.AlertId
         WHERE ClassId = :classId
     `, {classId});
+}
+
+export async function getAlertRecord(recordId) {
+    return await query(`
+        SELECT RecordId, AlertType.AlertId as AlertTypeId, AlertType.AlertName as AlertType, \`Interval\`, Duration, Start, Finished, Question, MultipleChoice, Answer, Timestamp FROM AlertRecords
+        LEFT JOIN AlertType ON AlertRecords.AlertType = AlertType.AlertId
+        WHERE RecordId = :recordId
+    `, {recordId});
 }
 
 export async function getAlertRecordReacts(classId, recordId) {
