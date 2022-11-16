@@ -418,7 +418,7 @@ export async function addAlertRecordReact(recordId, userId) {
 
 export async function updateAlertRecordReact(reactId, userId, click, answer) {
     return await query(`
-        UPDATE AlertRecordReacts SET Click = :click, Answer = :answer, Timestamp = NOW()
+        UPDATE AlertRecordReacts SET Clicked = :click, Answer = :answer, Timestamp = NOW()
         WHERE ReactId = :reactId AND UserId = :userId
     `, {reactId, userId, click, answer});
 }

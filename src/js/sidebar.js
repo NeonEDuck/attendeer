@@ -445,7 +445,7 @@ submitSettingBtn.addEventListener('click', async () => {
     }else if( Number(infoTime.value) < 1 || Number(infoTime.value) > 3) {
         alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
     }else {
-        if (alertType === AlertTypeEnum.MultipleChoice) {
+        if (globalAlertType === AlertTypeEnum.MultipleChoice) {
             let x = 0;
             for(let i = 0; i < optionInput.length; i++){
                 if(optionInput[i].value != ''){
@@ -477,7 +477,7 @@ submitSettingBtn.addEventListener('click', async () => {
                     MultipleChoice: multipleChoice,
                 }
             }
-        }else if(alertType === AlertTypeEnum.EssayQuestion) {
+        }else if(globalAlertType === AlertTypeEnum.EssayQuestion) {
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
@@ -487,7 +487,7 @@ submitSettingBtn.addEventListener('click', async () => {
                     Question: question,
                 }
             }
-        }else if(alertType === AlertTypeEnum.Vote) {
+        }else if(globalAlertType === AlertTypeEnum.Vote) {
             const optionSelected = alertInfo.querySelector("#option-selected");
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
@@ -862,7 +862,7 @@ choose3.addEventListener('click', () => {
         }else if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
             errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
             return;
-        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
+        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
             errorText.innerHTML = '持續時間範圍：1 ~ 3';
             return;
         }
@@ -977,7 +977,7 @@ choose4.addEventListener('click', () => {
         if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
             errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
             return;
-        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
+        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
             errorText.innerHTML = '持續時間範圍：1 ~ 3';
             return;
         }
@@ -1035,6 +1035,7 @@ choose4.addEventListener('click', () => {
 
 async function AlertReplace() {
     setupAlertScheduler();
+    console.log( alertType );
 }
 
 function userMedia() {

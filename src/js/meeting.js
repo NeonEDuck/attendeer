@@ -1104,11 +1104,12 @@ export async function setupAlertListener(alertRecord) {
                     let DoneClick = false;
                     let data;
 
-                    if( alertRecord.AlertType === AlertTypeEnum.Click) {
+                    if( alertRecord.AlertTypeId === AlertTypeEnum.Click) {
+                        DoneClick = true;
                         data = {
                             click : true,
                         }
-                    }else if(alertRecord.AlertType === AlertTypeEnum.MultipleChoice) {
+                    }else if(alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice) {
                         if(answearChosen != null) {
 
                             DoneClick = true;
@@ -1117,7 +1118,7 @@ export async function setupAlertListener(alertRecord) {
                                 answear: answearChosen.innerHTML,
                             }
                         }
-                    }else if(alertRecord.AlertType === AlertTypeEnum.EssayQuestion) {
+                    }else if(alertRecord.AlertTypeId === AlertTypeEnum.EssayQuestion) {
                         if(qstShowAnswear.value != '') {
                             DoneClick = true;
                             data = {
@@ -1125,7 +1126,7 @@ export async function setupAlertListener(alertRecord) {
                                 answear: qstShowAnswear.value,
                             }
                         }
-                    }else if(alertRecord.AlertType === AlertTypeEnum.Vote) {
+                    }else if(alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
                         const radio = document.querySelector(".radios").querySelectorAll('input');
                         for (let x = 0; x < radio.length; x ++) {
                             if (radio[x].checked) {
