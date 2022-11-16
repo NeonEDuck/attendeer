@@ -474,7 +474,7 @@ submitSettingBtn.addEventListener('click', async () => {
                 dataMultipleChoice = {
                     Question: question,
                     Answear: answearID,
-                    MultipleChoice: multipleChoice.toString(),
+                    MultipleChoice: multipleChoice,
                 }
             }
         }else if(alertType === AlertTypeEnum.EssayQuestion) {
@@ -515,7 +515,7 @@ submitSettingBtn.addEventListener('click', async () => {
 
             dataMultipleChoice = {
                 Question: question,
-                MultipleChoice: multipleChoice.toString(),
+                MultipleChoice: multipleChoice,
             }
         }
 
@@ -744,7 +744,7 @@ choose2.addEventListener('click', () => {
             dataMultipleChoice = {
                 Question: globalQuestion,
                 Answear: globalAnswear,
-                MultipleChoice: globalMultipleChoice.toString(),
+                MultipleChoice: globalMultipleChoice,
             }
             // let dataAlert = {
             //     alert: {
@@ -995,7 +995,7 @@ choose4.addEventListener('click', () => {
 
         dataMultipleChoice = {
             Question: question,
-            MultipleChoice: multipleChoice.toString(),
+            MultipleChoice: multipleChoice,
         }
 
         // let dataAlert = {
@@ -1039,7 +1039,7 @@ async function AlertReplace() {
 
 function userMedia() {
     // 取得標籤
-    const videoElement = document.querySelector('video')
+    const videoElement = document.querySelector('#player')
     const audioInputSelect = document.querySelector('select#audioSource')
     const audioOutputSelect = document.querySelector('select#audioOutput')
     const videoSelect = document.querySelector('select#videoSource')
@@ -1143,7 +1143,7 @@ function userMedia() {
         const audioSource = audioInputSelect.value
         const videoSource = videoSelect.value
         const constraints = {
-            audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
+            audio: false,
             video: { deviceId: videoSource ? { exact: videoSource } : undefined },
         }
         navigator.mediaDevices

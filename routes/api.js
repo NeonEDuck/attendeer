@@ -45,6 +45,9 @@ import {
     finishRecord,
     updateClassAlertRecord,
     getAlertRecord,
+    getAlertRecordReact,
+    addAlertRecordReact,
+    updateAlertRecordReact,
 } from './sql.js';
 
 const router = Router();
@@ -263,9 +266,27 @@ router.post('/api/getAlertRecord', checkAuth, async (req, res) => {
     })?.[0] || {});
 });
 
-router.post('/api/getAlertRecordReacts', checkHost, async (req, res) => {
+router.post('/api/getAlertRecordReacts', checkAuth, async (req, res) => {
     const { classId, recordId } = req.body;
     res.send(await getAlertRecordReacts(classId, recordId));
+});
+
+router.post('/api/getAlertRecordReact', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { classId, recordId } = req.body;
+    res.send((await getAlertRecordReact(classId, recordId, userId))[0] || {});
+});
+
+router.post('/api/addAlertRecordReact', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { recordId } = req.body;
+    res.send(await addAlertRecordReact(recordId, userId));
+});
+
+router.post('/api/updateAlertRecordReact', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { reactId, data: {click, answear: answer} } = req.body;
+    res.send(await updateAlertRecordReact(reactId, userId, click, answer));
 });
 
 router.post('/api/getAlertLog', checkHost, async (req, res) => {
@@ -331,7 +352,8 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
 
 router.post('/api/addAlertRecord', checkHost, async (req, res) => {
     const { classId, alertType, interval, duration, Question: question, MultipleChoice: multipleChoice, Answear: answer } = req.body;
-    res.send(await addAlertRecord(classId, alertType, interval, duration, question, multipleChoice, answer));
+    const multipleChoiceString = JSON.stringify(multipleChoice);
+    res.send(await addAlertRecord(classId, alertType, interval, duration, question, multipleChoiceString, answer));
 });
 
 router.post('/api/deleteUnfinishedRecords', checkHost, async (req, res) => {

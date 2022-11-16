@@ -396,7 +396,31 @@ export async function getAlertRecordReacts(classId, recordId) {
         ON ClassAttendees.UserId = AlertRecordReacts.UserId
         WHERE ClassId = :classId AND RecordId = :recordId
     `, {classId, recordId});
+}
 
+export async function getAlertRecordReact(classId, recordId, userId) {
+    return await query(`
+        SELECT ReactId, Users.UserId, UserName, Clicked, Answer, Timestamp FROM ClassAttendees
+        LEFT JOIN Users
+        ON ClassAttendees.UserId = Users.UserId
+        LEFT JOIN AlertRecordReacts
+        ON ClassAttendees.UserId = AlertRecordReacts.UserId
+        WHERE ClassId = :classId AND RecordId = :recordId AND AlertRecordReacts.UserId = :userId
+    `, {classId, recordId, userId});
+}
+
+export async function addAlertRecordReact(recordId, userId) {
+    return await query(`
+        INSERT INTO AlertRecordReacts (RecordId, UserId) VALUES
+        (:recordId, :userId)
+    `, {recordId, userId});
+}
+
+export async function updateAlertRecordReact(reactId, userId, click, answer) {
+    return await query(`
+        UPDATE AlertRecordReacts SET Click = :click, Answer = :answer, Timestamp = NOW()
+        WHERE ReactId = :reactId AND UserId = :userId
+    `, {reactId, userId, click, answer});
 }
 
 export async function getAlertReacts(classId) {
