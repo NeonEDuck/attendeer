@@ -77,7 +77,7 @@ toggle.addEventListener("click", () =>{
 });
 
 //黑白模式
-if (body.classList.contains("dark")) {
+if (document.documentElement.classList.contains("dark")) {
     modeSwitch.classList.add("open");
     modeText.innerHTML = "燈光模式";
 }
@@ -86,12 +86,12 @@ modeSwitch.addEventListener("click", () =>{
     modeSwitch.classList.toggle("open");
 
     if (modeSwitch.classList.contains("open")){
-        body.classList.add("dark");
+        document.documentElement.classList.add("dark");
         localStorage.setItem('color-scheme', 'dark');
         modeText.innerHTML = "燈光模式";
     }
     else{
-        body.classList.remove("dark");
+        document.documentElement.classList.remove("dark");
         localStorage.setItem('color-scheme', 'light');
         modeText.innerHTML = "黑暗模式";
     }

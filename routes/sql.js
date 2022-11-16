@@ -119,7 +119,7 @@ export async function addClass(userId, className, schoolId, classColor, interval
                 promises.push(new Promise(async (resolve, reject) => {
                     try {
                         const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
-                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
+                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
                         resolve();
                     }
                     catch (err) {
@@ -153,7 +153,7 @@ export async function updateClass(classId, className, schoolId, classColor, inte
                 promises.push(new Promise(async (resolve, reject) => {
                     try {
                         const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
-                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
+                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
                         resolve();
                     }
                     catch (err) {
@@ -351,24 +351,38 @@ export function getUserInfo(userId, email) {
     return query(`SELECT * FROM Users WHERE ${(userId)?'UserId = :userId' : 'Email = :email'}`, {userId, email});
 }
 
-export function getClassMessages(classId) {
+export function getClassMessages(classId, userId) {
     return query(`
-        SELECT Users.*, Content, Timestamp FROM Messages
+        SELECT Messages.UserId = :userId as IsSelf, Messages.UserId = HostId as IsHost, UUID, UserName, Content, Timestamp FROM Messages
         LEFT JOIN Users ON Messages.UserId = Users.UserId
-        WHERE ClassId = :classId
+        LEFT JOIN Classes ON Messages.ClassId = Classes.ClassId
+        LEFT JOIN ClassAttendees ON Messages.ClassId = ClassAttendees.ClassId AND Messages.UserId = ClassAttendees.UserId
+        WHERE Messages.ClassId = :classId
         ORDER BY Timestamp ASC
-    `, {classId});
+    `, {classId, userId});
+}
+
+export function getClassMessage(classId, userId, messageId) {
+    return query(`
+        SELECT Messages.UserId = :userId as IsSelf, Messages.UserId = HostId as IsHost, UUID, UserName, Content, Timestamp FROM Messages
+        LEFT JOIN Users ON Messages.UserId = Users.UserId
+        LEFT JOIN Classes ON Messages.ClassId = Classes.ClassId
+        LEFT JOIN ClassAttendees ON Messages.ClassId = ClassAttendees.ClassId AND Messages.UserId = ClassAttendees.UserId
+        WHERE Messages.ClassId = :classId AND MessageId = :messageId
+        ORDER BY Timestamp ASC
+    `, {classId, userId, messageId});
 }
 
 export async function addClassMessage(classId, userId, content) {
+    let product;
     try {
-        await query(`
+        product = await query(`
             INSERT INTO Messages (ClassId, UserId, Content) VALUES (:classId, :userId, :content)
         `, {classId, userId, content});
     } catch (err) {
         return {"code": 400, "message": "Body contains invaild data."};
     }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+    return {"code": 201, "message": "Request has been successfully fulfilled.", product};
 }
 
 export async function getAlertRecords(classId) {

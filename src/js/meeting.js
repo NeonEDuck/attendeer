@@ -3,7 +3,7 @@ import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
@@ -454,7 +454,6 @@ enterBtn.addEventListener('click', async () => {
     console.log(`join call: ${classId} as ${localUserId}`);
     socket.emit('join-call', classId, localUserId);
 
-    let chatInit = true;
 
     // async function addMessageToChat(msgData) {
     //     const { user, text, timestamp } = msgData;
@@ -470,27 +469,15 @@ enterBtn.addEventListener('click', async () => {
     //     msgText.innerHTML = text;
     //     chatRoom.appendChild(msg);
     // }
-    onSnapshot(messages, async (snapshot) => {
-        if (chatInit) {
-            chatInit = false;
 
-            const q = query(messages, orderBy('timestamp', 'asc'));
-            const messageDocs = await getDocs(q);
-            for (const msgDoc of messageDocs.docs) {
-                await addMessageToChat(msgDoc.data());
-            }
-        }
-        else {
-            snapshot.docChanges().forEach( async (change) => {
-                if (change.type === 'added') {
-                    await addMessageToChat(change.doc.data());
-                }
-            });
-        }
+    const response =  await apiCall('getClassMessages', { classId });
+    const messages = await response.json();
+    for (const message of messages) {
+        await addMessageToChat(message);
+    }
 
-        await delay(100);
-
-        chatRoom.scrollTop = chatRoom.scrollHeight;
+    socket.on('catch-text-message', async (messageId) => {
+        await getNewMessage(messageId);
     });
 
     if (isHost) {
@@ -592,19 +579,24 @@ messageBtn.addEventListener('click', async () => {
 
 sendMsgBtn.addEventListener('click', async () => {
     sendMsgBtn.disabled = true;
-    let text = msgInput?.value?.trim();
-    if (text) {
-        const msgDoc = doc(messages);
-        const data = {
-            user: localUserId,
-            text,
-            timestamp: new Date(),
-        };
+    let content = msgInput?.value?.trim();
+    if (content) {
+        const response = await apiCall('addClassMessage',{classId, content} )
+        const { insertId: messageId } = await response.json();
+        socket.emit('throw-text-message', messageId);
+        await getNewMessage(messageId)
+        // const msgDoc = doc(messages);
+        // const data = {
+        //     user: localUserId,
+        //     text,
+        //     timestamp: new Date(),
+        // };
 
-        await setDoc(msgDoc, data);
+        // await setDoc(msgDoc, data);
     }
     msgInput.value = '';
     sendMsgBtn.disabled = false;
+
 });
 
 msgInput.addEventListener("keyup", function(event) {
@@ -1204,11 +1196,22 @@ export async function setupAlertListener(alertRecord) {
 
 window.onresize = () => {Cam.resizeAll()};
 
-let userAbove = '';
+async function getNewMessage(messageId) {
+    const response =  await apiCall('getClassMessage', { classId, messageId });
+    const message = await response.json();
 
-async function addMessageToChat(msgData) {
-    const { user, text, timestamp } = msgData;
-    const date = new Date(timestamp.seconds * 1000);
+    await addMessageToChat( message );
+
+    await delay(100);
+
+    chatRoom.scrollTop = chatRoom.scrollHeight;
+}
+
+let userAbove = null;
+
+async function addMessageToChat(message) {
+    // {UserId, Email, UserName, PhotoURL, Content, Timestamp}
+    const date = new Date(message.Timestamp);
     let YY = date.getFullYear();
     let MM = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth();
     let DD = date.getDate() < 10 ? "0" + date.getDate() :date.getDate();
@@ -1216,13 +1219,16 @@ async function addMessageToChat(msgData) {
     let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() :date.getMinutes();
     let YMDhm = YY + "/" + MM + "/" + DD +" " + hh + ":" + mm;
 
-    if (localUserId === user){
-        if(user === userAbove) {
+    console.log(message)
+    const uuid = message.UUID ? numberArrayToUUIDString(message.UUID.data) : 'host';
+
+    if (message.IsSelf){
+        if(uuid === userAbove) {
             const msg = myMsgPrefab.cloneNode(true);
             const msgText = msg.querySelector('.my-msg__text');
             const myMsgDate = msg.querySelector('.my-msg__date');
             myMsgDate.attributes[1].value = YMDhm;
-            msgText.innerHTML = text;
+            msgText.innerHTML = message.Content;
             chatRoom.appendChild(msg);
         }else {
             const msg = myMsgPrefab.cloneNode(true);
@@ -1233,40 +1239,41 @@ async function addMessageToChat(msgData) {
             myMsgDate.attributes[1].value = YMDhm;
             msgUser.innerHTML = '你';
             msgTime.innerHTML = hh + ":" + mm;
-            msgText.innerHTML = text;
+            msgText.innerHTML = message.Content;
             chatRoom.appendChild(msg);
         }
     }
     else {
-        if(user === userAbove) {
+        if(uuid === userAbove) {
             const msg = msgPrefab.cloneNode(true);
             const msgText = msg.querySelector('.msg__text');
             const myMsgDate = msg.querySelector('.msg__date');
             myMsgDate.attributes[1].value = YMDhm;
-            msgText.innerHTML = text;
+            msgText.innerHTML = message.Content;
             chatRoom.appendChild(msg);
         }else {
-            const { name } = await getUserData(user) || { name: "???" };
             const msg = msgPrefab.cloneNode(true);
             const msgUser = msg.querySelector('.msg__user');
             const msgTime = msg.querySelector('.msg__timestamp');
             const msgText = msg.querySelector('.msg__text');
             const myMsgDate = msg.querySelector('.msg__date');
             myMsgDate.attributes[1].value = YMDhm;
-            const { host } = ( await getDoc(callDoc)).data();
-            if ( user === host ) {
-                msgUser.innerHTML = name + '老師';
+            msgUser.innerHTML = message.UserName;
+            if ( message.IsHost ) {
                 msgUser.classList.add('host');
-            }else {
-                msgUser.innerHTML = '匿名者';
             }
             msgTime.innerHTML = hh + ":" + mm;
-            msgText.innerHTML = text;
+            msgText.innerHTML = message.Content;
             chatRoom.appendChild(msg);
         }
     }
-
-    userAbove = user;
+    
+    if (message.IsHost) {
+        userAbove = 'host';
+    }
+    else {
+        userAbove = uuid;
+    }
 }
 
 function dockListener() {

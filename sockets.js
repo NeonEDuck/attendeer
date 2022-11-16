@@ -55,6 +55,12 @@ export default function(io) {
                 socket.broadcast.to(classId).emit('catch-alert-start', recordId);
             });
 
+            socket.on('throw-text-message', (messageId) => {
+                console.log(`throw-text-message`)
+                socket.to(socket.id).emit('catch-text-message', messageId);
+                socket.broadcast.to(classId).emit('catch-text-message', messageId);
+            });
+
             socket.on('disconnect', () => {
                 socket.broadcast.to(classId).emit('user-disconnected', userId);
             });

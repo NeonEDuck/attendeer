@@ -32,6 +32,10 @@ export function dateToMinutes(date) {
     return date.getHours() * 60 + date.getMinutes();
 }
 
+export function numberArrayToUUIDString(arr) {
+    return arr.map(x => x.toString(16)).join('')
+}
+
 export function htmlToElement(html) {
     let template = document.createElement('template');
     template.innerHTML = html;
