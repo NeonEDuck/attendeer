@@ -527,12 +527,11 @@ enterBtn.addEventListener('click', async () => {
         console.log('您不是會議主辦人');
 
         socket.on('catch-alert-start', async (recordId) => {
+            console.log(recordId);
             const response = await apiCall('getAlertRecord', {classId, recordId});
             const alertRecord = await response.json();
-
+            setupAlertListener(alertRecord);
         });
-
-        // setupAlertListener();
     }
 
     confirmPanel.remove();
@@ -927,7 +926,7 @@ async function startAlert() {
             await delay( globalInterval * MINUTE );
 
             await apiCall('turnOnRecord', { classId, recordId });
-            socket.emit('throw-alert-start', {recordId});
+            socket.emit('throw-alert-start', recordId);
 
             // updateDoc(alertPrevious, {started: true});
 
@@ -987,222 +986,217 @@ async function listenToAlert(data) {
     const response = await apiCall('addAlertRecordReacts', {recordId: data.RecordId});
 }
 
-export function setupAlertListener() {
+export async function setupAlertListener(alertRecord) {
     console.log('setupAlertListener');
-    onSnapshot(alertRecords, (snapshot) => {
-        snapshot.docChanges().forEach(async (change) => {
-            if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == false) {
+    console.log(alertRecord);
+    console.log(alertRecord.Finished);
+    console.log(alertRecord.Outdated);
+    if (alertRecord.Finished == false && alertRecord.Outdated == false) {
+        console.log('alert started');
+        const timestampEnd = new Date(alertRecord.Timestamp.toMillis() + (alertRecord.Interval + alertRecord.Duration) * MINUTE);
+        const response = await apiCall('getAlertRecordReacts', {classId, recordId: alertRecord.RecordId});
+        let click = true    
 
-                console.log('alert started');
-
-                const alertDoc     = doc(alertRecords, change.doc.id);
-                const participants = collection(alertDoc, 'participants');
-                const userDoc      = doc(participants, localUserId);
-                const { alertType, duration, timestamp, interval, question, multipleChoice } = change.doc.data();
-                const timestampEnd = new Date(timestamp.toMillis() + (interval + duration) * MINUTE);
-
-                    if( (await getDoc(userDoc)).data() === undefined ) {
-                        const data = {
-                            click : false,
-                        }
-                        await setDoc(userDoc, data);
-                    }
-
-                    const {click} = (await getDoc(userDoc)).data();
-                    if( click === false ) {
-                        console.log('see alert');
-                        alertModule.hidden = false;
-                        const alertShow = document.createElement('div');
-                        alertShow.classList.add('alert-show')
-                        alertModule.appendChild(alertShow);
-
-                        if(alertType === AlertTypeEnum.MultipleChoice) {
-                            const textarea = document.createElement('textarea');
-                            textarea.setAttribute("readonly", "readonly");
-                            textarea.classList.add('qst_show')
-                            textarea.innerHTML = question;
-                            alertShow.appendChild(textarea);
-                            for (let i = 0; i < multipleChoice.length; i++) {
-                                const field = document.createElement('div');
-                                field.classList.add('field')
-                                alertShow.appendChild(field);
-                                const span = document.createElement('span');
-                                span.classList.add('span_No');
-                                span.innerHTML = i+1;
-                                field.appendChild(span);
-                                const input = document.createElement('input');
-                                input.classList.add('option_input')
-                                input.setAttribute("readonly", "readonly");
-                                input.value = multipleChoice[i];
-                                field.appendChild(input);
-
-                                span.addEventListener('click', () => {
-                                    let no = alertShow.querySelectorAll(".span_No");
-                                    Array.from(no).forEach((item) => {
-                                        item.classList.remove("chosen");
-                                    });
-                                    span.classList.toggle("chosen");
-                                });
-                            }
-                        }else if(alertType === AlertTypeEnum.EssayQuestion) {
-                            const textarea = document.createElement('textarea');
-                            textarea.setAttribute("readonly", "readonly");
-                            textarea.classList.add('qst_show')
-                            textarea.innerHTML = question;
-                            alertShow.appendChild(textarea);
-                            const div = document.createElement('div');
-                            alertShow.appendChild(div);
-                            const textarea1 = document.createElement('textarea');
-                            textarea1.classList.add('qst_show_answear')
-                            div.appendChild(textarea1);
-                        }else if(alertType === AlertTypeEnum.Vote) {
-                            const textarea = document.createElement('textarea');
-                            textarea.setAttribute("readonly", "readonly");
-                            textarea.classList.add('qst_show')
-                            textarea.innerHTML = question;
-                            alertShow.appendChild(textarea);
-                            const divRadios = document.createElement('div');
-                            divRadios.classList.add('radios')
-                            alertShow.appendChild(divRadios);
-                            for (let i = 0; i < multipleChoice.length; i++) {
-                                const divRadio = document.createElement('div');
-                                divRadio.classList.add('radio')
-                                divRadios.appendChild(divRadio);
-                                const input = document.createElement('input');
-                                input.setAttribute("id", "radio" + (i+1) );
-                                input.setAttribute("type", "radio");
-                                input.setAttribute("name", "radio");
-                                input.setAttribute("value", i+1 );
-                                divRadio.appendChild(input);
-                                const label = document.createElement('label');
-                                label.setAttribute("for", "radio" + (i+1) );
-                                divRadio.appendChild(label);
-                                label.innerHTML = multipleChoice[i];
-                            }
-                        }
-
-                        const alertBtnDiv = document.createElement('div');
-                        alertBtnDiv.classList.add('alert-btn-div')
-                        alertShow.appendChild(alertBtnDiv);
-                        const alertBtn = document.createElement('button');
-                        alertBtn.setAttribute('id','alert-btn');
-                        alertBtnDiv.appendChild(alertBtn);
-                        const alertBtnText = document.createElement('p');
-                        alertBtnText.setAttribute('id','alert-btn__text');
-                        alertBtnText.innerHTML = '警醒按鈕';
-                        alertBtn.appendChild(alertBtnText);
-                        const alertBtnTime = document.createElement('span');
-                        alertBtnTime.setAttribute('id','alert-btn__time');
-                        alertBtnTime.innerHTML = '00:00';
-                        alertBtn.appendChild(alertBtnTime);
-
-                        alertBtn.addEventListener('click', async () => {
-                            const answearChosen = document.querySelector(".chosen");
-                            const qstShowAnswear = document.querySelector(".qst_show_answear");
-
-                            let DoneClick = false;
-                            let data;
-
-                            if(alertType === AlertTypeEnum.Click) {
-                                data = {
-                                    click : true,
-                                    timestamp: new Date()
-                                }
-                            }else if(alertType === AlertTypeEnum.MultipleChoice) {
-                                if(answearChosen != null) {
-
-                                    DoneClick = true;
-                                    data = {
-                                        click: true,
-                                        answear: answearChosen.innerHTML,
-                                        timestamp: new Date(),
-                                    }
-                                }
-                            }else if(alertType === AlertTypeEnum.EssayQuestion) {
-                                if(qstShowAnswear.value != '') {
-                                    DoneClick = true;
-                                    data = {
-                                        click: true,
-                                        answear: qstShowAnswear.value,
-                                        timestamp: new Date(),
-                                    }
-                                }
-                            }else if(alertType === AlertTypeEnum.Vote) {
-                                const radio = document.querySelector(".radios").querySelectorAll('input');
-                                for (let x = 0; x < radio.length; x ++) {
-                                    if (radio[x].checked) {
-                                        DoneClick = true;
-                                        data = {
-                                            click: true,
-                                            answear: radio[x].value,
-                                            timestamp: new Date(),
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if ( DoneClick === true ) {
-                                await updateDoc(userDoc, data);
-                                alertBtnTime.hidden = true;
-                                alertBtnText.innerHTML = '簽到完成';
-                                alertBtn.classList.add('active');
-                                await delay(1000);
-                                alertBtn.hidden = true;
-                                alertBtnTime.hidden = false;
-                                alertBtnText.innerHTML = '警醒按鈕';
-                                alertBtn.classList.remove('active');
-                                alertModule.hidden = true;
-                            }
-                        });
-
-                        alertBtn.dataset.id = change.doc.id;
-
-                        if (Math.random() < 0.5) {
-                            alertModule.style.left  = `${getRandom(50)}%`;
-                            alertModule.style.right = `initial`;
-                        }
-                        else {
-                            alertModule.style.right = `${getRandom(50)}%`;
-                            alertModule.style.left  = `initial`;
-                        }
-
-                        if (Math.random() < 0.5) {
-                            alertModule.style.top     = `${getRandom(50)}%`;
-                            alertModule.style.bottom  = `initial`;
-                        }
-                        else {
-                            alertModule.style.bottom  = `${getRandom(50)}%`;
-                            alertModule.style.top     = `initial`;
-                        }
-
-                        const countDownInterval = setIntervalImmediately(() => {
-                            const now = new Date();
-
-                            const distance = timestampEnd.getTime() - now.getTime();
-
-                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                            alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
-                        }, 1000);
-
-                        const now = new Date();
-                        setTimeout(() => {
-                            clearInterval(countDownInterval);
-                            alertModule.hidden = true;
-                            alertShow.remove();
-                        }, timestampEnd.getTime() - now.getTime());
-                    }
-
-            }else if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == true) {
-                const alertShows = document.querySelectorAll('.alert-show');
-                alertShows.forEach(alertShow => {
-                    alertShow.remove();
-                });
+            if( await response.json() === undefined ) {
+                const data = {
+                    click : false,
+                }
+                await apiCall('addAlertRecordReacts', {classId,  recordId: alertRecord.RecordId, data})
+                click = false;
             }
+
+            if( click === false ) {
+                console.log('see alert');
+                alertModule.hidden = false;
+                const alertShow = document.createElement('div');
+                alertShow.classList.add('alert-show')
+                alertModule.appendChild(alertShow);
+
+                if(alertType === AlertTypeEnum.MultipleChoice) {
+                    const textarea = document.createElement('textarea');
+                    textarea.setAttribute("readonly", "readonly");
+                    textarea.classList.add('qst_show')
+                    textarea.innerHTML = question;
+                    alertShow.appendChild(textarea);
+                    for (let i = 0; i < multipleChoice.length; i++) {
+                        const field = document.createElement('div');
+                        field.classList.add('field')
+                        alertShow.appendChild(field);
+                        const span = document.createElement('span');
+                        span.classList.add('span_No');
+                        span.innerHTML = i+1;
+                        field.appendChild(span);
+                        const input = document.createElement('input');
+                        input.classList.add('option_input')
+                        input.setAttribute("readonly", "readonly");
+                        input.value = multipleChoice[i];
+                        field.appendChild(input);
+
+                        span.addEventListener('click', () => {
+                            let no = alertShow.querySelectorAll(".span_No");
+                            Array.from(no).forEach((item) => {
+                                item.classList.remove("chosen");
+                            });
+                            span.classList.toggle("chosen");
+                        });
+                    }
+                }else if(alertType === AlertTypeEnum.EssayQuestion) {
+                    const textarea = document.createElement('textarea');
+                    textarea.setAttribute("readonly", "readonly");
+                    textarea.classList.add('qst_show')
+                    textarea.innerHTML = question;
+                    alertShow.appendChild(textarea);
+                    const div = document.createElement('div');
+                    alertShow.appendChild(div);
+                    const textarea1 = document.createElement('textarea');
+                    textarea1.classList.add('qst_show_answear')
+                    div.appendChild(textarea1);
+                }else if(alertType === AlertTypeEnum.Vote) {
+                    const textarea = document.createElement('textarea');
+                    textarea.setAttribute("readonly", "readonly");
+                    textarea.classList.add('qst_show')
+                    textarea.innerHTML = question;
+                    alertShow.appendChild(textarea);
+                    const divRadios = document.createElement('div');
+                    divRadios.classList.add('radios')
+                    alertShow.appendChild(divRadios);
+                    for (let i = 0; i < multipleChoice.length; i++) {
+                        const divRadio = document.createElement('div');
+                        divRadio.classList.add('radio')
+                        divRadios.appendChild(divRadio);
+                        const input = document.createElement('input');
+                        input.setAttribute("id", "radio" + (i+1) );
+                        input.setAttribute("type", "radio");
+                        input.setAttribute("name", "radio");
+                        input.setAttribute("value", i+1 );
+                        divRadio.appendChild(input);
+                        const label = document.createElement('label');
+                        label.setAttribute("for", "radio" + (i+1) );
+                        divRadio.appendChild(label);
+                        label.innerHTML = multipleChoice[i];
+                    }
+                }
+
+                const alertBtnDiv = document.createElement('div');
+                alertBtnDiv.classList.add('alert-btn-div')
+                alertShow.appendChild(alertBtnDiv);
+                const alertBtn = document.createElement('button');
+                alertBtn.setAttribute('id','alert-btn');
+                alertBtnDiv.appendChild(alertBtn);
+                const alertBtnText = document.createElement('p');
+                alertBtnText.setAttribute('id','alert-btn__text');
+                alertBtnText.innerHTML = '警醒按鈕';
+                alertBtn.appendChild(alertBtnText);
+                const alertBtnTime = document.createElement('span');
+                alertBtnTime.setAttribute('id','alert-btn__time');
+                alertBtnTime.innerHTML = '00:00';
+                alertBtn.appendChild(alertBtnTime);
+
+                alertBtn.addEventListener('click', async () => {
+                    const answearChosen = document.querySelector(".chosen");
+                    const qstShowAnswear = document.querySelector(".qst_show_answear");
+
+                    let DoneClick = false;
+                    let data;
+
+                    if( alertRecord.AlertType === AlertTypeEnum.Click) {
+                        data = {
+                            click : true,
+                            timestamp: new Date()
+                        }
+                    }else if(alertRecord.AlertType === AlertTypeEnum.MultipleChoice) {
+                        if(answearChosen != null) {
+
+                            DoneClick = true;
+                            data = {
+                                click: true,
+                                answear: answearChosen.innerHTML,
+                                timestamp: new Date(),
+                            }
+                        }
+                    }else if(alertRecord.AlertType === AlertTypeEnum.EssayQuestion) {
+                        if(qstShowAnswear.value != '') {
+                            DoneClick = true;
+                            data = {
+                                click: true,
+                                answear: qstShowAnswear.value,
+                                timestamp: new Date(),
+                            }
+                        }
+                    }else if(alertRecord.AlertType === AlertTypeEnum.Vote) {
+                        const radio = document.querySelector(".radios").querySelectorAll('input');
+                        for (let x = 0; x < radio.length; x ++) {
+                            if (radio[x].checked) {
+                                DoneClick = true;
+                                data = {
+                                    click: true,
+                                    answear: radio[x].value,
+                                    timestamp: new Date(),
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if ( DoneClick === true ) {
+                        await updateDoc(userDoc, data);
+                        alertBtnTime.hidden = true;
+                        alertBtnText.innerHTML = '簽到完成';
+                        alertBtn.classList.add('active');
+                        await delay(1000);
+                        alertBtn.hidden = true;
+                        alertBtnTime.hidden = false;
+                        alertBtnText.innerHTML = '警醒按鈕';
+                        alertBtn.classList.remove('active');
+                        alertModule.hidden = true;
+                    }
+                });
+
+                alertBtn.dataset.id = alertRecord.RecordId;
+
+                if (Math.random() < 0.5) {
+                    alertModule.style.left  = `${getRandom(50)}%`;
+                    alertModule.style.right = `initial`;
+                }
+                else {
+                    alertModule.style.right = `${getRandom(50)}%`;
+                    alertModule.style.left  = `initial`;
+                }
+
+                if (Math.random() < 0.5) {
+                    alertModule.style.top     = `${getRandom(50)}%`;
+                    alertModule.style.bottom  = `initial`;
+                }
+                else {
+                    alertModule.style.bottom  = `${getRandom(50)}%`;
+                    alertModule.style.top     = `initial`;
+                }
+
+                const countDownInterval = setIntervalImmediately(() => {
+                    const now = new Date();
+
+                    const distance = timestampEnd.getTime() - now.getTime();
+
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
+                }, 1000);
+
+                const now = new Date();
+                setTimeout(() => {
+                    clearInterval(countDownInterval);
+                    alertModule.hidden = true;
+                    alertShow.remove();
+                }, timestampEnd.getTime() - now.getTime());
+            }
+
+    }else if (alertRecord.Finished == false && alertRecord.Outdated == true) {
+        const alertShows = document.querySelectorAll('.alert-show');
+        alertShows.forEach(alertShow => {
+            alertShow.remove();
         });
-    });
+    }
 }
 
 window.onresize = () => {Cam.resizeAll()};

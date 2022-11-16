@@ -255,7 +255,7 @@ router.post('/api/getAlertRecords', checkHost, async (req, res) => {
     }));
 });
 
-router.post('/api/getAlertRecord', checkHost, async (req, res) => {
+router.post('/api/getAlertRecord', checkAuth, async (req, res) => {
     const { recordId } = req.body;
     res.send((await getAlertRecord(recordId)).map((x) => {
         x.MultipleChoice = JSON.parse(x.MultipleChoice);
