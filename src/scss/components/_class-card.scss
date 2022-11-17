@@ -6,9 +6,6 @@
     min-height: 10em;
     max-height: 14em;
     width: 100%;
-    @media only screen and (max-width: 570px) {
-        font-size: 0.5rem;
-    }
 
     background-color: var(--clr-component-500);
     box-shadow: var(--box-shadow-500);
@@ -35,6 +32,11 @@
 
 .class-card {
     @extend .class-card-template;
+    @media only screen and (max-width: 570px) {
+        aspect-ratio: inherit;
+        max-height: inherit;
+        flex-direction: column;
+    }
 
     header {
         display: flex;
@@ -44,11 +46,25 @@
         height: 100%;
         background-color: var(--class-color, var(--clr-class-1));
         padding: 1em;
+        @media only screen and (max-width: 570px) {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            footer {
+                margin-inline-start: auto;
+                text-align: right;
+            }
+        }
         * {
             color: #fff;
         }
-        :last-child {
-            margin-top: auto;
+
+        main {
+            padding: 0;
+        }
+
+        footer {
+            margin-block-start: auto;
         }
     }
 
@@ -56,6 +72,8 @@
         position: relative;
         padding: 2em;
         width: 100%;
+        height: auto;
+        height: auto;
     }
 
     &__name {
