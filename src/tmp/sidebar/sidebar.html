@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE-Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glassmorphism Sidebar Menu</title>
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <script src="./sidebar.js" defer></script>
+</head>
+
+<body>
+    <input type="checkbox" id="check">
+    
+    <div class="sidebar">
+        <label for="check">
+            <div class="toggle-sidebar"><i class="fa-solid fa-chevron-right"></i></div>
+        </label>
+        <div class="sidebar__content">
+            <header>
+                <h3>attendeer</h3>
+            </header>
+            <div class="clock-container">
+                <div class="clock-col">
+                    <p class="clock-day clock-timer"></p>
+                    <p class="clock-label">Day</p>
+                </div>
+                <div class="clock-col">
+                    <p class="clock-hours clock-timer"></p>
+                    <p class="clock-label">Hours</p>
+                </div>
+                <div class="clock-col">
+                    <p class="clock-minutes clock-timer"></p>
+                    <p class="clock-label">Minutes</p>
+                </div>
+                <div class="clock-col">
+                    <p class="clock-seconds clock-timer"></p>
+                    <p class="clock-label">Seconds</p>
+                </div>
+            </div>
+            <div class="icons">
+                <a href="#" id="icon-home">
+                    <i class="fa-solid fa-house-chimney"></i>
+                </a>
+                <a href="#">
+                    <i class="fa-solid fa-bell"></i>
+                </a>
+                <a href="#">
+                    <i class="fa-solid fa-mug-hot"></i>
+                </a>
+                <a href="#">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </a>
+                <a href="#">
+                    <i class="fa-solid fa-hand"></i>
+                </a>
+                <a href="#">
+                    <i class="fa-brands fa-youtube"></i>
+                </a>
+            </div>
+            <div class="alerts">
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-message"></i>
+                        <span class="text nav-text">題目式警醒</span>  
+                    </a>
+                </li>                                  
+                <li>
+                    <a href="#">                       
+                        <i class="fa-solid fa-message"></i> 
+                        <span class="text nav-text">題目式警醒</span>                        
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="text nav-text">題目式警醒</span> 
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-circle-question"></i>
+                        <span class="text nav-text">題目式警醒</span> 
+                    </a>
+                </li>
+            </div>              
+        </div>
+    </div>
+</body>
+</html>
