@@ -2,14 +2,14 @@
     <table id="class-schedule__table">
         <thead>
             <tr>
-                <th>節次</th>
-                <th>一</th>
-                <th>二</th>
-                <th>三</th>
-                <th>四</th>
-                <th>五</th>
-                <th>六</th>
-                <th>日</th>
+                <th><div class="class-schedule__content">節次</div></th>
+                <th><div class="class-schedule__content">一</div></th>
+                <th><div class="class-schedule__content">二</div></th>
+                <th><div class="class-schedule__content">三</div></th>
+                <th><div class="class-schedule__content">四</div></th>
+                <th><div class="class-schedule__content">五</div></th>
+                <th><div class="class-schedule__content">六</div></th>
+                <th><div class="class-schedule__content">日</div></th>
             </tr>
         </thead>
         <tbody id="class-schedule__tbody">
@@ -17,7 +17,9 @@
                 {% set i = loop.index-1 %}
                 <tr>
                     <td>
-                        {{ period.periodName }}
+                        <div class="class-schedule__content">
+                            {{ period.periodName }}
+                        </div>
                     </td>
                     {% for j in range(1, 8) %}
                         <td data-period="{{ i }}" data-weekday="{{ j }}"
@@ -25,6 +27,7 @@
                                 class="on"
                             {% endif %}
                         >
+                            <div class="class-schedule__content"></div>
                         </td>
                     {% endfor %}
                 </tr>

@@ -3,6 +3,11 @@
     grid-template-columns: 20em 1fr;
     padding: 1em 2em;
     gap: 2em;
+
+    @media only screen and (max-width: 900px) {
+        grid-template-columns: inherit;
+        grid-template-rows: auto auto;
+    }
 }
 
 #class-sidebar {
@@ -181,6 +186,7 @@ $post-gap: 4em;
 
     }
 }
+
 #alert-lookup__detail {
     border: 0.1em solid #ddd;
     padding: 1em;

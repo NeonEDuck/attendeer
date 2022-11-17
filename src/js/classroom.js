@@ -648,23 +648,23 @@ async function generateCalendar(month, year) {
     }
 }
 
-const month_list = calendar.querySelector('.month-list')
+// const month_list = calendar.querySelector('.month-list')
 
-month_names.forEach((e, index) => {
-    const month = htmlToElement(`
-        <div>
-            <div data-month="${index}">
-                ${e}
-            </div>
-        </div>
-    `);
-    month.querySelector('div').onclick = () => {
-        month_list.classList.remove('show')
-        curr_month.value = index
-        generateCalendar(index, curr_year.value)
-    }
-    month_list.appendChild(month)
-})
+// month_names.forEach((e, index) => {
+//     const month = htmlToElement(`
+//         <div>
+//             <div data-month="${index}">
+//                 ${e}
+//             </div>
+//         </div>
+//     `);
+//     month.querySelector('div').onclick = () => {
+//         month_list.classList.remove('show')
+//         curr_month.value = index
+//         generateCalendar(index, curr_year.value)
+//     }
+//     month_list.appendChild(month)
+// })
 
 // const month_picker = calendar.querySelector('#month-picker')
 
