@@ -97,22 +97,71 @@ const checkHost = async (req, res, next) => {
     }
 }
 
+async function send(req, res, cb) {
+    let result;
+    try {
+        result = await cb();
+    }
+    catch (err) {
+        result = {statusCode: 400, message: "Fail to fulfill request.", err};
+    }
+
+    const content =
+        `${req.baseUrl + req.path} @ ${new Date().toLocaleString()}\n` +
+        `BODY: ${JSON.stringify(req.body, null, 4)}\n` +
+        `
+            STATUS CODE: ${result.statusCode || 200}
+            MESSAGE: ${result.message || ''}
+            LOG: ${result.err || ''}
+            ==================================================
+        `.split('\n').map(s => s.trim()).filter(Boolean).join('\n') + '\n';
+
+    fs.writeFile('./err.log', content, {flag: 'a'}, err => {
+        if (err) {
+            console.error(err);
+        }
+    });
+
+    if (result.statusCode) {
+        res.statusCode = result.statusCode;
+
+        if (res.statusCode === 204) {
+            return res.send();
+        }
+        else {
+            return res.send(result.product);
+        }
+    }
+    return res.send(result || {})
+}
+
 router.post('/api/getClasses', async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
-    const results = await getClasses(userId);
-    res.send(results);
+    send(req, res, async () => {
+        return await getClasses(userId);
+    });
 });
 
 router.post('/api/getClass', checkAuth, async (req, res) => {
     const { classId } = req.body;
-    res.send((await getClass(classId))[0]);
+    send(req, res, async () => {
+        return (await getClass(classId))?.[0];
+    });
+});
+
+router.post('/api/addClass', async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { className, schoolId, classColor, interval, duration, attendees } = req.body;
+    send(req, res, async () => {
+        return await addClass(userId, className, schoolId, classColor, interval, duration, attendees);
+    });
 });
 
 router.post('/api/updateClass', checkHost, async (req, res) => {
     const {classId, className, classColor, schoolId, interval, duration, attendees} = req.body;
-    const result = await updateClass(classId, className, schoolId, classColor, interval, duration, attendees);
-    res.statusCode = result.code;
-    res.send(result);
+    send(req, res, async () => {
+        return await updateClass(classId, className, schoolId, classColor, interval, duration, attendees);
+    });
 });
 
 router.post('/api/updateClassAlertRecord', checkHost, async (req, res) => {
@@ -124,35 +173,34 @@ router.post('/api/updateClassAlertRecord', checkHost, async (req, res) => {
 
 router.post('/api/deleteClass', checkHost, async (req, res) => {
     const {classId} = req.body;
-    const result = await deleteClass(classId);
-    res.statusCode = result.code;
-    res.send(result);
+    send(req, res, async () => {
+        return await deleteClass(classId);
+    });
 });
 
 router.post('/api/getClassAttendees', checkHost, async (req, res) => {
     const { classId } = req.body;
-    res.send(await getClassAttendees(classId));
-});
-
-router.post('/api/addClass', async (req, res) => {
-    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
-    const { className, schoolId, classColor, interval, duration, attendees } = req.body;
-    const result = await addClass(userId, className, schoolId, classColor, interval, duration, attendees);
-    res.statusCode = result.code;
-    res.send(result);
+    send(req, res, async () => {
+        return await getClassAttendees(classId);
+    });
 });
 
 router.post('/api/getSchools', async (req, res) => {
-    res.send(await getSchools());
+    send(req, res, async () => {
+        return await getSchools();
+    });
 });
 
 router.post('/api/getSchoolPeriods', async (req, res) => {
     const { schoolId } = req.body;
-    res.send((await getSchoolPeriods(schoolId)).map((e) => {
-        e.StartTime = new Date(e.StartTime);
-        e.EndTime = new Date(e.EndTime);
-        return e;
-    }));
+    send(req, res, async () => {
+        const result = await getSchoolPeriods(schoolId)
+        return result.map((e) => {
+            e.StartTime = new Date(e.StartTime);
+            e.EndTime = new Date(e.EndTime);
+            return e;
+        });
+    });
 });
 
 router.post('/api/getClassSchedules', checkAuth, async (req, res) => {
@@ -163,7 +211,7 @@ router.post('/api/getClassSchedules', checkAuth, async (req, res) => {
 router.post('/api/setClassSchedules', checkHost, async (req, res) => {
     const { classId, schedules } = req.body;
     const result = await setClassSchedules(classId, schedules);
-    res.statusCode = result.code;
+    res.statusCode = result.statusCode;
     res.send(result);
 });
 
@@ -207,7 +255,7 @@ router.post('/api/addClassPost', checkHost, async (req, res) => {
     const { classId, title, content } = req.body;
 
     const result = await addClassPost(classId, title, content);
-    res.statusCode = result.code;
+    res.statusCode = result.statusCode;
     res.send(result);
 });
 
@@ -220,7 +268,7 @@ router.post('/api/addPostReply', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { postId, content } = req.body;
     const result = await addPostReply(postId, userId, content);
-    res.statusCode = result.code;
+    res.statusCode = result.statusCode;
     res.send(result);
 });
 
@@ -261,8 +309,8 @@ router.post('/api/addClassMessage', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { classId, content } = req.body;
     const result = await addClassMessage(classId, userId, content);
-    res.statusCode = result.code;
-    res.send(result.product);
+    res.statusCode = result.statusCode;
+    res.send(result);
 });
 
 router.post('/api/getChatLog', checkAuth, async (req, res) => {

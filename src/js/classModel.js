@@ -165,7 +165,7 @@ export class ClassModal {
     async _confirmDelete(e) {
         console.log('confirmDelete');
         const response = await apiCall('deleteClass', {classId: this.classId});
-        if (response.status === 201) {
+        if (response.status !== 400) {
             window.location.href = '/';
         }
     }
@@ -194,7 +194,7 @@ export class ClassModal {
         if (this.action === 'add') {
             const response = await apiCall('addClass', data);
 
-            if (response.status !== 201) {
+            if (response.status === 400) {
                 submitClassBtn.disabled = false;
                 submitSettingBtn.disabled = false;
                 this._showErrorMessage(attendeeTable, '鍵入的資料有錯誤');
@@ -205,7 +205,7 @@ export class ClassModal {
             console.log(data);
             const response = await apiCall('updateClass', data);
 
-            if (response.status !== 201) {
+            if (response.status === 400) {
                 submitClassBtn.disabled = false;
                 submitSettingBtn.disabled = false;
                 this._showErrorMessage(attendeeTable, '鍵入的資料有錯誤');

@@ -10,6 +10,13 @@ const pool = createPool({
     timezone: 'utc',
 });
 
+const statusCode200 = (product) => {
+    return {statusCode: 200, message: "Request has been successfully fulfilled.", product}
+};
+const statusCode204 = () => {
+    return {statusCode: 204, message: "Request has been successfully fulfilled."};
+};
+
 export async function transactionQuery(cb) {
     return new Promise((resolve, reject) => {
         pool.getConnection(async (err, conn) => {
@@ -107,92 +114,70 @@ export async function addClass(userId, className, schoolId, classColor, interval
         // 生成隨機ClassId，如果有與已存在的課程ClassId衝突到，重新再生成
     }
 
-    try {
-        await transactionQuery(async (query) => {
-            await query(`
-                INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, :classColor, 1, :interval, :duration)
-            `, { classId, className, userId, schoolId, classColor, interval, duration });
+    await transactionQuery(async (query) => {
+        const product = await query(`
+            INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, :classColor, 1, :interval, :duration)
+        `, { classId, className, userId, schoolId, classColor, interval, duration });
+        console.log(product);
 
+        const promises = []
+        for (const attendee of attendees) {
+            promises.push(new Promise(async (resolve, reject) => {
+                try {
+                    const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
+                    await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
+                    resolve();
+                }
+                catch (err) {
+                    reject(err);
+                }
+            }));
+        }
 
-            const promises = []
-            for (const attendee of attendees) {
-                promises.push(new Promise(async (resolve, reject) => {
-                    try {
-                        const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
-                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
-                        resolve();
-                    }
-                    catch (err) {
-                        reject(err);
-                    }
-                }));
-            }
-
-            await Promise.all(promises);
-        })
-
-    }
-    catch (err) {
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+        await Promise.all(promises);
+    })
+    return statusCode200({insertId: classId});
 }
 
 export async function updateClass(classId, className, schoolId, classColor, interval, duration, attendees) {
-    try {
-        await transactionQuery(async (query) => {
-            await query(`
-                UPDATE Classes SET ClassName = :className, SchoolId = :schoolId, ClassColor = :classColor, \`Interval\` = :interval, Duration = :duration
-                WHERE ClassId = :classId
-            `, {classId, className, schoolId, classColor, interval, duration});
+    await transactionQuery(async (query) => {
+        await query(`
+            UPDATE Classes SET ClassName = :className, SchoolId = :schoolId, ClassColor = :classColor, \`Interval\` = :interval, Duration = :duration
+            WHERE ClassId = :classId
+        `, {classId, className, schoolId, classColor, interval, duration});
 
-            await query(`DELETE FROM ClassAttendees WHERE ClassId = :classId`, { classId });
+        await query(`DELETE FROM ClassAttendees WHERE ClassId = :classId`, { classId });
 
-            const promises = []
-            for (const attendee of attendees) {
-                promises.push(new Promise(async (resolve, reject) => {
-                    try {
-                        const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
-                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
-                        resolve();
-                    }
-                    catch (err) {
-                        reject(err);
-                    }
-                }));
-            }
+        const promises = []
+        for (const attendee of attendees) {
+            promises.push(new Promise(async (resolve, reject) => {
+                try {
+                    const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
+                    await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
+                    resolve();
+                }
+                catch (err) {
+                    reject(err);
+                }
+            }));
+        }
 
-            await Promise.all(promises);
-        });
-    }
-    catch (err) {
-        console.error(err);
-        return {"code": 400, "message": "Data 'attendees' contains invaild user."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+        await Promise.all(promises);
+    });
+    return statusCode204();
 }
 
 export async function updateClassAlertRecord(classId, interval, time) {
-    try {
-        await query(`
-            UPDATE Classes SET \`Interval\` = :interval, Duration = :time
-            WHERE ClassId = :classId
-        `, { classId, interval, time });
-    }
-    catch (e) {
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+    await query(`
+        UPDATE Classes SET \`Interval\` = :interval, Duration = :time
+        WHERE ClassId = :classId
+    `, { classId, interval, time });
+    return statusCode204();
 }
 
 export async function deleteClass(classId) {
-    try {
-        await query(`DELETE FROM Classes WHERE ClassId = :classId`, { classId });
-    }
-    catch (err) {
-        return {"code": 400, "message": "Fail to fulfill request."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+    await query(`DELETE FROM Classes WHERE ClassId = :classId`, { classId });
+    return statusCode204();
 }
 
 export function getClassAttendees(classId) {
@@ -229,33 +214,28 @@ export function getClassSchedules(classId) {
 }
 
 export async function setClassSchedules(classId, schedules) {
-    try {
-        await transactionQuery(async (query) => {
-            await query(`DELETE FROM Schedules WHERE ClassId = :classId`, { classId });
+    await transactionQuery(async (query) => {
+        await query(`DELETE FROM Schedules WHERE ClassId = :classId`, { classId });
 
-            const promises = [];
-            for (const schedule of schedules) {
-                promises.push(new Promise(async (resolve, reject) => {
-                    try {
-                        await query(
-                            `INSERT INTO Schedules VALUES (:classId, :period, :weekdayId)`,
-                            {classId, period: schedule.period, weekdayId: schedule.weekday}
-                        )
-                        resolve()
-                    }
-                    catch (err) {
-                        reject(err)
-                    }
-                }));
-            }
+        const promises = [];
+        for (const schedule of schedules) {
+            promises.push(new Promise(async (resolve, reject) => {
+                try {
+                    await query(
+                        `INSERT INTO Schedules VALUES (:classId, :period, :weekdayId)`,
+                        {classId, period: schedule.period, weekdayId: schedule.weekday}
+                    )
+                    resolve()
+                }
+                catch (err) {
+                    reject(err)
+                }
+            }));
+        }
 
-            await Promise.all(promises);
-        });
-    }
-    catch (err) {
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+        await Promise.all(promises);
+    });
+    return statusCode204();
 }
 
 export function getClassCalendars(classId) {
@@ -267,24 +247,27 @@ export function getClassCalendar(classId, date) {
 }
 
 export function addClassCalendar(classId, date, text) {
-    return query(
+    const product = query(
         `INSERT INTO Calendars (ClassId, Content, OccurDate) VALUES (:classId, :text, :date)`,
         {classId, date, text}
     );
+    return statusCode200(product);
 }
 
-export function setClassCalendar(classId, date, text) {
-    return query(
+export async function setClassCalendar(classId, date, text) {
+    await query(
         `UPDATE Calendars SET Content = :text WHERE ClassId = :classId AND OccurDate = :date`,
         {classId, date, text}
     );
+    return statusCode204();
 }
 
-export function removeClassCalendar(classId, date) {
-    return query(
+export async function removeClassCalendar(classId, date) {
+    await query(
         `DELETE FROM Calendars WHERE ClassId = :classId AND OccurDate = :date`,
         {classId, date}
     );
+    return statusCode204();
 }
 
 export function getClassPosts(classId) {
@@ -295,17 +278,12 @@ export function getClassPosts(classId) {
     `, {classId});
 }
 
-export function addClassPost(classId, title, content) {
-    try {
-        query(
-            `INSERT INTO Posts (ClassId, Title, Content) VALUES (:classId, :title, :content)`,
-            {classId, title, content}
-        );
-    }
-    catch (err) {
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+export async function addClassPost(classId, title, content) {
+    const product = await query(
+        `INSERT INTO Posts (ClassId, Title, Content) VALUES (:classId, :title, :content)`,
+        {classId, title, content}
+    );
+    return statusCode200(product);
 }
 
 export function getPostReplys(postId, limit) {
@@ -334,17 +312,12 @@ export function getPostReplys(postId, limit) {
     `, {postId});
 }
 
-export function addPostReply(postId, userId, content) {
-    try {
-        query(
-            `INSERT INTO Replys (PostId, UserId, Content) VALUES (:postId, :userId, :content)`,
-            {postId, userId, content}
-        );
-    }
-    catch (err) {
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+export async function addPostReply(postId, userId, content) {
+    const product = await query(
+        `INSERT INTO Replys (PostId, UserId, Content) VALUES (:postId, :userId, :content)`,
+        {postId, userId, content}
+    );
+    return statusCode200(product);
 }
 
 export function getUserInfo(userId, email) {
@@ -374,15 +347,10 @@ export function getClassMessage(classId, userId, messageId) {
 }
 
 export async function addClassMessage(classId, userId, content) {
-    let product;
-    try {
-        product = await query(`
-            INSERT INTO Messages (ClassId, UserId, Content) VALUES (:classId, :userId, :content)
-        `, {classId, userId, content});
-    } catch (err) {
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
-    return {"code": 201, "message": "Request has been successfully fulfilled.", product};
+    const product = await query(`
+        INSERT INTO Messages (ClassId, UserId, Content) VALUES (:classId, :userId, :content)
+    `, {classId, userId, content});
+    return statusCode200(product);
 }
 
 export async function getAlertRecords(classId) {
@@ -424,17 +392,20 @@ export async function getAlertRecordReact(classId, recordId, userId) {
 }
 
 export async function addAlertRecordReact(recordId, userId) {
-    return await query(`
+    const product = await query(`
         INSERT INTO AlertRecordReacts (RecordId, UserId) VALUES
         (:recordId, :userId)
     `, {recordId, userId});
+    return statusCode200(product);
+
 }
 
 export async function updateAlertRecordReact(reactId, userId, click, answer) {
-    return await query(`
+    await query(`
         UPDATE AlertRecordReacts SET Clicked = :click, Answer = :answer, Timestamp = NOW()
         WHERE ReactId = :reactId AND UserId = :userId
     `, {reactId, userId, click, answer});
+    return statusCode204();
 }
 
 export async function getAlertReacts(classId) {
@@ -455,61 +426,60 @@ export async function getAlertReacts(classId) {
 }
 
 export async function addAlertRecord(classId, alertType, interval, duration, question, multipleChoice, answer) {
-    return await query(`
+    const product = await query(`
         INSERT INTO AlertRecords (ClassId, AlertType, \`Interval\`, Duration, Question, MultipleChoice, Answer) VALUES
         (:classId, :alertType, :interval, :duration, :question, :multipleChoice, :answer)
     `, {classId, alertType, interval, duration, question, multipleChoice, answer});
+    return statusCode200(product)
 }
 
 export async function deleteUnfinishedRecords(classId) {
-    return await query(`
+    await query(`
         DELETE FROM AlertRecords
         WHERE ClassId = :classId
         AND Finished = false
     `, {classId});
+    return statusCode204();
 }
 
 export async function expireUnfinishedRecords(classId) {
-    return await query(`
+    await query(`
         DELETE FROM AlertRecords
         WHERE ClassId = :classId
         AND Finished = false
     `, {classId});
+    return statusCode204();
 }
 
 export async function turnOnRecord(recordId) {
-    return await query(`
+    await query(`
         UPDATE AlertRecords SET Start = true
         WHERE RecordId = :recordId
     `, {recordId});
+    return statusCode204();
 }
 
 export async function finishRecord(recordId) {
-    try {
-        return await transactionQuery(async (query) => {
-            const [{Outdated: outdated}] = await query(`
-                SELECT Outdated FROM AlertRecords
+    return await transactionQuery(async (query) => {
+        const [{Outdated: outdated}] = await query(`
+            SELECT Outdated FROM AlertRecords
+            WHERE RecordId = :recordId
+        `, {recordId});
+        if (outdated) {
+            await query(`
+                DELETE FROM AlertRecords
                 WHERE RecordId = :recordId
             `, {recordId});
-            if (outdated) {
-                await query(`
-                    DELETE FROM AlertRecords
-                    WHERE RecordId = :recordId
-                `, {recordId});
-                return {"code": 204, "message": "Record has been deleted."};
-            }
-            else {
-                await query(`
-                    UPDATE AlertRecords SET Finished = true
-                    WHERE RecordId = :recordId
-                `, {recordId});
-                return {"code": 201, "message": "Request has been successfully fulfilled."};
-            }
-        });
-    }
-    catch (e) {
-        return {"code": 400, "message": "Body contains invaild data."};
-    }
+            return {"code": 204, message: "Record has been deleted."};
+        }
+        else {
+            await query(`
+                UPDATE AlertRecords SET Finished = true
+                WHERE RecordId = :recordId
+            `, {recordId});
+            return {"code": 201, message: "Request has been successfully fulfilled."};
+        }
+    });
 }
 
 export async function uploadSQL() {

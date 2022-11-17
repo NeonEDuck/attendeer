@@ -274,7 +274,7 @@ calendarSaveBtn?.addEventListener('click', async () => {
     const text = calendarDetailEdit.value.trim();
 
     const response = await apiCall('updateClassCalendar', {classId, date, text});
-    if (response.status === 204) {
+    if (response.status !== 400) {
         calendar.querySelector('.current-selected-day').dataset.detail = text;
         calendarDetailText.innerHTML = text || '無行程';
         if (text) {
@@ -356,7 +356,7 @@ tabGroupTabs.forEach((tab, idx) => {
             const generatedPosts = []
             generator = setIntervalImmediately(async () => {
                 const response = await apiCall('getClassPosts', {classId});
-                if (response.status !== 200) {
+                if (response.status === 400) {
                     return;
                 }
                 const posts = await response.json()
@@ -383,7 +383,7 @@ tabGroupTabs.forEach((tab, idx) => {
         else if (catagory === 'chat') {
             chatLog.innerHTML = '';
             const response = await apiCall('getClassMessages', {classId});
-            if (response.status !== 200) {
+            if (response.status === 400) {
                 return;
             }
             const messages = await response.json()
@@ -518,7 +518,7 @@ async function generatePost(post) {
         if (text.length > 0) {
             submitInput.value = '';
             apiCall('addPostReply', {classId, postId: post.PostId, content: text}).then((response) => {
-                if (response.status !== 201) {
+                if (response.status === 400) {
                     console.log(response.status);
                     return;
                 }
