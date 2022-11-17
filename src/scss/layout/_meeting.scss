@@ -408,6 +408,7 @@ body.dark {
         border-start-start-radius: 10px;
         border-start-end-radius: 10px;
         font-size: 25px;
+        cursor: pointer;
     }
 
     .floating {
@@ -417,7 +418,7 @@ body.dark {
         min-width: 514px;
         max-width: 30vw;
         height: calc(100% - 150px);
-        padding: 15px;
+        padding: 2em;
         background-color: var(--floating--color-1);
         box-shadow: inset 0.2rem 0.2rem 0.5rem var(--floating--color-2), inset -0.2rem -0.2rem 0.5rem var(--floating--color-3);
         border-radius: 12px;
@@ -668,6 +669,25 @@ body.dark {
                 &:active {
                     box-shadow: inset 0.2rem 0.2rem 0.5rem var(--button-color-2), inset -0.2rem -0.2rem 0.5rem var(--button-color-3);
                     color: var(--button-hov-color);
+                }
+            }
+        }
+        .floating-user-media {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+
+            > h1:first-child {
+                text-align: center;
+            }
+
+            > div {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25em;
+
+                > select {
+                    flex: 1 1 0;
                 }
             }
         }
