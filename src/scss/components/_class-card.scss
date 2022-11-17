@@ -51,6 +51,10 @@
         width: 100%;
     }
 
+    &__name {
+        word-break: break-all;
+    }
+
     &__button {
         --side-length: 2em;
         --padding: 0.5em;
