@@ -1,7 +1,3 @@
-import { firestore, auth } from './firebase-config.js';
-import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
-
 export const LOWER_CASE = 'abcdefghjiklnmopqrstuvwxyz';
 export const SECOND = 1000;
 export const MINUTE = 60 * SECOND;
@@ -84,44 +80,6 @@ export function debounce(cb, delay=1000) {
             cb(...args);
         }, delay);
     }
-}
-
-const users = collection(firestore, 'users');
-let _user = null;
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        _user = user
-        const userDoc = doc(users, user.uid);
-        const userSnapshot = await getDoc(userDoc);
-
-        let data = {
-            name: user.displayName,
-            email: user.email,
-            photo: user.photoURL,
-        };
-
-        if (!userSnapshot.exists()) {
-            await setDoc(userDoc, data);
-        }
-        else {
-            // 先檢查是否有改變，再上傳資料
-            //?不知道更新流量比較需要注意還是獲取流量才比較需要注意
-            const {name, photo} = userSnapshot.data();
-            if (data.name !== name || data.photo !== photo) {
-                await updateDoc(userDoc, data);
-            }
-        }
-    }
-});
-
-export function getUser() {
-    return new Promise(async (resolve) => {
-        while (_user === null) {
-            await delay(100);
-        }
-        resolve(_user);
-    });
 }
 
 const userDict = {};
