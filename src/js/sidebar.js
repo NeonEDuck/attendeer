@@ -1,5 +1,3 @@
-import { firestore } from './firebase-config.js';
-import { collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { getKeyByValue, apiCall, AlertTypeEnum } from './util.js';
 import { prefab } from './prefab.js';
