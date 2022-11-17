@@ -38,6 +38,18 @@ import {
     getAlertRecords,
     getAlertRecordReacts,
     getAlertReacts,
+    addAlertRecord,
+    deleteUnfinishedRecords,
+    expireUnfinishedRecords,
+    turnOnRecord,
+    finishRecord,
+    updateClassAlertRecord,
+    getAlertRecord,
+    getAlertRecordReact,
+    addAlertRecordReact,
+    updateAlertRecordReact,
+    getClassMessage,
+    addClassMessage,
 } from './sql.js';
 
 const router = Router();
@@ -99,6 +111,13 @@ router.post('/api/getClass', checkAuth, async (req, res) => {
 router.post('/api/updateClass', checkHost, async (req, res) => {
     const {classId, className, classColor, schoolId, interval, duration, attendees} = req.body;
     const result = await updateClass(classId, className, schoolId, classColor, interval, duration, attendees);
+    res.statusCode = result.code;
+    res.send(result);
+});
+
+router.post('/api/updateClassAlertRecord', checkHost, async (req, res) => {
+    const {classId, interval, duration} = req.body;
+    const result = await updateClassAlertRecord(classId, interval, duration);
     res.statusCode = result.code;
     res.send(result);
 });
@@ -211,8 +230,31 @@ router.post('/api/getUserInfo', async (req, res) => {
 });
 
 router.post('/api/getClassMessages', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { classId } = req.body;
-    res.send(await getClassMessages(classId));
+    const messages = await getClassMessages(classId, userId);
+    if (await isHost(userId, classId)) {
+        res.send(messages);
+    }
+    else {
+        res.send(messages.map((x) => {
+            x.UserName = (x.IsSelf  === 1 || x.IsHost === 1) ? x.UserName : '參與者';
+            return x;
+        }));
+    }
+});
+
+router.post('/api/getClassMessage', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { classId, messageId } = req.body;
+    const message = (await getClassMessage(classId, userId, messageId))[0];
+    if (await isHost(userId, classId)) {
+        res.send(message);
+    }
+    else {
+        message.UserName = (message.IsSelf || message.IsHost) ? message.UserName : '參與者';
+        res.send(message);
+    }
 });
 
 router.post('/api/addClassMessage', checkAuth, async (req, res) => {
@@ -220,7 +262,7 @@ router.post('/api/addClassMessage', checkAuth, async (req, res) => {
     const { classId, content } = req.body;
     const result = await addClassMessage(classId, userId, content);
     res.statusCode = result.code;
-    res.send(result);
+    res.send(result.product);
 });
 
 router.post('/api/getChatLog', checkAuth, async (req, res) => {
@@ -241,9 +283,35 @@ router.post('/api/getAlertRecords', checkHost, async (req, res) => {
     }));
 });
 
-router.post('/api/getAlertRecordReacts', checkHost, async (req, res) => {
+router.post('/api/getAlertRecord', checkAuth, async (req, res) => {
+    const { recordId } = req.body;
+    res.send((await getAlertRecord(recordId)).map((x) => {
+        x.MultipleChoice = JSON.parse(x.MultipleChoice);
+        return x;
+    })?.[0] || {});
+});
+
+router.post('/api/getAlertRecordReacts', checkAuth, async (req, res) => {
     const { classId, recordId } = req.body;
     res.send(await getAlertRecordReacts(classId, recordId));
+});
+
+router.post('/api/getAlertRecordReact', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { classId, recordId } = req.body;
+    res.send((await getAlertRecordReact(classId, recordId, userId))[0] || {});
+});
+
+router.post('/api/addAlertRecordReact', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { recordId } = req.body;
+    res.send(await addAlertRecordReact(recordId, userId));
+});
+
+router.post('/api/updateAlertRecordReact', checkAuth, async (req, res) => {
+    const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
+    const { reactId, data: {click, answear: answer} } = req.body;
+    res.send(await updateAlertRecordReact(reactId, userId, click, answer));
 });
 
 router.post('/api/getAlertLog', checkHost, async (req, res) => {
@@ -305,6 +373,34 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
 
     // XLSX.writeFile(workbook, './test.xlsx', {type: 'base64'})
     res.send(XLSX.write(workbook, {type: 'base64'}));
+});
+
+router.post('/api/addAlertRecord', checkHost, async (req, res) => {
+    const { classId, alertType, interval, duration, Question: question, MultipleChoice: multipleChoice, Answear: answer } = req.body;
+    const multipleChoiceString = JSON.stringify(multipleChoice);
+    res.send(await addAlertRecord(classId, alertType, interval, duration, question, multipleChoiceString, answer));
+});
+
+router.post('/api/deleteUnfinishedRecords', checkHost, async (req, res) => {
+    const { classId } = req.body;
+    res.send(await deleteUnfinishedRecords(classId));
+});
+
+router.post('/api/expireUnfinishedRecords', checkHost, async (req, res) => {
+    const { classId } = req.body;
+    res.send(await expireUnfinishedRecords(classId));
+});
+
+router.post('/api/turnOnRecord', checkHost, async (req, res) => {
+    const { recordId } = req.body;
+    res.send(await turnOnRecord(recordId));
+});
+
+router.post('/api/finishRecord', checkHost, async (req, res) => {
+    const { recordId } = req.body;
+    const result = await finishRecord(recordId);
+    res.statusCode = result.code;
+    res.send(result);
 });
 
 router.post('/api/_uploadSQL', async (req, res) => {

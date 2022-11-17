@@ -50,6 +50,17 @@ export default function(io) {
                 socket.to(socketId).emit('catch-inform-status', data);
             });
 
+            socket.on('throw-alert-start', (recordId) => {
+                console.log(`throw-alert-start`)
+                socket.broadcast.to(classId).emit('catch-alert-start', recordId);
+            });
+
+            socket.on('throw-text-message', (messageId) => {
+                console.log(`throw-text-message`)
+                socket.to(socket.id).emit('catch-text-message', messageId);
+                socket.broadcast.to(classId).emit('catch-text-message', messageId);
+            });
+
             socket.on('disconnect', () => {
                 socket.broadcast.to(classId).emit('user-disconnected', userId);
             });

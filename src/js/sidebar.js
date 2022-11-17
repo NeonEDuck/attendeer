@@ -1,7 +1,7 @@
 import { firestore } from './firebase-config.js';
 import { collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import 'webrtc-adapter';
-import { AlertTypeEnum, getUser } from './util.js';
+import { getKeyByValue, apiCall, AlertTypeEnum } from './util.js';
 import { prefab } from './prefab.js';
 import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice } from './meeting.js';
 
@@ -55,6 +55,10 @@ const alertInfoErrorText       = alertInfo.querySelector('.error-text'),
       choose3                  = floatingAlert.querySelector('#choose-3'),
       choose4                  = floatingAlert.querySelector('#choose-4');
 
+const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
+const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
+const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
+
 // Global variable
 let current = 0;
 let optionsTotal = 0;
@@ -65,13 +69,7 @@ let question;
 let answearID;
 let multipleChoice;
 export let dataMultipleChoice = {};
-
-let localUserId = null;
-
-// Firestore
-const calls   = collection(firestore, 'calls');
-const classId  = document.querySelector('#class-id')?.value?.trim() || document.querySelector('#class-id').innerHTML?.trim();
-const callDoc = doc(calls, classId);
+let isHost = localUserId === hostId;
 
 //開關sidebar
 toggle.addEventListener("click", () =>{
@@ -79,7 +77,7 @@ toggle.addEventListener("click", () =>{
 });
 
 //黑白模式
-if (body.classList.contains("dark")) {
+if (document.documentElement.classList.contains("dark")) {
     modeSwitch.classList.add("open");
     modeText.innerHTML = "燈光模式";
 }
@@ -88,12 +86,12 @@ modeSwitch.addEventListener("click", () =>{
     modeSwitch.classList.toggle("open");
 
     if (modeSwitch.classList.contains("open")){
-        body.classList.add("dark");
+        document.documentElement.classList.add("dark");
         localStorage.setItem('color-scheme', 'dark');
         modeText.innerHTML = "燈光模式";
     }
     else{
-        body.classList.remove("dark");
+        document.documentElement.classList.remove("dark");
         localStorage.setItem('color-scheme', 'light');
         modeText.innerHTML = "黑暗模式";
     }
@@ -112,11 +110,11 @@ export function sidebarListener() {
             hiddenAllFloating();
 
             if(navText === '警醒資訊') {
-                const { host } = (await getDoc(callDoc)).data();
-                const user = await getUser();
-                localUserId = user.uid;
+                // const { host } = (await getDoc(callDoc)).data();
+                // const user = await getUser();
+
                 floatingAlert.hidden = false;
-                if (localUserId === host){
+                if (isHost){
                     console.log('會議主辦人警醒資訊');
                     closeModalForm();
                 }else {
@@ -176,7 +174,7 @@ async function closeModalForm() {
 
     floatingAlert.style.opacity = 1;
 
-    infoType.innerHTML = globalAlertType;
+    infoType.innerHTML = getKeyByValue(AlertTypeEnum, globalAlertType);
     infoInterval.value = globalInterval;
     infoTime.value     = globalTime;
     fieldset.innerHTML = '';
@@ -186,7 +184,7 @@ async function closeModalForm() {
     const label = document.createElement('label');
     const textarea = document.createElement('textarea');
 
-    if(globalAlertType === 'click') {
+    if(globalAlertType === AlertTypeEnum.Click) {
         fieldset.hidden = true;
     }else {
         fieldset.hidden = false;
@@ -199,7 +197,7 @@ async function closeModalForm() {
         textarea.innerHTML = globalQuestion;
         fieldset.appendChild(textarea);
     }
-    if(globalAlertType === 'multiple choice') {
+    if(globalAlertType === AlertTypeEnum.MultipleChoice) {
         legend.innerHTML = '選擇題';
         label.innerHTML = '問題:';
 
@@ -447,7 +445,7 @@ submitSettingBtn.addEventListener('click', async () => {
     }else if( Number(infoTime.value) < 1 || Number(infoTime.value) > 3) {
         alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
     }else {
-        if (alertType === AlertTypeEnum.MultipleChoice) {
+        if (globalAlertType === AlertTypeEnum.MultipleChoice) {
             let x = 0;
             for(let i = 0; i < optionInput.length; i++){
                 if(optionInput[i].value != ''){
@@ -479,7 +477,7 @@ submitSettingBtn.addEventListener('click', async () => {
                     MultipleChoice: multipleChoice,
                 }
             }
-        }else if(alertType === AlertTypeEnum.EssayQuestion) {
+        }else if(globalAlertType === AlertTypeEnum.EssayQuestion) {
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
                 return;
@@ -489,7 +487,7 @@ submitSettingBtn.addEventListener('click', async () => {
                     Question: question,
                 }
             }
-        }else if(alertType === AlertTypeEnum.Vote) {
+        }else if(globalAlertType === AlertTypeEnum.Vote) {
             const optionSelected = alertInfo.querySelector("#option-selected");
             if(infoTextarea.value === '') {
                 alertInfoErrorText.innerHTML = '問題禁止為空字串';
@@ -529,13 +527,14 @@ submitSettingBtn.addEventListener('click', async () => {
         alertType = globalAlertType;
 
         const data = {
-            alert: {
-                interval,
-                time,
-            },
+            classId,
+            interval:interval,
+            duration:time,
         }
-        const callDoc = doc(calls, classId);
-        await updateDoc(callDoc, data);
+        // UPDATE Classes SET Interval = :interval, Duration= :time WHERE ClassId = :classId
+        await apiCall('updateClassAlertRecord', data)
+        // const callDoc = doc(calls, classId);
+        // await updateDoc(callDoc, data);
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -593,14 +592,22 @@ choose1.addEventListener('click', () => {
             interval = Number(alertInterval.value);
             time     = Number(alertTime.value);
 
+            // const data = {
+            //     alert: {
+            //         interval:interval,
+            //         time:time,
+            //     },
+            // }
+            // const callDoc = doc(calls, classId);
+            // await updateDoc(callDoc, data);
+
             const data = {
-                alert: {
-                    interval:interval,
-                    time:time,
-                },
+                classId,
+                interval:interval,
+                duration:time,
             }
-            const callDoc = doc(calls, classId);
-            await updateDoc(callDoc, data);
+            await apiCall('updateClassAlertRecord', data)
+
             setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
             alertInfo.classList.remove("close");
@@ -739,14 +746,22 @@ choose2.addEventListener('click', () => {
                 Answear: globalAnswear,
                 MultipleChoice: globalMultipleChoice,
             }
-            let dataAlert = {
-                alert: {
-                    interval: globalInterval,
-                    time: globalTime,
-                },
+            // let dataAlert = {
+            //     alert: {
+            //         interval: globalInterval,
+            //         time: globalTime,
+            //     },
+            // }
+            // const callDoc = doc(calls, classId);
+            // await updateDoc(callDoc, dataAlert);
+
+            const data = {
+                classId,
+                interval:interval,
+                duration:time,
             }
-            const callDoc = doc(calls, classId);
-            await updateDoc(callDoc, dataAlert);
+            await apiCall('updateClassAlertRecord', data)
+
 
             current = 0;
             optionsTotal = 0;
@@ -847,7 +862,7 @@ choose3.addEventListener('click', () => {
         }else if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
             errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
             return;
-        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
+        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
             errorText.innerHTML = '持續時間範圍：1 ~ 3';
             return;
         }
@@ -862,14 +877,21 @@ choose3.addEventListener('click', () => {
             Question: question,
         }
 
-        let dataAlert = {
-            alert: {
-                interval: interval,
-                time: time,
-            },
+        // let dataAlert = {
+        //     alert: {
+        //         interval: interval,
+        //         time: time,
+        //     },
+        // }
+        // const callDoc = doc(calls, classId);
+        // await updateDoc(callDoc, dataAlert);
+
+        const data = {
+            classId,
+            interval:interval,
+            duration:time,
         }
-        const callDoc = doc(calls, classId);
-        await updateDoc(callDoc, dataAlert);
+        await apiCall('updateClassAlertRecord', data)
 
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -955,7 +977,7 @@ choose4.addEventListener('click', () => {
         if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
             errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
             return;
-        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
+        }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
             errorText.innerHTML = '持續時間範圍：1 ~ 3';
             return;
         }
@@ -976,15 +998,23 @@ choose4.addEventListener('click', () => {
             MultipleChoice: multipleChoice,
         }
 
-        let dataAlert = {
-            alert: {
-                interval: interval,
-                time: time,
-            },
-        }
+        // let dataAlert = {
+        //     alert: {
+        //         interval: interval,
+        //         time: time,
+        //     },
+        // }
 
-        const callDoc = doc(calls, classId);
-        await updateDoc(callDoc, dataAlert);
+        // const callDoc = doc(calls, classId);
+        // await updateDoc(callDoc, dataAlert);
+
+        const data = {
+            classId,
+            interval:interval,
+            duration:time,
+        }
+        await apiCall('updateClassAlertRecord', data)
+
         setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
         voteSetting.hidden = true;
@@ -1005,11 +1035,12 @@ choose4.addEventListener('click', () => {
 
 async function AlertReplace() {
     setupAlertScheduler();
+    console.log( alertType );
 }
 
 function userMedia() {
     // 取得標籤
-    const videoElement = document.querySelector('video')
+    const videoElement = document.querySelector('#player')
     const audioInputSelect = document.querySelector('select#audioSource')
     const audioOutputSelect = document.querySelector('select#audioOutput')
     const videoSelect = document.querySelector('select#videoSource')
@@ -1113,7 +1144,7 @@ function userMedia() {
         const audioSource = audioInputSelect.value
         const videoSource = videoSelect.value
         const constraints = {
-            audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
+            audio: false,
             video: { deviceId: videoSource ? { exact: videoSource } : undefined },
         }
         navigator.mediaDevices

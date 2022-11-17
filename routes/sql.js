@@ -17,19 +17,19 @@ export async function transactionQuery(cb) {
                 if (err) {
                     throw err;
                 };
-                await new Promise((resolve, reject) => {
+                const result = await new Promise((resolve, reject) => {
                     conn.beginTransaction(async (err) => {
                         if (err) {
                             reject(err);
                         }
                         try {
-                            await cb((sqlString, values) => {query(sqlString, values, conn)});
+                            const result = await cb((sqlString, values) => {return query(sqlString, values, conn)});
                             conn.commit((err) => {
                                 if (err) {
                                     throw err;
                                 }
                                 conn.release();
-                                resolve();
+                                resolve(result);
                             });
                         }
                         catch (err) {
@@ -37,7 +37,7 @@ export async function transactionQuery(cb) {
                         }
                     });
                 });
-                resolve();
+                resolve(result);
             }
             catch (err) {
                 conn.rollback(() => {
@@ -119,7 +119,7 @@ export async function addClass(userId, className, schoolId, classColor, interval
                 promises.push(new Promise(async (resolve, reject) => {
                     try {
                         const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
-                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
+                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
                         resolve();
                     }
                     catch (err) {
@@ -153,7 +153,7 @@ export async function updateClass(classId, className, schoolId, classColor, inte
                 promises.push(new Promise(async (resolve, reject) => {
                     try {
                         const [ { UserId: userId } ] = await getUserInfo(undefined, attendee);
-                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId)`, { classId, userId });
+                        await query(`INSERT INTO ClassAttendees VALUES (:classId, :userId, UNHEX(REPLACE(UUID(), '-', '')))`, { classId, userId });
                         resolve();
                     }
                     catch (err) {
@@ -168,6 +168,19 @@ export async function updateClass(classId, className, schoolId, classColor, inte
     catch (err) {
         console.error(err);
         return {"code": 400, "message": "Data 'attendees' contains invaild user."};
+    }
+    return {"code": 201, "message": "Request has been successfully fulfilled."};
+}
+
+export async function updateClassAlertRecord(classId, interval, time) {
+    try {
+        await query(`
+            UPDATE Classes SET \`Interval\` = :interval, Duration = :time
+            WHERE ClassId = :classId
+        `, { classId, interval, time });
+    }
+    catch (e) {
+        return {"code": 400, "message": "Body contains invaild data."};
     }
     return {"code": 201, "message": "Request has been successfully fulfilled."};
 }
@@ -338,32 +351,54 @@ export function getUserInfo(userId, email) {
     return query(`SELECT * FROM Users WHERE ${(userId)?'UserId = :userId' : 'Email = :email'}`, {userId, email});
 }
 
-export function getClassMessages(classId) {
+export function getClassMessages(classId, userId) {
     return query(`
-        SELECT Users.*, Content, Timestamp FROM Messages
+        SELECT Messages.UserId = :userId as IsSelf, Messages.UserId = HostId as IsHost, UUID, UserName, Content, Timestamp FROM Messages
         LEFT JOIN Users ON Messages.UserId = Users.UserId
-        WHERE ClassId = :classId
+        LEFT JOIN Classes ON Messages.ClassId = Classes.ClassId
+        LEFT JOIN ClassAttendees ON Messages.ClassId = ClassAttendees.ClassId AND Messages.UserId = ClassAttendees.UserId
+        WHERE Messages.ClassId = :classId
         ORDER BY Timestamp ASC
-    `, {classId});
+    `, {classId, userId});
+}
+
+export function getClassMessage(classId, userId, messageId) {
+    return query(`
+        SELECT Messages.UserId = :userId as IsSelf, Messages.UserId = HostId as IsHost, UUID, UserName, Content, Timestamp FROM Messages
+        LEFT JOIN Users ON Messages.UserId = Users.UserId
+        LEFT JOIN Classes ON Messages.ClassId = Classes.ClassId
+        LEFT JOIN ClassAttendees ON Messages.ClassId = ClassAttendees.ClassId AND Messages.UserId = ClassAttendees.UserId
+        WHERE Messages.ClassId = :classId AND MessageId = :messageId
+        ORDER BY Timestamp ASC
+    `, {classId, userId, messageId});
 }
 
 export async function addClassMessage(classId, userId, content) {
+    let product;
     try {
-        await query(`
+        product = await query(`
             INSERT INTO Messages (ClassId, UserId, Content) VALUES (:classId, :userId, :content)
         `, {classId, userId, content});
     } catch (err) {
         return {"code": 400, "message": "Body contains invaild data."};
     }
-    return {"code": 201, "message": "Request has been successfully fulfilled."};
+    return {"code": 201, "message": "Request has been successfully fulfilled.", product};
 }
 
 export async function getAlertRecords(classId) {
     return await query(`
-        SELECT RecordId, AlertType.AlertId as AlertTypeId, AlertType.AlertName as AlertType, \`Interval\`, Duration, Finished, Question, MultipleChoice, Answer, Timestamp FROM AlertRecords
+        SELECT RecordId, AlertType.AlertId as AlertTypeId, AlertType.AlertName as AlertType, \`Interval\`, Duration, Start, Finished, Outdated, Question, MultipleChoice, Answer, Timestamp FROM AlertRecords
         LEFT JOIN AlertType ON AlertRecords.AlertType = AlertType.AlertId
         WHERE ClassId = :classId
     `, {classId});
+}
+
+export async function getAlertRecord(recordId) {
+    return await query(`
+        SELECT RecordId, AlertType.AlertId as AlertTypeId, AlertType.AlertName as AlertType, \`Interval\`, Duration, Start, Finished, Outdated, Question, MultipleChoice, Answer, Timestamp FROM AlertRecords
+        LEFT JOIN AlertType ON AlertRecords.AlertType = AlertType.AlertId
+        WHERE RecordId = :recordId
+    `, {recordId});
 }
 
 export async function getAlertRecordReacts(classId, recordId) {
@@ -375,7 +410,31 @@ export async function getAlertRecordReacts(classId, recordId) {
         ON ClassAttendees.UserId = AlertRecordReacts.UserId
         WHERE ClassId = :classId AND RecordId = :recordId
     `, {classId, recordId});
+}
 
+export async function getAlertRecordReact(classId, recordId, userId) {
+    return await query(`
+        SELECT ReactId, Users.UserId, UserName, Clicked, Answer, Timestamp FROM ClassAttendees
+        LEFT JOIN Users
+        ON ClassAttendees.UserId = Users.UserId
+        LEFT JOIN AlertRecordReacts
+        ON ClassAttendees.UserId = AlertRecordReacts.UserId
+        WHERE ClassId = :classId AND RecordId = :recordId AND AlertRecordReacts.UserId = :userId
+    `, {classId, recordId, userId});
+}
+
+export async function addAlertRecordReact(recordId, userId) {
+    return await query(`
+        INSERT INTO AlertRecordReacts (RecordId, UserId) VALUES
+        (:recordId, :userId)
+    `, {recordId, userId});
+}
+
+export async function updateAlertRecordReact(reactId, userId, click, answer) {
+    return await query(`
+        UPDATE AlertRecordReacts SET Clicked = :click, Answer = :answer, Timestamp = NOW()
+        WHERE ReactId = :reactId AND UserId = :userId
+    `, {reactId, userId, click, answer});
 }
 
 export async function getAlertReacts(classId) {
@@ -393,6 +452,64 @@ export async function getAlertReacts(classId) {
         LEFT JOIN AlertRecordReacts
         ON Reference.RecordId = AlertRecordReacts.RecordId AND Reference.UserId = AlertRecordReacts.UserId
     `, {classId});
+}
+
+export async function addAlertRecord(classId, alertType, interval, duration, question, multipleChoice, answer) {
+    return await query(`
+        INSERT INTO AlertRecords (ClassId, AlertType, \`Interval\`, Duration, Question, MultipleChoice, Answer) VALUES
+        (:classId, :alertType, :interval, :duration, :question, :multipleChoice, :answer)
+    `, {classId, alertType, interval, duration, question, multipleChoice, answer});
+}
+
+export async function deleteUnfinishedRecords(classId) {
+    return await query(`
+        DELETE FROM AlertRecords
+        WHERE ClassId = :classId
+        AND Finished = false
+    `, {classId});
+}
+
+export async function expireUnfinishedRecords(classId) {
+    return await query(`
+        DELETE FROM AlertRecords
+        WHERE ClassId = :classId
+        AND Finished = false
+    `, {classId});
+}
+
+export async function turnOnRecord(recordId) {
+    return await query(`
+        UPDATE AlertRecords SET Start = true
+        WHERE RecordId = :recordId
+    `, {recordId});
+}
+
+export async function finishRecord(recordId) {
+    try {
+        return await transactionQuery(async (query) => {
+            const [{Outdated: outdated}] = await query(`
+                SELECT Outdated FROM AlertRecords
+                WHERE RecordId = :recordId
+            `, {recordId});
+            if (outdated) {
+                await query(`
+                    DELETE FROM AlertRecords
+                    WHERE RecordId = :recordId
+                `, {recordId});
+                return {"code": 204, "message": "Record has been deleted."};
+            }
+            else {
+                await query(`
+                    UPDATE AlertRecords SET Finished = true
+                    WHERE RecordId = :recordId
+                `, {recordId});
+                return {"code": 201, "message": "Request has been successfully fulfilled."};
+            }
+        });
+    }
+    catch (e) {
+        return {"code": 400, "message": "Body contains invaild data."};
+    }
 }
 
 export async function uploadSQL() {
