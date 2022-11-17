@@ -129,9 +129,11 @@ const userDict = {};
 export async function getUserData(userId) {
     if (!userDict[userId]) {
         const response = await apiCall('getUserInfo', {userId});
-        const user = await response.json();
-        if (user) {
-            userDict[userId] = user;
+        if (response.status === 200) {
+            const user = await response.json();
+            if (user) {
+                userDict[userId] = user;
+            }
         }
     }
 

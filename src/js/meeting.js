@@ -1,5 +1,3 @@
-import { firestore } from './firebase-config.js';
-import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, where, orderBy } from 'firebase/firestore';
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
@@ -99,12 +97,6 @@ localCams.screenShare.node.hidden = true;
 localCams.screenShare.video.muted = true;
 
 export let intervalID;
-
-// Firestore
-const calls = collection(firestore, 'calls');
-const callDoc = doc(calls, classId);
-const alertRecords = collection(callDoc, 'alertRecords');
-let messages = collection(callDoc, 'messages');
 
 document.onreadystatechange = async () => {
     localCams.webcam.name.innerHTML = userName;
@@ -929,11 +921,14 @@ async function startAlert() {
             await delay( globalTime * MINUTE );
 
             const response2 = await apiCall('finishRecord', { classId, recordId })
-            if (response2.status === 201) { // finished
-                globalAlertType = AlertTypeEnum.Click;
-            }
-            else if (response2.status === 204) { // outdated
+            if (response2.status === 200) {
+                const { action } = await response2.json();
+                if (action === "update") { // finished
+                    globalAlertType = AlertTypeEnum.Click;
+                }
+                else { // outdated
 
+                }
             }
             // if (outdated === true) {
             //     await apiCall('DeleteAlertRecord', { classId, recordId })
@@ -989,7 +984,7 @@ export async function setupAlertListener(alertRecord) {
         console.log((new Date()).toISOString())
         console.log(timestampEnd.toISOString())
         const response = await apiCall('getAlertRecordReact', {classId, recordId: alertRecord.RecordId});
-        let click = true    
+        let click = true
 
         let reactId = (await response.json()).ReactId;
 
@@ -1267,7 +1262,7 @@ async function addMessageToChat(message) {
             chatRoom.appendChild(msg);
         }
     }
-    
+
     if (message.IsHost) {
         userAbove = 'host';
     }

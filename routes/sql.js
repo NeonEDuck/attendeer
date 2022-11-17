@@ -470,14 +470,14 @@ export async function finishRecord(recordId) {
                 DELETE FROM AlertRecords
                 WHERE RecordId = :recordId
             `, {recordId});
-            return {"code": 204, message: "Record has been deleted."};
+            return statusCode200({action: "delete"});
         }
         else {
             await query(`
                 UPDATE AlertRecords SET Finished = true
                 WHERE RecordId = :recordId
             `, {recordId});
-            return {"code": 201, message: "Request has been successfully fulfilled."};
+            return statusCode200({action: "update"});
         }
     });
 }

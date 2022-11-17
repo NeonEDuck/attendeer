@@ -100,7 +100,13 @@ const checkHost = async (req, res, next) => {
 async function send(req, res, cb) {
     let result;
     try {
-        result = await cb();
+        result = await cb()
+        if (!result) {
+            result = {statusCode: 204, message: "Request has been successfully fulfilled."};
+        }
+        else if (!result.statusCode) {
+            result = {statusCode: 200, message: "Request has been successfully fulfilled.", product: result};
+        }
     }
     catch (err) {
         result = {statusCode: 400, message: "Fail to fulfill request.", err};
@@ -121,18 +127,13 @@ async function send(req, res, cb) {
             console.error(err);
         }
     });
-
-    if (result.statusCode) {
-        res.statusCode = result.statusCode;
-
-        if (res.statusCode === 204) {
-            return res.send();
-        }
-        else {
-            return res.send(result.product);
-        }
+    res.statusCode = result.statusCode
+    if (res.statusCode === 204) {
+        return res.send();
     }
-    return res.send(result || {})
+    else {
+        return res.send(result.product);
+    }
 }
 
 router.post('/api/getClasses', async (req, res) => {
@@ -166,9 +167,9 @@ router.post('/api/updateClass', checkHost, async (req, res) => {
 
 router.post('/api/updateClassAlertRecord', checkHost, async (req, res) => {
     const {classId, interval, duration} = req.body;
-    const result = await updateClassAlertRecord(classId, interval, duration);
-    res.statusCode = result.code;
-    res.send(result);
+    send(req, res, async () => {
+        return await updateClassAlertRecord(classId, interval, duration);
+    });
 });
 
 router.post('/api/deleteClass', checkHost, async (req, res) => {
@@ -205,112 +206,121 @@ router.post('/api/getSchoolPeriods', async (req, res) => {
 
 router.post('/api/getClassSchedules', checkAuth, async (req, res) => {
     const { classId } = req.body;
-    res.send(await getClassSchedules(classId));
+    send(req, res, async () => {
+        return await getClassSchedules(classId);
+    });
 });
 
 router.post('/api/setClassSchedules', checkHost, async (req, res) => {
     const { classId, schedules } = req.body;
-    const result = await setClassSchedules(classId, schedules);
-    res.statusCode = result.statusCode;
-    res.send(result);
+    send(req, res, async () => {
+        return await setClassSchedules(classId, schedules);
+    });
 });
 
 router.post('/api/getClassCalendars', checkAuth, async (req, res) => {
     const { classId } = req.body;
-    res.send(await getClassCalendars(classId));
+    send(req, res, async () => {
+        return await getClassCalendars(classId);
+    });
 });
 
 router.post('/api/updateClassCalendar', checkHost, async (req, res) => {
     const { classId, date, text } = req.body;
     const [ calendar ] = await getClassCalendar(classId, date);
-    try {
-        if (text !== '') {
-            if (calendar) {
-                await setClassCalendar(classId, date, text);
-            }
-            else {
-                await addClassCalendar(classId, date, text);
-            }
+    if (text !== '') {
+        if (calendar) {
+            send(req, res, async () => {
+                return await setClassCalendar(classId, date, text);
+            });
         }
         else {
-            if (calendar) {
-                await removeClassCalendar(classId, date);
-            }
+
+            send(req, res, async () => {
+                return await addClassCalendar(classId, date, text);
+            });
         }
-        res.statusCode = 204;
-        res.send({"code": 204, "message": "Request has been successfully fulfilled."});
     }
-    catch {
-        res.statusCode = 400;
-        res.send({"code": 400, "message": "Body contains invaild data."});
+    else {
+        if (calendar) {
+            send(req, res, async () => {
+                return await removeClassCalendar(classId, date);
+            });
+        }
     }
 });
 
 router.post('/api/getClassPosts', checkAuth, async (req, res) => {
     const { classId } = req.body;
-    res.send(await getClassPosts(classId));
+    send(req, res, async () => {
+        return await getClassPosts(classId);
+    });
 });
 
 router.post('/api/addClassPost', checkHost, async (req, res) => {
     const { classId, title, content } = req.body;
-
-    const result = await addClassPost(classId, title, content);
-    res.statusCode = result.statusCode;
-    res.send(result);
+    send(req, res, async () => {
+        return await addClassPost(classId, title, content);
+    });
 });
 
 router.post('/api/getPostReplys', checkAuth, async (req, res) => {
     const { postId, limit } = req.body;
-    res.send(await getPostReplys(postId, limit));
+    send(req, res, async () => {
+        return await getPostReplys(postId, limit);
+    });
 });
 
 router.post('/api/addPostReply', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { postId, content } = req.body;
-    const result = await addPostReply(postId, userId, content);
-    res.statusCode = result.statusCode;
-    res.send(result);
+    send(req, res, async () => {
+        return await addPostReply(postId, userId, content);
+    });
 });
 
 router.post('/api/getUserInfo', async (req, res) => {
     const { userId, email } = req.body;
-    res.send((await getUserInfo(userId, email))[0] || {});
+    send(req, res, async () => {
+        return (await getUserInfo(userId, email))[0];
+    });
 });
 
 router.post('/api/getClassMessages', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { classId } = req.body;
-    const messages = await getClassMessages(classId, userId);
-    if (await isHost(userId, classId)) {
-        res.send(messages);
-    }
-    else {
-        res.send(messages.map((x) => {
+    send(req, res, async () => {
+        const messages = await getClassMessages(classId, userId);
+        if (await isHost(userId, classId)) {
+            return messages;
+        }
+
+        return messages.map((x) => {
             x.UserName = (x.IsSelf  === 1 || x.IsHost === 1) ? x.UserName : '參與者';
             return x;
-        }));
-    }
+        });
+    });
 });
 
 router.post('/api/getClassMessage', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { classId, messageId } = req.body;
-    const message = (await getClassMessage(classId, userId, messageId))[0];
-    if (await isHost(userId, classId)) {
-        res.send(message);
-    }
-    else {
-        message.UserName = (message.IsSelf || message.IsHost) ? message.UserName : '參與者';
-        res.send(message);
-    }
+
+    send(req, res, async () => {
+        const message = (await getClassMessage(classId, userId, messageId))[0];
+        if (!(await isHost(userId, classId))) {
+            message.UserName = (message.IsSelf || message.IsHost) ? message.UserName : '參與者';
+        }
+        return message;
+    });
 });
 
 router.post('/api/addClassMessage', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { classId, content } = req.body;
-    const result = await addClassMessage(classId, userId, content);
-    res.statusCode = result.statusCode;
-    res.send(result);
+    send(req, res, async () => {
+        return await addClassMessage(classId, userId, content);
+    });
 });
 
 router.post('/api/getChatLog', checkAuth, async (req, res) => {
@@ -325,41 +335,53 @@ router.post('/api/getChatLog', checkAuth, async (req, res) => {
 
 router.post('/api/getAlertRecords', checkHost, async (req, res) => {
     const { classId } = req.body;
-    res.send((await getAlertRecords(classId)).map((x) => {
-        x.MultipleChoice = JSON.parse(x.MultipleChoice);
-        return x;
-    }));
+    send(req, res, async () => {
+        return (await getAlertRecords(classId)).map((x) => {
+            x.MultipleChoice = JSON.parse(x.MultipleChoice);
+            return x;
+        });
+    });
 });
 
 router.post('/api/getAlertRecord', checkAuth, async (req, res) => {
     const { recordId } = req.body;
-    res.send((await getAlertRecord(recordId)).map((x) => {
-        x.MultipleChoice = JSON.parse(x.MultipleChoice);
-        return x;
-    })?.[0] || {});
+    send(req, res, async () => {
+        return (await getAlertRecord(recordId)).map((x) => {
+            x.MultipleChoice = JSON.parse(x.MultipleChoice);
+            return x;
+        })?.[0];
+    });
 });
 
 router.post('/api/getAlertRecordReacts', checkAuth, async (req, res) => {
     const { classId, recordId } = req.body;
-    res.send(await getAlertRecordReacts(classId, recordId));
+    send(req, res, async () => {
+        return await getAlertRecordReacts(classId, recordId);
+    });
 });
 
 router.post('/api/getAlertRecordReact', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { classId, recordId } = req.body;
-    res.send((await getAlertRecordReact(classId, recordId, userId))[0] || {});
+    send(req, res, async () => {
+        return (await getAlertRecordReact(classId, recordId, userId))[0];
+    });
 });
 
 router.post('/api/addAlertRecordReact', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { recordId } = req.body;
-    res.send(await addAlertRecordReact(recordId, userId));
+    send(req, res, async () => {
+        return await addAlertRecordReact(recordId, userId);
+    });
 });
 
 router.post('/api/updateAlertRecordReact', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
     const { reactId, data: {click, answear: answer} } = req.body;
-    res.send(await updateAlertRecordReact(reactId, userId, click, answer));
+    send(req, res, async () => {
+        return await updateAlertRecordReact(reactId, userId, click, answer);
+    });
 });
 
 router.post('/api/getAlertLog', checkHost, async (req, res) => {
@@ -426,29 +448,37 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
 router.post('/api/addAlertRecord', checkHost, async (req, res) => {
     const { classId, alertType, interval, duration, Question: question, MultipleChoice: multipleChoice, Answear: answer } = req.body;
     const multipleChoiceString = JSON.stringify(multipleChoice);
-    res.send(await addAlertRecord(classId, alertType, interval, duration, question, multipleChoiceString, answer));
+    send(req, res, async () => {
+        return await addAlertRecord(classId, alertType, interval, duration, question, multipleChoiceString, answer);
+    });
 });
 
 router.post('/api/deleteUnfinishedRecords', checkHost, async (req, res) => {
     const { classId } = req.body;
-    res.send(await deleteUnfinishedRecords(classId));
+    send(req, res, async () => {
+        return await deleteUnfinishedRecords(classId);
+    });
 });
 
 router.post('/api/expireUnfinishedRecords', checkHost, async (req, res) => {
     const { classId } = req.body;
-    res.send(await expireUnfinishedRecords(classId));
+    send(req, res, async () => {
+        return await expireUnfinishedRecords(classId);
+    });
 });
 
 router.post('/api/turnOnRecord', checkHost, async (req, res) => {
     const { recordId } = req.body;
-    res.send(await turnOnRecord(recordId));
+    send(req, res, async () => {
+        return await turnOnRecord(recordId);
+    });
 });
 
 router.post('/api/finishRecord', checkHost, async (req, res) => {
     const { recordId } = req.body;
-    const result = await finishRecord(recordId);
-    res.statusCode = result.code;
-    res.send(result);
+    send(req, res, async () => {
+        return await finishRecord(recordId);
+    });
 });
 
 router.post('/api/_uploadSQL', async (req, res) => {
