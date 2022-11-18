@@ -4,7 +4,8 @@ import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
 import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString } from './util.js';
-import { sidebarListener, dataMultipleChoice } from './sidebar.js';
+import { sidebarListener, dataMultipleChoice, constraints } from './sidebar.js';
+import { async } from '@firebase/util';
 
 const socket = io('/');
 
@@ -91,6 +92,19 @@ export function setGlobalAlert(alertType, interval, time, question, answear, glo
     globalMultipleChoice = globalmultipleChoice;
 }
 
+export async function setWebcamStream(constraints) {
+    webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
+    await resetWebcam();
+    if (webcamOn) {
+        localCams.webcam.profile.hidden = true;
+        localCams.webcam.video.srcObject = webcamStream;
+    }
+    else {
+        localCams.webcam.profile.hidden = false;
+        localCams.webcam.video.srcObject = null;
+    }
+}
+
 // Default state
 webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
@@ -137,7 +151,8 @@ micBtn.addEventListener('click', async () => {
 
 webcamBtn.addEventListener('click', async () => {
     try {
-        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia(constraints);
+        console.log(webcamStream);
     }
     catch {
         webcamOn = false;
@@ -155,6 +170,13 @@ webcamBtn.addEventListener('click', async () => {
     }
     await refreshStream();
 });
+
+// export async function aaa(videoSource) {
+    
+//     webcamStream = videoSource || await navigator.mediaDevices.getUserMedia(constraints).then(gotStream);
+//     await refreshStream();
+// }
+
 
 screenShareBtn.addEventListener('click', async () => {
 
@@ -621,7 +643,7 @@ msgInput.addEventListener("keyup", function(event) {
 //     }
 // });
 
-async function requestStreamPermission() {
+export async function requestStreamPermission() {
     try {
         localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     }
@@ -630,8 +652,9 @@ async function requestStreamPermission() {
         Button.toggleOpen(micBtn, false);
         unmute = false;
     }
+
     try {
-        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({video: {undefined}, audio: false})
     }
     catch {
         console.log('webcam request failed');
@@ -639,8 +662,33 @@ async function requestStreamPermission() {
     }
 }
 
-async function refreshStream() {
-    if (webcamOn && localStreams.webcam === null) {
+async function resetWebcam() {
+    localStreams.webcam = null;
+    for (const [id, peer] of Object.entries(Peer.peers)) {
+        for (const sender of peer.senders.webcam) {
+            console.log(`remove webcam from ${id} ${sender}`)
+            peer.pc.removeTrack(sender);
+        }
+        peer.senders.webcam = [];
+    }
+
+    await refreshStream();
+}
+
+async function resetAudio() {
+    for (const [id, peer] of Object.entries(Peer.peers)) {
+        for (const sender of peer.senders.audio) {
+            console.log(`remove audio from ${id} ${sender}`)
+            peer.pc.removeTrack(sender);
+        }
+        peer.senders.audio = [];
+    }
+
+    await refreshStream();
+}
+
+export async function refreshStream() {
+    if (webcamOn) {
         localStreams.webcam = webcamStream;
         for (const [id, peer] of Object.entries(Peer.peers)) {
             localStreams.webcam.getTracks().forEach((track) => {
@@ -649,7 +697,7 @@ async function refreshStream() {
             });
         }
     }
-    else if (!webcamOn && localStreams.webcam !== null) {
+    else if (!webcamOn) {
         localStreams.webcam = null;
         for (const [id, peer] of Object.entries(Peer.peers)) {
             for (const sender of peer.senders.webcam) {
@@ -1219,7 +1267,6 @@ async function addMessageToChat(message) {
     let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() :date.getMinutes();
     let YMDhm = YY + "/" + MM + "/" + DD +" " + hh + ":" + mm;
 
-    console.log(message)
     const uuid = message.UUID ? numberArrayToUUIDString(message.UUID.data) : 'host';
 
     if (message.IsSelf){

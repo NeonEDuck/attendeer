@@ -3,7 +3,8 @@ import { collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { getKeyByValue, apiCall, AlertTypeEnum } from './util.js';
 import { prefab } from './prefab.js';
-import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice } from './meeting.js';
+import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice, setWebcamStream } from './meeting.js';
+import { async } from '@firebase/util';
 
 // HTML elements
 
@@ -70,6 +71,7 @@ let answearID;
 let multipleChoice;
 export let dataMultipleChoice = {};
 let isHost = localUserId === hostId;
+export let constraints = {};
 
 //開關sidebar
 toggle.addEventListener("click", () =>{
@@ -1040,6 +1042,7 @@ async function AlertReplace() {
 
 function userMedia() {
     // 取得標籤
+    const camVideo = document.querySelector('.cam__video');
     const videoElement = document.querySelector('#player')
     const audioInputSelect = document.querySelector('select#audioSource')
     const audioOutputSelect = document.querySelector('select#audioOutput')
@@ -1054,7 +1057,7 @@ function userMedia() {
         const values = selectors.map((select) => select.value)
         selectors.forEach((select) => {
             while (select.firstChild) {
-            select.removeChild(select.firstChild)
+                select.removeChild(select.firstChild)
             }
         })
         for (let i = 0; i !== deviceInfos.length; ++i) {
@@ -1062,12 +1065,10 @@ function userMedia() {
             const option = document.createElement('option')
             option.value = deviceInfo.deviceId
             if (deviceInfo.kind === 'audioinput') {
-                option.text =
-                deviceInfo.label || `microphone ${audioInputSelect.length + 1}`
+                option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`
                 audioInputSelect.appendChild(option)
             } else if (deviceInfo.kind === 'audiooutput') {
-            option.text =
-                deviceInfo.label || `speaker ${audioOutputSelect.length + 1}`
+                option.text = deviceInfo.label || `speaker ${audioOutputSelect.length + 1}`
                 audioOutputSelect.appendChild(option)
             } else if (deviceInfo.kind === 'videoinput') {
                 option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`
@@ -1094,7 +1095,7 @@ function userMedia() {
     function attachSinkId(element, sinkId) {
         if (typeof element.sinkId !== 'undefined') {
             element
-            .setSinkId(sinkId)
+            .setSinkId(sinkId) 
             .then(() => {
                 console.log(`Success, audio output device attached: ${sinkId}`)
             })
@@ -1121,7 +1122,6 @@ function userMedia() {
     // 將視訊顯示在 video 標籤上
     function gotStream(stream) {
         videoElement.srcObject = stream
-
         return navigator.mediaDevices.enumerateDevices()
     }
 
@@ -1135,16 +1135,13 @@ function userMedia() {
     }
 
     // 播放自己的視訊
-    function start() {
-        if (window.stream) {
-            window.stream.getTracks().forEach((track) => {
-                track.stop()
-            })
-        }
+    async function start() {
         const audioSource = audioInputSelect.value
         const videoSource = videoSelect.value
-        const constraints = {
+        console.log(videoSource);
+        constraints = {
             audio: false,
+            // audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
             video: { deviceId: videoSource ? { exact: videoSource } : undefined },
         }
         navigator.mediaDevices
@@ -1152,6 +1149,8 @@ function userMedia() {
             .then(gotStream)
             .then(gotDevices)
             .catch(handleError)
+        
+        setWebcamStream(constraints);
     }
 
     audioInputSelect.onchange = start

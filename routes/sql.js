@@ -403,12 +403,16 @@ export async function getAlertRecord(recordId) {
 
 export async function getAlertRecordReacts(classId, recordId) {
     return await query(`
-        SELECT ReactId, Users.UserId, UserName, Clicked, Answer, Timestamp FROM ClassAttendees
+        SELECT record.RecordId, Users.UserId, UserName, Clicked, Answer, Timestamp FROM ClassAttendees
         LEFT JOIN Users
         ON ClassAttendees.UserId = Users.UserId
+        CROSS JOIN (
+            SELECT RecordId FROM AlertRecords
+            WHERE RecordId = :recordId AND ClassId = :classId
+        ) as record
         LEFT JOIN AlertRecordReacts
-        ON ClassAttendees.UserId = AlertRecordReacts.UserId
-        WHERE ClassId = :classId AND RecordId = :recordId
+        ON record.RecordId = AlertRecordReacts.RecordId AND Users.UserId = AlertRecordReacts.UserId
+        WHERE ClassAttendees.ClassId = :classId
     `, {classId, recordId});
 }
 
