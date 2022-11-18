@@ -85,6 +85,9 @@ label {
     color: var(--clr-text-500);
 }
 
+svg {
+    width: 100%;
+}
 
 path, circle, polygon {
     fill: var(--clr-text-500);
