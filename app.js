@@ -14,7 +14,6 @@ app.use(compression());
 
 // static folder
 app.use('/', express.static('public'));
-app.use('/js/firebase', express.static('node_modules/firebase'));
 
 // body parser
 import bodyParser from 'body-parser';
@@ -53,21 +52,6 @@ const csrfMiddleware = csrf({ cookie: { secure: true, httpOnly: true, sameSite: 
 // app.use(csrfMiddleware);
 // app.all('*', (req, res, next) => {
 //     res.locals.csrfToken = req.csrfToken();
-//     next();
-// });
-
-// auth check
-// import { adminAuth } from './firebase-admin.js';
-// app.all('*', async (req, res, next) => {
-//     const sessionCookie = req.session.idToken || '';
-
-//     req.local = {};
-//     await adminAuth.verifySessionCookie(sessionCookie, true)
-//         .then((decodedToken) => {
-//             req.local.decodedToken = decodedToken;
-//         }, (error) => {
-//             req.local.decodedToken = {};
-//         });
 //     next();
 // });
 
