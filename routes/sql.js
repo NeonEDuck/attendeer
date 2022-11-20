@@ -116,7 +116,7 @@ export async function addClass(userId, className, schoolId, classColor, interval
 
     await transactionQuery(async (query) => {
         const product = await query(`
-            INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, :classColor, 1, :interval, :duration)
+            INSERT INTO Classes VALUES (:classId, :className, :userId, :schoolId, :classColor, :interval, :duration)
         `, { classId, className, userId, schoolId, classColor, interval, duration });
         console.log(product);
 
