@@ -577,6 +577,10 @@ function getFebDays(year) {
     return isLeapYear(year) ? 29 : 28
 }
 
+function toDateString(year, month, day) {
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+}
+
 async function generateCalendar(month, year) {
     const calendar_days = calendar.querySelector('.calendar-days')
     const calendar_header_year = calendar.querySelector('#year')
@@ -616,7 +620,7 @@ async function generateCalendar(month, year) {
             if (day === currDate.getDate() && year === currDate.getFullYear() && month === currDate.getMonth()) {
                 dayDiv.classList.add('curr-date')
             }
-            const detail = calendarEvents[`${year}-${month+1}-${day}`]
+            const detail = calendarEvents[toDateString(year, month+1, day)];
             if (detail) {
                 dayDiv.classList.add('detailed-date')
                 dayDiv.dataset.detail = detail;
@@ -632,8 +636,8 @@ async function generateCalendar(month, year) {
                 const calendar_detail_date = calendar.querySelector('.calendar-footer .detail__date');
                 const calendar_detail_text = calendar.querySelector('.calendar-footer .detail__text');
                 const calendar_detail_edit = calendar.querySelector('.calendar-footer .detail__edit');
-                calendar_detail_date.innerHTML = `${year}-${month+1}-${i - first_day.getDay() + 1}`
-                calendar.dataset.curDate = `${year}-${month+1}-${i - first_day.getDay() + 1}`;
+                calendar_detail_date.innerHTML = toDateString(year, month+1, i - first_day.getDay() + 1);
+                calendar.dataset.curDate = toDateString(year, month+1, i - first_day.getDay() + 1);
                 if (dayDiv.dataset.detail) {
                     calendar_detail_text.innerHTML = dayDiv.dataset.detail;
                     calendar_detail_edit.value = dayDiv.dataset.detail;
