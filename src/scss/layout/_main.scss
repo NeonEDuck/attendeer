@@ -3,6 +3,7 @@
     align-items: start;
     justify-content: center;
     height: calc(100vh - var(--navbar-height));
+    max-width: 80vw;
     padding: 0;
     aspect-ratio: 1 / 1;
     padding-block-start: 20vh;

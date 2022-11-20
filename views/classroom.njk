@@ -29,12 +29,14 @@
 
     <div class="post-reply-writer flex flex-row flex-align-start gap-2">
         <img src="{{ photoURL or '/imgs/dummy_profile.png' }}" class="post__picture" alt="">
-        <div class="flex flex-column flex-item-1">
+        <div class="flex flex-column">
             <div class="flex flex-row gap-2">
                 <p class="post__name">{{ displayName or '未登入' }}</p>
             </div>
-            <div class="flex flex-row flex-align-start gap-2">
-                <textarea type="text" class="flex-item-1 auto-resize" placeholder="留言"></textarea>
+            <div class="flex flex-row flex-align-start">
+                <div class="flex-item-1">
+                    <textarea type="text" placeholder="留言" class="auto-resize" style="width: 100%;"></textarea>
+                </div>
                 <button class="btn-primary" data-tooltip="送出">{% include 'svg/airplane.svg' %}</button>
             </div>
         </div>

@@ -7,10 +7,14 @@
 {% block prefab %}
     <div class="class-card">
         <header>
-            <h6>上課時數</h6>
-            <h2><span class="class-card__hour"></span> 小時</h2>
-            <p class="class-card__class-id"></p>
-            <p>教師: <span class="class-card__host"></span></p>
+            <main>
+                <h6>上課時數</h6>
+                <h2><span class="class-card__hour"></span> 小時</h2>
+            </main>
+            <footer>
+                <p class="class-card__class-id"></p>
+                <p>教師: <span class="class-card__host"></span></p>
+            </footer>
         </header>
 
         <div class="class-card__content">
@@ -31,10 +35,14 @@
                     <div class="class-card" style="--class-color: var(--clr-class-{{ class.ClassColor }})">
 
                         <header>
-                            <h6>上課時數</h6>
-                            <h2><span class="class-card__hour">{{ class.ClassHour }}</span> 小時</h2>
-                            <p class="class-card__class-id">{{ class.ClassId }}</p>
-                            <p>教師: <span class="class-card__host">{{ class.HostName }}</span></p>
+                            <main>
+                                <h6>上課時數</h6>
+                                <h2><span class="class-card__hour">{{ class.ClassHour }}</span> 小時</h2>
+                            </main>
+                            <footer>
+                                <p class="class-card__class-id">{{ class.ClassId }}</p>
+                                <p>教師: <span class="class-card__host">{{ class.HostName }}</span></p>
+                            </footer>
                         </header>
 
                         <div class="class-card__content">
