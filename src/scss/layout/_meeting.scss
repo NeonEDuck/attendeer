@@ -368,6 +368,31 @@ body.dark {
     width: 100%;
     z-index: 99;
 
+    .alert_icon_buttons {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--button-color-3);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        top: 2%;
+        font-size: 2rem;
+        cursor: pointer;
+        color: var(--button-icon-color);
+        p {
+            color: var(--text-color);
+        }
+        &:hover {
+            color: var(--button-hov-color);
+        }
+        &:active {
+            box-shadow: inset 0.2rem 0.2rem 0.5rem var(--button-color-2), inset -0.2rem -0.2rem 0.5rem var(--button-color-3);
+            color: var(--button-hov-color);
+        }
+    }
+
     .overflow-auto {
         overflow: auto;
     }
@@ -421,13 +446,21 @@ body.dark {
         background-color: var(--floating--color-1);
         box-shadow: inset 0.2rem 0.2rem 0.5rem var(--floating--color-2), inset -0.2rem -0.2rem 0.5rem var(--floating--color-3);
         border-radius: 12px;
+        text-align: center;
+
+        #floating-user-media {
+            height: 100%;
+            #video {
+                width: 100%;
+            }
+        }
+
         .floating-alert {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100%;
             width: 100%;
-            text-align: center;
             .center-btn {
                 display: flex;
                 justify-content: center;
@@ -513,7 +546,7 @@ body.dark {
                 width: 100%;
                 height: 100%;
                 display: grid;
-                &.close {display: none;}
+
                 .page-content {
                     display: grid;
                     grid-gap: 1rem;
@@ -646,31 +679,70 @@ body.dark {
             header {
                 color: var(--text-color);
             }
-            .alert_icon_buttons {
-                width: 3rem;
-                height: 3rem;
-                border-radius: 50%;
-                box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--button-color-3);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                position: absolute;
-                top: 2%;
-                font-size: 2rem;
-                cursor: pointer;
-                color: var(--button-icon-color);
-                p {
-                    color: var(--text-color);
-                }
-                &:hover {
-                    color: var(--button-hov-color);
-                }
-                &:active {
-                    box-shadow: inset 0.2rem 0.2rem 0.5rem var(--button-color-2), inset -0.2rem -0.2rem 0.5rem var(--button-color-3);
-                    color: var(--button-hov-color);
+        }
+
+        .floating-alert-record {
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+
+            .alert-record {
+                height: 100%;
+                width: 100%;
+
+                #alert-lookup {
+                    height: calc(100% - 2rem - 15px);
+
+                    #alert-lookup__search {
+                        height: 6%;
+                    }
+
+                    #alert-lookup__list {
+                        height: calc(100% - 6% );
+
+                        .alert-lookup__table {
+                            height: 100%;
+
+                            #alert-log {
+                                height: 100%;
+                                overflow: auto;
+                                display: grid;
+                            }
+
+                            #alert-detail-log {
+                                height: 100%;
+                                overflow: auto;
+                                display: block;
+                            }
+                        }
+                    }
+
+                    #lookup__detail {
+                        border: 0.1em solid #ddd;
+                        padding: 0.5em;
+                        text-decoration: none;
+                        color: var(--text-color);
+                        display: grid;
+                        align-items: center;
+                        height: 20%;
+                        .alert-summary__option  {
+                            display: grid;
+                            grid-template-columns: 15fr 3fr 3fr;
+                            text-align: start;
+                        }
+                    }
+
                 }
             }
+
+            #download-alert-btn {
+                right: 2%;
+            }
         }
+
         .button-setting {
             &.close {
                 opacity: 0;
