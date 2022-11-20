@@ -67,12 +67,12 @@ document.addEventListener('readystatechange', async () => {
 
 
 async function generateAlertLog() {
-    alertLog.innerHTML = '';
     const response = await apiCall('getAlertRecords', {classId});
     if (response.status !== 200) {
         return;
     }
     const alertRecords = await response.json()
+    alertLog.innerHTML = '';
     for (const alertRecord of alertRecords) {
         const record = htmlToElement(`
             <tr class="alert-record">
@@ -195,7 +195,7 @@ async function generateReactDetail(alertType, alertReact) {
     alertDetailLog.insertBefore(alertReactElement, alertDetailLog.firstChild);
 }
 
-alertSearch.addEventListener('keyup', () => {
+alertSearch?.addEventListener('keyup', () => {
     const filter = alertSearch.value.toUpperCase();
     const rows = alertLog.querySelectorAll('tr');
 
@@ -211,7 +211,7 @@ alertSearch.addEventListener('keyup', () => {
     }
 })
 
-settingBtn.addEventListener('click', async (e) => {
+settingBtn?.addEventListener('click', async (e) => {
     classModal.openModifyModal(classId);
 });
 
@@ -360,7 +360,7 @@ tabGroupTabs.forEach((tab, idx) => {
                     return;
                 }
                 const posts = await response.json()
-                if (!generatedPosts) {
+                if (!generatedPosts[0]) {
                     targetPage.innerHTML = '';
                 }
                 const promises = [];

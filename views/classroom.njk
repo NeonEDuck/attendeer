@@ -145,17 +145,17 @@
 
             <div id="class-main" data-current-catagory="entire">
                 <div id="tab-group" style="--length: 4">
-                    <input type="radio" name="slider" data-catagory="entire" id="entire-tab">
-                    <input type="radio" name="slider" data-catagory="write"  id="write-tab" checked>
-                    <input type="radio" name="slider" data-catagory="chat"   id="chat-tab">
-                    <input type="radio" name="slider" data-catagory="alert"  id="alert-tab">
 
                     <nav>
                         <div class="slider"></div>
-                        <label for="entire-tab">公告</label>
-                        <label for="write-tab">新增貼文</label>
-                        <label for="chat-tab">聊天紀錄</label>
-                        <label for="alert-tab">警醒紀錄</label>
+                        <label for="entire-tab">公告</label><input type="radio" name="slider" data-catagory="entire" id="entire-tab">
+                        {% if isHost %}
+                            <label for="write-tab">新增貼文</label><input type="radio" name="slider" data-catagory="write" id="write-tab" checked>
+                        {% endif %}
+                        <label for="chat-tab">聊天紀錄</label><input type="radio" name="slider" data-catagory="chat" id="chat-tab">
+                        {% if isHost %}
+                            <label for="alert-tab">警醒紀錄</label><input type="radio" name="slider" data-catagory="alert" id="alert-tab">
+                        {% endif %}
                     </nav>
                 </div>
 
