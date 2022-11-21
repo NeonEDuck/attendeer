@@ -42,9 +42,11 @@ classModal._submitAddClass = (e) => {
 }
 
 document.onreadystatechange = async () => {
-    setInterval(() => {
-        refreshClasses()
-    }, 5 * SECOND);
+    if (classList) {
+        setInterval(() => {
+            refreshClasses()
+        }, 5 * SECOND);
+    }
 };
 
 addClassBtn?.addEventListener('click', async () => {
