@@ -37,6 +37,20 @@
             <p class="my-msg__text" ></p>
         </div>
     </li>
+
+    <div class="toast">
+        <div class="toast-content">
+
+            <div class="message">
+                <span class="text text-1"></span>
+                <span class="text text-2"></span>
+            </div>
+        </div>
+        <i class='bx bx-x close-toast'></i>
+
+        <div class="progress"></div>
+    </div>
+
     <li class="notification" data-type="generic">
         <header>
             {% include 'svg/bell.svg' %}
@@ -237,17 +251,8 @@
                     <button id="send-msg-btn" class="btn-primary">{% include 'svg/airplane.svg' %}</button>
                 </div>
 
-                <div class="toast">
-                    <div class="toast-content">
-
-                        <div class="message">
-                            <span class="text text-1"></span>
-                            <span class="text text-2"></span>
-                        </div>
-                    </div>
-                    <i class='bx bx-x close-toast'></i>
-
-                    <div class="progress"></div>
+                <div id="toasts">
+                    
                 </div>
 
             </div>

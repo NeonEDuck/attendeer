@@ -15,6 +15,7 @@ const body = document.querySelector('body');
 const camPrefab    = prefab.querySelector('.cam');
 const msgPrefab    = prefab.querySelector('.msg');
 const myMsgPrefab  = prefab.querySelector('.my-msg');
+const toastPrefab  = prefab.querySelector('.toast');
 const notificationPrefab  = prefab.querySelector('.notification');
 
 const sidebarRight      = document.querySelector(".sidebar-right");
@@ -46,17 +47,12 @@ const toolbar               = document.querySelector('#toolbar');
 const chat                  = document.querySelector('#chat');
 const chatRoom              = document.querySelector('#chat__room')
 const msgInput              = document.querySelector('#msg-input');
+const toasts              = document.querySelector('#toasts');
 const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
 const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
 const userName              = document.querySelector('#user-name')?.value?.trim() || document.querySelector('#user-name').innerHTML?.trim();
 const photoURL              = document.querySelector('#photo-URL')?.value?.trim() || document.querySelector('#photo-URL').innerHTML?.trim();
 const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
-
-const toast      = document.querySelector('.toast'),
-      closeToast = document.querySelector('.close-toast'),
-      progress   = document.querySelector('.progress'),
-      text1      = document.querySelector('.text-1'),
-      text2      = document.querySelector('.text-2');
 
 // Audio
 const notificationSound = new Audio('/audio/notification_sound.wav');
@@ -517,11 +513,33 @@ enterBtn.addEventListener('click', async () => {
         
         if (!message.IsSelf && document.querySelector('.close-message')){
 
+            const toastAlert = toastPrefab.cloneNode(true);
+            const closeToast = toastAlert.querySelector('.close-toast');
+            const toastContent = toastAlert.querySelector('.toast-content');
+            const progress = toastAlert.querySelector('.progress');
+            const text1 = toastAlert.querySelector('.text-1');
+            const text2 = toastAlert.querySelector('.text-2');
+            toasts.appendChild(toastAlert);
+            const toast = toasts.lastChild;
+
+            
             toast.classList.add('active');
             progress.classList.add('active');
 
             text1.innerHTML = message.UserName;
             text2.innerHTML = message.Content;
+
+            toasts.scrollTop = toasts.scrollHeight;
+
+            toastContent.addEventListener("click", () => {
+                sidebarRight.classList.remove("close");
+                meetingPanel.classList.remove("close-message");
+                if (!document.querySelector('.close-message')) {
+                    toasts.innerHTML = '';
+                }
+                
+                Cam.resizeAll();
+            })
 
             setTimeout(() =>{
                 toast.classList.remove('active');
@@ -540,6 +558,8 @@ enterBtn.addEventListener('click', async () => {
                 }, 300)
             })
             
+            await delay(3300);
+            toast.remove();
         }
     });
 
@@ -638,8 +658,7 @@ messageBtn.addEventListener('click', async () => {
     sidebarRight.classList.toggle("close");
     meetingPanel.classList.toggle("close-message");
     if (!document.querySelector('.close-message')) {
-        progress.classList.remove('active');
-        toast.classList.remove('active');
+        toasts.innerHTML = '';
     }
     
     Cam.resizeAll();
