@@ -714,7 +714,8 @@ function getDismissTime() {
 
     let prevEndTime = 0;
     let prevName = '';
-    schoolPeriods.forEach((period, i) => {
+    let i = 0;
+    for (const period of schoolPeriods) {
         const startTime = dateToMinutes(period.StartTime);
         const endTime   = dateToMinutes(period.EndTime);
         if (minuteOfToday >= startTime && minuteOfToday < endTime) {
@@ -727,7 +728,7 @@ function getDismissTime() {
             }
             else {
                 if (endTime - minuteOfToday < dismissTimePadding) {
-                    // console.log(`現在下課會是第${classTime.name}節下課`);
+                    // console.log(`現在下課會是第${period.PeriodName}節下課`);
                     if (i < schoolPeriods.length - 1) {
                         const nextStartTime = dateToMinutes(schoolPeriods[i+1].StartTime);
                         return [period.PeriodName, nextStartTime - endTime];
@@ -735,7 +736,7 @@ function getDismissTime() {
                     return [period.PeriodName, 24 * 60 - endTime];
                 }
             }
-            // console.log(`現在是第${classTime.name}節上課`);
+            // console.log(`現在是第${period.PeriodName}節上課`);
             return [null, 0];
         }
         else {
@@ -747,8 +748,9 @@ function getDismissTime() {
         }
         prevEndTime = endTime;
         prevName = period.PeriodName;
-    });
-
+        i++;
+    }
+    
     // console.log(`現在放學了`);
     return [null, 0];
 }

@@ -195,7 +195,7 @@ export function getSchools() {
 
 export function getSchoolPeriods(schoolId) {
     return query(`
-        SELECT Periods.*, (PeriodId - FirstPeriodId) AS Period FROM Periods
+        SELECT PeriodId, PeriodName, SchoolId, DATE_FORMAT(StartTime, "%Y/%m/%d %H:%i:%S") as StartTime, DATE_FORMAT(EndTime, "%Y/%m/%d %H:%i:%S") as EndTime, (PeriodId - FirstPeriodId) AS Period FROM Periods
         CROSS JOIN (
             SELECT PeriodId AS FirstPeriodId FROM Periods
             WHERE SchoolId = :schoolId
