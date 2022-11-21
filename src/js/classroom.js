@@ -67,12 +67,12 @@ document.addEventListener('readystatechange', async () => {
 
 
 async function generateAlertLog() {
-    alertLog.innerHTML = '';
     const response = await apiCall('getAlertRecords', {classId});
     if (response.status !== 200) {
         return;
     }
     const alertRecords = await response.json()
+    alertLog.innerHTML = '';
     for (const alertRecord of alertRecords) {
         const record = htmlToElement(`
             <tr class="alert-record">
@@ -195,7 +195,7 @@ async function generateReactDetail(alertType, alertReact) {
     alertDetailLog.insertBefore(alertReactElement, alertDetailLog.firstChild);
 }
 
-alertSearch.addEventListener('keyup', () => {
+alertSearch?.addEventListener('keyup', () => {
     const filter = alertSearch.value.toUpperCase();
     const rows = alertLog.querySelectorAll('tr');
 
@@ -203,15 +203,15 @@ alertSearch.addEventListener('keyup', () => {
         const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
 
         if (text.indexOf(filter) !== -1) {
-            row.style.display = "none";
+            row.style.display = "";
         }
         else {
-            row.style.display = "";
+            row.style.display = "none";
         }
     }
 })
 
-settingBtn.addEventListener('click', async (e) => {
+settingBtn?.addEventListener('click', async (e) => {
     classModal.openModifyModal(classId);
 });
 
@@ -360,7 +360,7 @@ tabGroupTabs.forEach((tab, idx) => {
                     return;
                 }
                 const posts = await response.json()
-                if (!generatedPosts) {
+                if (!generatedPosts[0]) {
                     targetPage.innerHTML = '';
                 }
                 const promises = [];
@@ -549,6 +549,10 @@ async function generatePost(post) {
 async function populateReply(post, count) {
     const replyContainer = post.querySelector('.post-reply-container');
     const response = await apiCall('getPostReplys', {classId, postId: post.dataset.postId, limit: count});
+    if (response.status !== 200) {
+        return;
+    }
+
     const replys = await response.json();
 
     replyContainer.innerHTML = '';
@@ -575,6 +579,10 @@ function isLeapYear(year) {
 
 function getFebDays(year) {
     return isLeapYear(year) ? 29 : 28
+}
+
+function toDateString(year, month, day) {
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 }
 
 async function generateCalendar(month, year) {
@@ -616,7 +624,7 @@ async function generateCalendar(month, year) {
             if (day === currDate.getDate() && year === currDate.getFullYear() && month === currDate.getMonth()) {
                 dayDiv.classList.add('curr-date')
             }
-            const detail = calendarEvents[`${year}-${month+1}-${day}`]
+            const detail = calendarEvents[toDateString(year, month+1, day)];
             if (detail) {
                 dayDiv.classList.add('detailed-date')
                 dayDiv.dataset.detail = detail;
@@ -632,8 +640,8 @@ async function generateCalendar(month, year) {
                 const calendar_detail_date = calendar.querySelector('.calendar-footer .detail__date');
                 const calendar_detail_text = calendar.querySelector('.calendar-footer .detail__text');
                 const calendar_detail_edit = calendar.querySelector('.calendar-footer .detail__edit');
-                calendar_detail_date.innerHTML = `${year}-${month+1}-${i - first_day.getDay() + 1}`
-                calendar.dataset.curDate = `${year}-${month+1}-${i - first_day.getDay() + 1}`;
+                calendar_detail_date.innerHTML = toDateString(year, month+1, i - first_day.getDay() + 1);
+                calendar.dataset.curDate = toDateString(year, month+1, i - first_day.getDay() + 1);
                 if (dayDiv.dataset.detail) {
                     calendar_detail_text.innerHTML = dayDiv.dataset.detail;
                     calendar_detail_edit.value = dayDiv.dataset.detail;

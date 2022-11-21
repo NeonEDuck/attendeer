@@ -14,7 +14,6 @@ export default {
         index: './src/js/index.js',
         meeting: './src/js/meeting.js',
         classroom: './src/js/classroom.js',
-        login: './src/js/login.js',
     },
     output: {
         path: path.join(__dirname, 'public/js'),
