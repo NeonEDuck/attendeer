@@ -203,10 +203,10 @@ alertSearch?.addEventListener('keyup', () => {
         const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
 
         if (text.indexOf(filter) !== -1) {
-            row.style.display = "none";
+            row.style.display = "";
         }
         else {
-            row.style.display = "";
+            row.style.display = "none";
         }
     }
 })
