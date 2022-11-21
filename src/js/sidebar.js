@@ -3,7 +3,7 @@ import { collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import 'webrtc-adapter';
 import { htmlToElement, getKeyByValue, apiCall, AlertTypeEnum } from './util.js';
 import { prefab } from './prefab.js';
-import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice, setWebcamStream } from './meeting.js';
+import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice, setWebcamStream, setLocalStreams } from './meeting.js';
 
 // HTML elements
 
@@ -79,7 +79,6 @@ let answearID;
 let multipleChoice;
 export let dataMultipleChoice = {};
 let isHost = localUserId === hostId;
-export let constraints = {};
 
 //開關sidebar
 toggle.addEventListener("click", () =>{
@@ -1248,15 +1247,12 @@ async function AlertReplace() {
     console.log( alertType );
 }
 
-function userMedia() {
+async function userMedia() {
     // 取得標籤
     const videoElement = document.querySelector('#video')
     const audioInputSelect = document.querySelector('select#audioSource')
-    const audioOutputSelect = document.querySelector('select#audioOutput')
     const videoSelect = document.querySelector('select#videoSource')
-    const selectors = [audioInputSelect, audioOutputSelect, videoSelect]
-
-    audioOutputSelect.disabled = !('sinkId' in HTMLMediaElement.prototype)
+    const selectors = [audioInputSelect, videoSelect]
 
     // 將讀取到的設備加入到 select 標籤中
     function gotDevices(deviceInfos) {
@@ -1274,9 +1270,6 @@ function userMedia() {
             if (deviceInfo.kind === 'audioinput') {
                 option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`
                 audioInputSelect.appendChild(option)
-            } else if (deviceInfo.kind === 'audiooutput') {
-                option.text = deviceInfo.label || `speaker ${audioOutputSelect.length + 1}`
-                audioOutputSelect.appendChild(option)
             } else if (deviceInfo.kind === 'videoinput') {
                 option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`
                 videoSelect.appendChild(option)
@@ -1295,35 +1288,15 @@ function userMedia() {
         })
     }
 
+
+
     // 讀取設備
-    navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError)
-
-    // 手動修改音訊的輸出 例如預設耳機切換成喇叭
-    function attachSinkId(element, sinkId) {
-        if (typeof element.sinkId !== 'undefined') {
-            element
-            .setSinkId(sinkId) 
-            .then(() => {
-                console.log(`Success, audio output device attached: ${sinkId}`)
-            })
-            .catch((error) => {
-                let errorMessage = error
-                if (error.name === 'SecurityError') {
-                    errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`
-                }
-                console.error(errorMessage)
-                // Jump back to first output device in the list as it's the default.
-                audioOutputSelect.selectedIndex = 0
-            })
-        } else {
-            console.warn('Browser does not support output device selection.')
-        }
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        gotDevices(devices);
     }
-
-    // 處理音訊改變的方法
-    function changeAudioDestination() {
-        const audioDestination = audioOutputSelect.value
-        attachSinkId(videoElement, audioDestination)
+    catch (err) {
+        handleError(err);
     }
 
     // 將視訊顯示在 video 標籤上
@@ -1342,13 +1315,10 @@ function userMedia() {
     }
 
     // 播放自己的視訊
-    async function start() {
-        const audioSource = audioInputSelect.value
+    async function startVideo() {
         const videoSource = videoSelect.value
-        console.log(videoSource);
-        constraints = {
+        let constraints = {
             audio: false,
-            // audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
             video: { deviceId: videoSource ? { exact: videoSource } : undefined },
         }
         navigator.mediaDevices
@@ -1356,14 +1326,27 @@ function userMedia() {
             .then(gotStream)
             .then(gotDevices)
             .catch(handleError)
-        
+
         setWebcamStream(constraints);
+        localStorage.setItem('video-source', videoSource)
+    }
+    // 播放輸入音訊
+    async function startAudio() {
+        const audioSource = audioInputSelect.value
+        let constraints = {
+            audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
+            video: false ,
+        }
+        setLocalStreams(constraints);
+        localStorage.setItem('audio-source', audioSource)
     }
 
-    audioInputSelect.onchange = start
-    audioOutputSelect.onchange = changeAudioDestination
+    audioInputSelect.value = localStorage.getItem('audio-source') || 'default';
+    videoSelect.value      = localStorage.getItem('video-source') || 'default';
 
-    videoSelect.onchange = start
+    audioInputSelect.onchange = startAudio
+    videoSelect.onchange = startVideo
 
-    start();
+    startVideo();
+    startAudio();
 }

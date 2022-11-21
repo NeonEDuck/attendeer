@@ -4,7 +4,7 @@ import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
 import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString } from './util.js';
-import { sidebarListener, dataMultipleChoice, constraints } from './sidebar.js';
+import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 import { async } from '@firebase/util';
 
 const socket = io('/');
@@ -104,6 +104,11 @@ export async function setWebcamStream(constraints) {
         localCams.webcam.video.srcObject = null;
     }
 }
+export async function setLocalStreams(constraints) {
+    localStreams.audio = await navigator.mediaDevices.getUserMedia(constraints);
+    localStreams.audio.getAudioTracks()[0].enabled = unmute;
+    await resetAudio();
+}
 
 // Default state
 webcamBtn.disabled = true;
@@ -151,7 +156,7 @@ micBtn.addEventListener('click', async () => {
 
 webcamBtn.addEventListener('click', async () => {
     try {
-        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia(constraints);
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({video: {undefined}, audio: false});
         console.log(webcamStream);
     }
     catch {
@@ -709,7 +714,7 @@ export async function refreshStream() {
     }
 
     for (const [id, peer] of Object.entries(Peer.peers)) {
-        if (!peer.senders.audio) {
+        if (!peer.senders.audio[0]) {
             localStreams.audio?.getTracks().forEach((track) => {
                 console.log(`add audio to ${id}`)
                 peer.senders.audio.push(peer.pc.addTrack(track, localStreams.audio));
