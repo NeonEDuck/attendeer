@@ -705,7 +705,7 @@ body.dark {
 
                         .alert-lookup__table {
                             height: 100%;
-
+                            background-color: transparent;
                             #alert-log {
                                 height: 100%;
                                 overflow: auto;
@@ -1277,4 +1277,95 @@ body.dark {
             margin-left: 5px;
         }
     }
+
+    .toast {
+        position: absolute;
+        top: 25px;
+        right: 30px;
+        border-radius: 12px;
+        background: #fff;
+        padding: 10px;
+        border-left: 5px solid #4070f4;
+        overflow: hidden;
+        width: 200px;
+        height: 9%;
+        transform: translateX(calc(100% + 30px));
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+        opacity: 0.5;
+
+        &.active {
+            transform: translateX(0%);
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+
+            .message {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+
+                .text {
+                    font-weight: 400;
+                    color: #666666;
+
+                    &.text-1 {
+                        font-weight: 600;
+                        color: #333;
+                    }
+                }
+            }
+        }
+
+        .close-toast {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            padding: 5px;
+            cursor: pointer;
+            opacity: 0.5;
+        
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            background: #ddd;
+
+            &::before {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                height: 100%;
+                width: 100%;
+                background-color: #4070f4;
+            }
+
+            &.active {
+                &::before {
+                    animation: progress 3s linear forwards;
+                }
+            }
+            @keyframes progress {
+                100% {
+                    right: 100%;
+                }
+            }
+        }
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+
 }

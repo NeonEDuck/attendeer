@@ -124,6 +124,12 @@ if (isHost){
             }
         }
     })
+
+    multipleChoiceSetting.onkeydown = function() {
+        if (event.keyCode == 9) { 
+            return false;
+         }
+    }
 }
 
 //sidebar 點擊監聽
@@ -136,7 +142,9 @@ export function sidebarListener() {
             navBtn[index].classList.toggle("open");
             let navText = navBtn[index].querySelector('.nav-text').innerHTML;
             fltCntr.hidden = false;
-            hiddenAllFloating();
+            if (isHost){
+                hiddenAllFloating();
+            }
 
             if(navText === '警醒資訊') {
                 floatingAlert.hidden = false;
@@ -161,7 +169,9 @@ closeFloatingButton.addEventListener('click', () => {
         item.className = "nav-btn";
     });
 
-    hiddenAllFloating();
+    if (isHost){
+        hiddenAllFloating();
+    }
 });
 
 

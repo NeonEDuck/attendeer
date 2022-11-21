@@ -52,6 +52,12 @@ const userName              = document.querySelector('#user-name')?.value?.trim(
 const photoURL              = document.querySelector('#photo-URL')?.value?.trim() || document.querySelector('#photo-URL').innerHTML?.trim();
 const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
 
+const toast      = document.querySelector('.toast'),
+      closeToast = document.querySelector('.close-toast'),
+      progress   = document.querySelector('.progress'),
+      text1      = document.querySelector('.text-1'),
+      text2      = document.querySelector('.text-2');
+
 // Audio
 const notificationSound = new Audio('/audio/notification_sound.wav');
 
@@ -505,6 +511,36 @@ enterBtn.addEventListener('click', async () => {
 
     socket.on('catch-text-message', async (messageId) => {
         await getNewMessage(messageId);
+
+        const response =  await apiCall('getClassMessage', { classId, messageId });
+        const message  = await response.json();
+        
+        if (!message.IsSelf && document.querySelector('.close-message')){
+
+            toast.classList.add('active');
+            progress.classList.add('active');
+
+            text1.innerHTML = message.UserName;
+            text2.innerHTML = message.Content;
+
+            setTimeout(() =>{
+                toast.classList.remove('active');
+            }, 3000);
+
+
+            setTimeout(() => {
+                progress.classList.remove('active');
+            }, 3300)
+        
+            closeToast.addEventListener("click", () => {
+                toast.classList.remove('active');
+            
+                setTimeout(() => {
+                    progress.classList.remove('active');
+                }, 300)
+            })
+            
+        }
     });
 
     if (isHost) {
@@ -601,6 +637,11 @@ hangUpBtn.addEventListener('click', async () => {
 messageBtn.addEventListener('click', async () => {
     sidebarRight.classList.toggle("close");
     meetingPanel.classList.toggle("close-message");
+    if (!document.querySelector('.close-message')) {
+        progress.classList.remove('active');
+        toast.classList.remove('active');
+    }
+    
     Cam.resizeAll();
 });
 
