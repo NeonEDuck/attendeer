@@ -15,7 +15,8 @@
 
 .calendar-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
+    flex-wrap: wrap;
     align-items: center;
     font-size: 1.25em;
     font-weight: 600;
@@ -124,6 +125,7 @@
 .year-picker {
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 span#month {
@@ -137,7 +139,6 @@ span#month {
     border-radius: 50%;
     display: grid;
     place-items: center;
-    margin-inline: 0.25em;
     cursor: pointer;
     user-select: none;
     animation: hover-in var(--transition-duration) forwards;

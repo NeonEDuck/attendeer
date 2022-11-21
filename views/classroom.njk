@@ -9,7 +9,7 @@
     <div class="flex flex-row flex-align gap-2">
         <div class="flex flex-column padding-inline-start-2 flex-item-1">
             <h3 class="post__title">Title</h3>
-            <div class="flex flex-row gap-2">
+            <div class="flex flex-row flex-wrap gap-2">
                 <p class="post__catagory">公告</p>
                 <p class="post__date">2022/1/1</p>
             </div>
@@ -29,11 +29,11 @@
 
     <div class="post-reply-writer flex flex-row flex-align-start gap-2">
         <img src="{{ photoURL or '/imgs/dummy_profile.png' }}" class="post__picture" alt="">
-        <div class="flex flex-column">
-            <div class="flex flex-row gap-2">
+        <div class="flex flex-column flex-item-1">
+            <div class="flex flex-row">
                 <p class="post__name">{{ displayName or '未登入' }}</p>
             </div>
-            <div class="flex flex-row flex-align-start">
+            <div class="flex flex-row flex-align-start gap-2">
                 <div class="flex-item-1">
                     <textarea type="text" placeholder="留言" class="auto-resize" style="width: 100%;"></textarea>
                 </div>
@@ -174,11 +174,13 @@
                                 </div>
                                 <div class="flex flex-column gap-4 flex-item-1">
                                     <p>標題</p>
-                                    <input type="text" id="write-title">
+                                    <input type="text" id="write-title" style="width: 100%;">
                                 </div>
                             </div>
                             <p>內容</p>
-                            <textarea type="text" id="write-content" style="height: 11em; resize: vertical;"></textarea>
+                            <div class="flex flex-row">
+                                <textarea type="text" id="write-content" style="height: 11em; resize: vertical; width: 100%;"></textarea>
+                            </div>
                             <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
                         </div>
                     </div>

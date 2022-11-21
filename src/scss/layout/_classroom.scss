@@ -107,6 +107,10 @@ $post-gap: 4em;
     gap: 1em;
     --count: attr(replyCount);
 
+    &__title {
+        word-break: break-all;
+    }
+
     &__content {
         margin-inline-start: 1em;
         margin-block-end: 1em;
