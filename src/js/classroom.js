@@ -549,6 +549,10 @@ async function generatePost(post) {
 async function populateReply(post, count) {
     const replyContainer = post.querySelector('.post-reply-container');
     const response = await apiCall('getPostReplys', {classId, postId: post.dataset.postId, limit: count});
+    if (response.status !== 200) {
+        return;
+    }
+
     const replys = await response.json();
 
     replyContainer.innerHTML = '';
