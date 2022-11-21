@@ -14,3 +14,9 @@ setIntervalImmediately(() => {
         textarea.classList.add('settle');
     }
 }, 500);
+
+[...document.querySelectorAll('button[href]')].forEach((e) => {
+    e.addEventListener('click', () => {
+        window.location.href = e.getAttribute('href');
+    });
+})

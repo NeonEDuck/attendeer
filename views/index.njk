@@ -19,10 +19,10 @@
 
         <div class="class-card__content">
             <h2 class="class-card__name">{{ class.ClassName }}</h2>
-            <a class="class-card__button">
+            <button class="class-card__button">
                 {% include 'svg/right_arrow.svg' %}
                 <span>查看</span>
-            </a>
+            </button>
         </div>
     </div>
 {% endblock prefab %}
@@ -47,10 +47,10 @@
 
                         <div class="class-card__content">
                             <h2 class="class-card__name">{{ class.ClassName }}</h2>
-                            <a class="class-card__button" href="/{{ class.ClassId }}">
+                            <button class="class-card__button" href="/{{ class.ClassId }}">
                                 {% include 'svg/right_arrow.svg' %}
                                 <span>查看</span>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 {% endfor %}

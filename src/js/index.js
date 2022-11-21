@@ -18,13 +18,15 @@ async function refreshClasses() {
     for (const classData of classes) {
         const classCard           = classCardPrefab.cloneNode(true);
         const classCardName       = classCard.querySelector('.class-card__name');
-        const classCardLink       = classCard.querySelector('.class-card__button');
+        const classCardBtn        = classCard.querySelector('.class-card__button');
         const classCardHour       = classCard.querySelector('.class-card__hour');
         const classCardClasssId   = classCard.querySelector('.class-card__class-id');
         const classCardHost       = classCard.querySelector('.class-card__host');
         classCard.style.setProperty('--class-color', `var(--clr-class-${classData.ClassColor})`);
         classCardName.innerHTML = classData.ClassName;
-        classCardLink.href      = `/${classData.ClassId}`;
+        classCardBtn.addEventListener('click', () => {
+            window.location.href = `/${classData.ClassId}`;
+        });
         classCardHour.innerHTML = classData.ClassHour;
         classCardClasssId.innerHTML = classData.ClassId;
         classCardHost.innerHTML = classData.HostName;
