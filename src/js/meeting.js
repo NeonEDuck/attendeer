@@ -5,7 +5,6 @@ import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
 import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
-import { async } from '@firebase/util';
 
 const socket = io('/');
 
@@ -56,6 +55,8 @@ const hostId                = document.querySelector('#host-id')?.value?.trim() 
 
 // Audio
 const notificationSound = new Audio('/audio/notification_sound.wav');
+const minecraft = new Audio('/audio/Minecraft.mp3');
+let Villager = 1;
 
 // Global variable
 let isHost = localUserId === hostId;
@@ -522,7 +523,14 @@ enterBtn.addEventListener('click', async () => {
             toasts.appendChild(toastAlert);
             const toast = toasts.lastChild;
 
+            (new Audio('/audio/Villager_idle'+ Villager +'.ogg')).play();
             
+            if( Villager > 2 ) {
+                Villager = 1;
+            }else {
+                Villager++;
+            }
+
             toast.classList.add('active');
             progress.classList.add('active');
 
@@ -530,6 +538,7 @@ enterBtn.addEventListener('click', async () => {
             text2.innerHTML = message.Content;
 
             toasts.scrollTop = toasts.scrollHeight;
+
 
             toastContent.addEventListener("click", () => {
                 sidebarRight.classList.remove("close");
@@ -640,6 +649,9 @@ hangUpBtn.addEventListener('click', async () => {
 
     meetingPanel.hidden = true;
     hangUpBtn.disabled = true;
+
+    minecraft.play();
+    minecraft.loop = true;
 });
 
 // messageBtn.addEventListener('click', async () => {

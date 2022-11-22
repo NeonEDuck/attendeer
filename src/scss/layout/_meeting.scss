@@ -1404,7 +1404,9 @@ body.dark {
                     .text {
                         font-weight: 400;
                         color: var(--clr-text);
-    
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        
                         &.text-1 {
                             font-weight: 600;
                             color: var(--clr-text-500);
