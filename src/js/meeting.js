@@ -439,13 +439,16 @@ enterBtn.addEventListener('click', async () => {
             notifyDismissBtn.disabled = !name || dismissedClasses.find(item => item.name === name);
         }, 1000);
     }
-    else {
-        socket.emit('throw-request-status');
-    }
 
     console.log(`join call: ${classId} as ${localUserId}`);
     socket.emit('join-call', classId, localUserId);
 
+    if (isHost) {
+        socket.emit('throw-inform-status', 'boardcast', {dismissedClasses, inNotifyDismissCoolDown});
+    }
+    else {
+        socket.emit('throw-request-status');
+    }
 
     // async function addMessageToChat(msgData) {
     //     const { user, text, timestamp } = msgData;
@@ -750,7 +753,7 @@ function getDismissTime() {
         prevName = period.PeriodName;
         i++;
     }
-    
+
     // console.log(`現在放學了`);
     return [null, 0];
 }

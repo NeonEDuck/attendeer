@@ -47,7 +47,12 @@ export default function(io) {
 
             socket.on('throw-inform-status', (socketId, data) => {
                 console.log(`throw-inform-status`)
-                socket.to(socketId).emit('catch-inform-status', data);
+                if (socketId === 'boardcast') {
+                    socket.broadcast.to(classId).emit('catch-inform-status', data);
+                }
+                else {
+                    socket.to(socketId).emit('catch-inform-status', data);
+                }
             });
 
             socket.on('throw-alert-start', (recordId) => {
