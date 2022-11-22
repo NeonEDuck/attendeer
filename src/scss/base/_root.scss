@@ -58,11 +58,32 @@
     --tran-04: all 0.4s ease;
     --tran-05: all 0.5s ease;
 
+    /* ====== here ====== */
+    --clr-class-1:  hsl(49 68% 23%);
+    --clr-class-2:  hsl(79 40% 23%);
+    --clr-class-3:  hsl(122 35% 42%);
+    --clr-class-4:  hsl(195 76% 30%);
+    --clr-class-5:  hsl(238 34% 39%);
+    --clr-class-6:  hsl(226 82% 11%);
+    --clr-class-7:  hsl(292 60% 20%);
+    --clr-class-8:  hsl(349 89% 17%);
+    --clr-class-9:  hsl(358 74% 30%);
+    --clr-class-10: hsl(332 72% 35%);
+
     --clr-body: hsl(215 46% 93%);
 
-    --clr-component-300: rgb(235, 247, 255);
-    --clr-component-500: hsl(206 23% 94%);
-    --clr-component-700: hsl(0 0% 68%);
+    --hsl-component-300: 204 54% 88%;
+    --hsl-component-500: 206 23% 94%;
+    --hsl-component-700: 0 0% 68%;
+    --hsl-component-300-reverse: 210 5% 30%;
+    --hsl-component-500-reverse: 210 6% 16%;
+    --hsl-component-700-reverse: 210 4% 12%;
+    --clr-component-300: hsl(var(--hsl-component-300));
+    --clr-component-500: hsl(var(--hsl-component-500));
+    --clr-component-700: hsl(var(--hsl-component-700));
+    --clr-component-300-reverse: hsl(var(--hsl-component-300-reverse));
+    --clr-component-500-reverse: hsl(var(--hsl-component-500-reverse));
+    --clr-component-700-reverse: hsl(var(--hsl-component-700-reverse));
 
     --clr-primary-300: hsl(265 90% 65%);
     --clr-primary-500: hsl(245 99% 68%);
@@ -71,11 +92,21 @@
     --clr-text-300: hsl(0 0% 44%);
     --clr-text-500: hsl(0 0% 15%);
     --clr-text-700: hsl(0 0% 0%);
+    --clr-text-300-reverse: hsl(0 0% 58%);
+    --clr-text-500-reverse: hsl(0 0% 80%);
+    --clr-text-700-reverse: hsl(0 0% 100%);
 
     --clr-text-white: hsl(0 0% 100%);
     --clr-text-black: hsl(0 0% 15%);
 
-    --clr-cancel: hsl(14 90% 50%);
+
+    --clr-cancel-300: hsl(18 93% 52%);
+    --clr-cancel-500: hsl(14 90% 50%);
+    --clr-cancel-700: hsl(11 91% 46%);
+
+    --clr-transparennt-300: hsl(0 0% 50% / 20%);
+    --clr-transparennt-500: hsl(0 0% 40% / 30%);
+    --clr-transparennt-700: hsl(0 0% 30% / 40%);
 
     --clr-bubble-self: hsl(203 52% 71%);
     --clr-bubble-other: hsl(218 13% 50%);
@@ -86,13 +117,15 @@
 
     --box-shadow-300: 0.1rem 0.1rem 0.25rem var(--clr-shadow-700), -0.1rem -0.1rem 0.25rem var(--clr-shadow-500);
     --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
+    --box-shadow-700: 0.3rem 0.3rem 1rem var(--clr-shadow-700), -0.3rem -0.3rem 1rem var(--clr-shadow-700);
 
-    --transition-timing: 250ms ease;
+    --transition-duration: 250ms;
+    --transition-timing: var(--transition-duration) ease;
     --transition-color: color var(--transition-timing), background-color var(--transition-timing);
     --transition-inset: inset var(--transition-timing);
 }
 
-.dark {
+:root.dark {
     &,
     ::after,
     ::before {
@@ -131,9 +164,18 @@
 
         --clr-body: hsl(210, 4%, 10%);
 
-        --clr-component-300: hsl(210 5% 30%);
-        --clr-component-500: hsl(210 6% 16%);
-        --clr-component-700: hsl(210 4% 12%);
+        --hsl-component-300: 210 5% 30%;
+        --hsl-component-500: 210 6% 16%;
+        --hsl-component-700: 210 4% 12%;
+        --hsl-component-300-reverse: 204 100% 96%;
+        --hsl-component-500-reverse: 206 23% 94%;
+        --hsl-component-700-reverse: 0 0% 68%;
+        --clr-component-300: hsl(var(--hsl-component-300));
+        --clr-component-500: hsl(var(--hsl-component-500));
+        --clr-component-700: hsl(var(--hsl-component-700));
+        --clr-component-300-reverse: hsl(var(--hsl-component-300-reverse));
+        --clr-component-500-reverse: hsl(var(--hsl-component-500-reverse));
+        --clr-component-700-reverse: hsl(var(--hsl-component-700-reverse));
 
         --clr-primary-300: hsl(194 80% 43%);
         --clr-primary-500: hsl(210 73% 44%);
@@ -142,11 +184,20 @@
         --clr-text-300: hsl(0 0% 58%);
         --clr-text-500: hsl(0 0% 80%);
         --clr-text-700: hsl(0 0% 100%);
+        --clr-text-300-reverse: hsl(0 0% 44%);
+        --clr-text-500-reverse: hsl(0 0% 15%);
+        --clr-text-700-reverse: hsl(0 0% 0%);
 
         --clr-text-white: #fff;
         --clr-text-black: #0f0f0f;
 
-        --clr-cancel: hsl(9 95% 45%);
+        --clr-cancel-300: hsl(9 96% 39%);
+        --clr-cancel-500: hsl(9 95% 45%);
+        --clr-cancel-700: hsl(9 96% 39%);
+
+        --clr-transparennt-300: hsl(0 0% 30% / 30%);
+        --clr-transparennt-500: hsl(0 0% 40% / 30%);
+        --clr-transparennt-700: hsl(0 0% 50% / 40%);
 
         --clr-bubble-self: hsl(202 31% 53%);
         --clr-bubble-other: hsl(216 18% 31%);
@@ -156,5 +207,6 @@
         --clr-shadow-700: hsl(0 0% 0%);
 
         --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
+        --box-shadow-700: 0.3rem 0.3rem 1rem var(--clr-shadow-700), -0.3rem -0.3rem 1rem var(--clr-shadow-700);
     }
 }

@@ -1,9 +1,17 @@
 .msg {
     text-align: left;
 
+    p {
+        min-height: 0;
+    }
+
     &__user {
         font-weight: 500;
         color: var(--text-color);
+
+        &.host {
+            font-weight: 900;
+        }
     }
 
     &__timestamp {
@@ -25,6 +33,10 @@
 .my-msg {
     text-align: right;
     position: relative;
+
+    p {
+        min-height: 0;
+    }
 
     &__user {
         font-weight: 500;

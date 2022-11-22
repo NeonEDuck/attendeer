@@ -1,5 +1,5 @@
 import { prefab } from './prefab.js';
-import { getUserData, debounce } from './util.js';
+import { debounce, getUserData } from './util.js';
 
 const camPrefab = prefab.querySelector('.cam');
 
@@ -27,15 +27,18 @@ export class Cam {
     static camDict = {};
     static area = null;
     static container = null;
+    static pinnedContainer = null;
+    static pinned = false;
     static Type = {
         Webcam: 'webcam',
         ScreenShare: 'screenShare',
         Audio: 'audio',
     };
 
-    static init(area, container) {
+    static init(area, container, pinnedContainer) {
         Cam.area = area;
         Cam.container = container;
+        Cam.pinnedContainer = pinnedContainer;
     }
 
     static getCam(userId, streamType) {
@@ -43,21 +46,34 @@ export class Cam {
     }
 
     static resizeAll() {
-        const firstCam = Cam.container.querySelector(':first-child');
-        const x = 1 + Math.floor((Cam.area.clientWidth - (16*2) - (16*15)) / (16*16));
-        const y = 1 + Math.floor((Cam.area.clientHeight - (16*2) - (16*15/16*9)) / (16*9));
+        const em = 16;
+        const containerWidth = Cam.container.clientWidth - (4*em);
+        const containerHeight = Cam.container.clientHeight - (4*em);
+        const camWidth = 15*em;
+        const camHeight = camWidth/16*9;
+        const x = 1 + Math.floor((containerWidth - camWidth) / (camWidth + 1.0*em));
+        const y = 1 + Math.floor((containerHeight - camHeight) / (camHeight + 1.0*em));
         const count = Cam.container.children.length;
-        [...Cam.container.children].slice(0, x*y).forEach((cam) => {
+        const reorderedArray = [...Cam.container.children];
+        reorderedArray.sort((a, b) => {return (a.id < b.id)?1:-1});
+        reorderedArray.forEach((e) => {
+            e.classList.remove('pinned');
+            Cam.container.appendChild(e);
+        });
+        const cams = [...Cam.container.querySelectorAll('.cam:not([hidden], [id*="-audio"])')];
+        const firstCam = cams[0];
+
+        cams.slice(0, x*y).forEach((cam) => {
             cam.removeAttribute('overflowed');
         });
-        [...Cam.container.children].slice(Math.max(x*y, 1)).forEach((cam) => {
+        cams.slice(Math.max(x*y, 1)).forEach((cam) => {
             cam.setAttribute('overflowed', '');
         });
 
         for (let i = y-1; i >= 0; i--) {
             if (count > i * x) {
-                [...Cam.container.children].forEach((cam, idx) => {
-                    cam.style.maxHeight = `calc(calc(100% - ${i}em) / ${(i+1)})`;
+                cams.forEach((cam, idx) => {
+                    cam.style.maxHeight = `calc((100% - ${i}em) / ${(i+1)})`;
                     cam.style.maxWidth = (count > x && idx >= i*x)?`${firstCam.clientWidth}px`: 'initial';
                 });
                 break;
@@ -75,6 +91,7 @@ export class Cam {
             this.name = this.node.querySelector('.cam__name');
             this.profile = this.node.querySelector('.cam__profile');
             this.warning = this.node.querySelector('.cam__warning');
+            this.pinBtn = this.node.querySelector('.cam__pin-btn');
             this.owner = userId;
             this.streamType = streamType;
 
@@ -86,10 +103,29 @@ export class Cam {
 
             this.name.innerHTML = userId;
             console.log(userId);
-            getUserData(userId).then((data) => {
-                if (data) {
-                    this.name.innerHTML = data.name;
-                    this.profile.src = data.photo;
+            getUserData(userId).then((user) => {
+                if (user.UserName) {
+                    this.name.innerHTML = user.UserName;
+                    this.profile.src = user.PhotoURL;
+                }
+            });
+            this.pinBtn.addEventListener('click', () => {
+                [...Cam.pinnedContainer.children].forEach((e) => {
+                    Cam.container.appendChild(e);
+                });
+                if (this.node.classList.contains('pinned')) {
+                    Cam.area.classList.remove('pinned-mode');
+                    this.node.classList.remove('pinned');
+                    Cam.resizeAll();
+                }
+                else {
+                    this.node.classList.add('pinned');
+                    Cam.area.classList.add('pinned-mode');
+                    Cam.pinnedContainer.appendChild(this.node);
+                    this.node.removeAttribute('overflowed');
+                    this.node.style.maxHeight = '';
+                    this.node.style.maxWidth = '';
+                    Cam.resizeAll();
                 }
             });
 
@@ -102,19 +138,36 @@ export class Cam {
     turnOn(stream) {
         this.profile.hidden = true;
         const mediaStream = new MediaStream();
-        const [ track ] = stream.getTracks();
-        mediaStream.addTrack(track);
+        for (const track of stream.getTracks()) {
+            mediaStream.addTrack(track);
+        }
+        //! 現在有用 但一定有問題
+        if (mediaStream.getVideoTracks()[0]) {
+            mediaStream.getVideoTracks()[0].onended = function () {
+                this.turnOff();
+            };
+        }
         this.video.srcObject = mediaStream;
     }
 
     turnOff() {
+        if (this.node.classList.contains('pinned')) {
+            Cam.area.classList.remove('pinned-mode');
+            this.node.classList.remove('pinned');
+            Cam.container.appendChild(this.node);
+        }
         this.video.srcObject = null;
         if (this.streamType === Cam.Type.Webcam) {
             this.profile.hidden = false;
         }
+        else if (this.owner === 'local' && this.streamType === 'screen-share') {
+            this.node.hidden = true;
+            this.video.srcObject = null;
+        }
         else {
             this.destory();
         }
+        Cam.resizeAll();
     }
 
     destory() {
@@ -130,7 +183,8 @@ export class Peer {
     static localStreams = null;
     static socket = null;
 
-    static init(localStreams, socket) {
+    static init(localUserId, localStreams, socket) {
+        Peer.localUserId = localUserId;
         Peer.localStreams = localStreams;
         Peer.socket = socket;
     }
@@ -210,7 +264,9 @@ export class Peer {
                     break;
 
                 case "failed":
-                    Cam.getCam(this.userId, streamType).warning.hidden = false;
+                    for (const streamType in Peer.peers[this.userId]?.streams) {
+                        Cam.getCam(this.userId, streamType).warning.hidden = false;
+                    }
                     console.log(`connectionState: ${this.userId} failed`);
 
                     //? 嘗試重新連線，不確定是否能成功，需要測試

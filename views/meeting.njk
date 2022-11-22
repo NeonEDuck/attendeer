@@ -3,6 +3,7 @@
 {% block script %}
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="/js/meeting.js" type="module" defer></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 {% endblock script %}
 
 {% block navbar %}
@@ -12,17 +13,9 @@
     <div class="cam">
         <video class="cam__video" autoplay playsinline control=false></video>
         <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
-        {# <div id="cam__menu" class="cam__menu close">
-            <li class="cam__li" style="--i:0;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:1;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:2;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-        </div> #}
+        <div class="cam__menu">
+            <button class="cam__pin-btn" data-tooltip="釘選"><i class='bx bx-pin'></i></button>
+        </div>
         <span class="cam__name"></span>
         <span class="cam__warning" hidden>!</span>
     </div>
@@ -56,6 +49,8 @@
             <button class="notification__close-btn btn-red">{% include 'svg/cross.svg' %}</button>
         </footer>
     </li>
+
+
 {% endblock prefab %}
 
 {% block content %}
@@ -70,8 +65,8 @@
                     </span>
 
                     <div class="text header-text">
-                        <span class="name">應用統計學</span>
-                        <span class="profession">xxx-xxx</span>
+                        <span class="sidebar__class-name">{{ className }}</span>
+                        <span class="sidebar__class-id">{{ classId }}</span>
                     </div>
                 </div>
             </header>
@@ -86,30 +81,27 @@
                             <button class="nav-btn">
                                 {% include 'svg/setting.svg' %}
                                 <span class="text nav-text">裝置設定</span>
+                                {# 裝置設定 #}
+                            </button>
+                        </li>
+                        <!-- <li class="nav-link">
+                            <button class="nav-btn" disabled="disabled">
+                                {% include 'svg/setting.svg' %}
+                                <span class="text nav-text" style="text-decoration:line-through;color: #818181;">尚無功能</span>
+                                {# 會議選項 #}
                             </button>
                         </li>
                         <li class="nav-link">
-                            <button class="nav-btn">
+                            <button class="nav-btn" disabled="disabled">
                                 {% include 'svg/setting.svg' %}
-                                <span class="text nav-text">會議選項</span>
+                                <span class="text nav-text" style="text-decoration:line-through;color: #818181;">尚無功能</span>
+                                {# 會議資訊 #}
                             </button>
-                        </li>
-                        <li class="nav-link">
-                            <button class="nav-btn">
-                                {% include 'svg/setting.svg' %}
-                                <span class="text nav-text">會議資訊</span>
-                            </button>
-                        </li>
+                        </li> -->
                         <li class="nav-link">
                             <button class="nav-btn">
                                 {% include 'svg/setting.svg' %}
                                 <span class="text nav-text">警醒資訊</span>
-                            </button>
-                        </li>
-                        <li class="nav-link">
-                            <button class="nav-btn">
-                                {% include 'svg/setting.svg' %}
-                                <span class="text nav-text">背景效果</span>
                             </button>
                         </li>
                     </ul>
@@ -130,15 +122,16 @@
             </div>
         </nav>
 
-        <div class="floating-container">
+        <div class="floating-container" hidden>
 
             <div class="floating">
-
                 <div class="close-floating_button">
                     <i class='bx bx-x-circle'></i>
                 </div>
 
                 {% include './sidebar/alert-info.njk' %}
+
+                {% include './sidebar/user-media.njk' %}
 
             </div>
         </div>
@@ -148,10 +141,12 @@
 
         <div id="meeting-panel__left">
             <div id="cam-area">
+                <div id="pinned-cam-container">
+
+                </div>
                 <div id="cam-container">
 
                 </div>
-
                 <div id='alert' hidden>
 
                 </div>
@@ -175,7 +170,13 @@
                             <div class="ico" id="ico"><button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button></div>
                         </li>
                         <li class="li-4">
-                            <div class="name">下課鈴</div>
+                            <div class="name">
+                                {% if isHost %}
+                                    開始下課
+                                {% else %}
+                                    提醒下課
+                                {% endif %}
+                            </div>
                             <div class="ico" id="ico"><button id="notify-dismiss-btn" class="btn-primary btn-round" disabled>{% include './svg/bell.svg' %}</button></div>
                         </li>
                         <li class="li-bin li-5">
@@ -186,20 +187,18 @@
                     </div>
                 </div>
 
-                {# <span id="call-id">{{ callId }}</span> #}
-                <input id="call-id" type="text" value="{{ callId }}" hidden>
-                {# <input id="call-input" type="text"> #}
-                {# <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include 'svg/screen_share.svg' %}</button>
-                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include 'svg/hang_up.svg' %}</button>
-                <button id="message-btn" class="btn-primary btn-round">{% include 'svg/message.svg' %}</button> #}
-
+                <input id="class-id" type="text" value="{{ classId }}" hidden>
+                <input id="user-id" type="text" value="{{ userId }}" hidden>
+                <input id="user-name" type="text" value="{{ displayName }}" hidden>
+                <input id="photo-URL" type="text" value="{{ photoURL }}" hidden>
+                <input id="host-id" type="text" value="{{ hostId }}" hidden>
 
                 <button id="message-btn" class="btn-primary btn-round" data-tooltip="聊天室">{% include './svg/message.svg' %}</button>
             </div>
         </div>
 
         <div id="meeting-panel__right" class="sidebar-right close">
-            <header>
+            {# <header>
                 <div class="segmented-control">
 
                     <input type="radio" name="radio2" value="3" id="tab-1" checked/>
@@ -213,7 +212,7 @@
                     <div class="segmented-control__color"></div>
 
                 </div>
-            </header>
+            </header> #}
             <div id="chat">
                 <ul id="chat__room" class="margin-block-end-2"></ul>
 

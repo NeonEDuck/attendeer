@@ -1,3 +1,4 @@
+
 <div class="calendar">
     <div class="calendar-header">
         <div class="year-picker">
@@ -32,17 +33,21 @@
         <div class="calendar-days"></div>
     </div>
     <div class="calendar-footer">
-        <div class="detail flex flex-column flex-align-end">
+        <div class="detail">
             <p class="detail__date"></p>
             <p class="detail__text">點擊查看行程</p>
             <input type="text" class="detail__edit" value="" hidden/>
         </div>
-        <div class="toolbar flex flex-row gap-2 flex-align">
-            <p id="calendar__tooltip" hidden>點擊日期以編輯行程</p>
-            <button id="calendar__cancel" data-tooltip="取消" class="btn-red" hidden>{% include "svg/cross.svg" %}</button>
-            <button id="calendar__save" data-tooltip="儲存" hidden>{% include "svg/save.svg" %}</button>
-            <button id="calendar__edit" data-tooltip="編輯" hidden>{% include "svg/pen.svg" %}</button>
-        </div>
+
+        {% if isHost %}
+            <div class="toolbar">
+                <p id="calendar__tooltip" hidden>點擊日期以編輯行程</p>
+                <div class="button-group">
+                    <button id="calendar__cancel" data-tooltip="取消" class="btn-red" hidden>{% include "svg/cross.svg" %}</button>
+                    <button id="calendar__save" data-tooltip="儲存" hidden>{% include "svg/save.svg" %}</button>
+                    <button id="calendar__edit" data-tooltip="編輯">{% include "svg/pen.svg" %}</button>
+                </div>
+            </div>
+        {% endif %}
     </div>
-    <div class="month-list"></div>
 </div>

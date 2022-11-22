@@ -13,15 +13,8 @@
     background: var(--clr-component-700);
     transition: var(--transition-color);
 
-    &.open {
-        background: var(--clr-primary-500);
-        &::before {
-            left: calc( 3 * var(--width) / 4 - var(--button-size) / 2 );
-         }
-    }
-
     &:hover {
-        animation: none;
+        background: var(--clr-primary-500);
     }
 
     &::before {
@@ -35,5 +28,17 @@
         transform: translateY(-50%);
         background: var(--clr-component-500);
         transition: var(--transition-color), var(--transition-inset);
+    }
+
+    &.open {
+        background: var(--clr-primary-500);
+
+        &:hover {
+            background: var(--clr-primary-300);
+        }
+
+        &::before {
+            left: calc( 3 * var(--width) / 4 - var(--button-size) / 2 );
+         }
     }
 }

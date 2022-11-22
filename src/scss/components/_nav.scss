@@ -1,8 +1,11 @@
 @use '../abstracts' as *;
 
-#navbar {
+:root {
     --navbar-height: 5em;
     --navbar-padding: 0.5em;
+}
+
+#navbar {
     position: sticky;
     z-index: 100;
     display: flex;

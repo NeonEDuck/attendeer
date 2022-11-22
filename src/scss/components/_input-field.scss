@@ -32,9 +32,12 @@ input[type=number] {
 textarea {
     @include rounded-input();
     border-radius: $border-radius $border-radius 0 $border-radius;
+    height: 5em;
+    resize: none;
 }
 
 textarea.auto-resize {
+    height: 2em;
     border-radius: $border-radius;
     resize: none;
 }
