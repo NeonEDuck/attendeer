@@ -1,5 +1,5 @@
 import { prefab } from './prefab.js';
-import { debounce, getUserData } from './util.js';
+import { debounce, getUserData, htmlToElement } from './util.js';
 
 const camPrefab = prefab.querySelector('.cam');
 
@@ -29,6 +29,7 @@ export class Cam {
     static container = null;
     static pinnedContainer = null;
     static pinned = false;
+    static statusCam;
     static Type = {
         Webcam: 'webcam',
         ScreenShare: 'screenShare',
@@ -39,6 +40,19 @@ export class Cam {
         Cam.area = area;
         Cam.container = container;
         Cam.pinnedContainer = pinnedContainer;
+        if (!Cam.statusCam) {
+            Cam.statusCam = htmlToElement(`
+                <div id="status-cam" class="cam" hidden>
+                    <div class="cam__profiles">
+                        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture" referrerpolicy="no-referrer" hidden>
+                        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture" referrerpolicy="no-referrer" hidden>
+                        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture" referrerpolicy="no-referrer" hidden>
+                    </div>
+                    <span class="cam__name"></span>
+                </div>
+                `);
+            Cam.container.appendChild(Cam.statusCam);
+        }
     }
 
     static getCam(userId, streamType) {
@@ -53,20 +67,39 @@ export class Cam {
         const camHeight = camWidth/16*9;
         const x = 1 + Math.floor((containerWidth - camWidth) / (camWidth + 1.0*em));
         const y = 1 + Math.floor((containerHeight - camHeight) / (camHeight + 1.0*em));
-        const count = Cam.container.children.length;
         const reorderedArray = [...Cam.container.children];
         reorderedArray.sort((a, b) => {return (a.id < b.id)?1:-1});
         reorderedArray.forEach((e) => {
             e.classList.remove('pinned');
             Cam.container.appendChild(e);
         });
-        const cams = [...Cam.container.querySelectorAll('.cam:not([hidden], [id*="-audio"])')];
+        let cams = [...Cam.container.querySelectorAll('.cam:not([hidden], [id*="-audio"], [id="status-cam"])')];
+        const count = cams.length;
+        if (count > x*y) {
+            Cam.container.insertBefore(Cam.statusCam, cams[x*y-1]);
+            Cam.statusCam.hidden = false;
+            const overflowCount = count - x*y;
+            Cam.statusCam.querySelector('.cam__name').innerHTML = `其他參與者${overflowCount}人`;
+            Cam.statusCam.querySelectorAll('.cam__profile').forEach((e, idx) => {
+                if (idx < overflowCount) {
+                    e.src = cams[x*y+idx].querySelector('cam__profile')?.src || '/imgs/dummy_profile.png';
+                    e.hidden = false;
+                    return;
+                }
+                e.hidden = true;
+            });
+            cams = [...Cam.container.querySelectorAll('.cam:not([hidden], [id*="-audio"]), #status-cam')];
+        }
+        else {
+            Cam.statusCam.hidden = true;
+        }
+
         const firstCam = cams[0];
 
-        cams.slice(0, x*y).forEach((cam) => {
+        cams.slice(0, Math.max(x*y, x, y, 1)).forEach((cam) => {
             cam.removeAttribute('overflowed');
         });
-        cams.slice(Math.max(x*y, 1)).forEach((cam) => {
+        cams.slice(Math.max(x*y, x, y, 1)).forEach((cam) => {
             cam.setAttribute('overflowed', '');
         });
 
