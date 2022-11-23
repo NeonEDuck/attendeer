@@ -67,13 +67,13 @@ const deg = 6,
       hr  = document.querySelector('#hr'),
       mn  = document.querySelector('#mn'),
       sc  = document.querySelector('#sc');
-      
+
 setInterval(() => {
     let day = new Date();
     let hh = day.getHours() * 30;
     let mm = day.getMinutes() * deg;
     let ss = day.getSeconds() * deg;
-    
+
     hr.style.transform = `rotateZ(${(hh)+(mm/12)}deg)`;
     mn.style.transform = `rotateZ(${mm}deg)`;
     sc.style.transform = `rotateZ(${ss}deg)`;
@@ -98,7 +98,12 @@ let isHost = localUserId === hostId;
 //開關sidebar
 toggle.addEventListener("click", () =>{
     sidebar.classList.toggle("close");
-    clock.classList.toggle("close");
+    if (sidebar.classList.contains("close")) {
+        clock.classList.add("close");
+    }
+    else {
+        clock.classList.remove("close");
+    }
 });
 
 //黑白模式
@@ -142,7 +147,7 @@ if (isHost){
     })
 
     multipleChoiceSetting.onkeydown = function() {
-        if (event.keyCode == 9) { 
+        if (event.keyCode == 9) {
             return false;
          }
     }
@@ -263,10 +268,10 @@ async function generateAlertLog() {
     alertSearch.addEventListener('keyup', () => {
         const filter = alertSearch.value.toUpperCase();
         const rows = alertLog.querySelectorAll('tr');
-    
+
         for (const row of rows) {
             const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
-    
+
             if (text.indexOf(filter) !== -1) {
                 row.style.display = "none";
             }
@@ -279,28 +284,28 @@ async function generateAlertLog() {
     const b64toBlob = (b64Data, contentType='', sliceSize=512) => {
         const byteCharacters = atob(b64Data);
         const byteArrays = [];
-    
+
         for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
             const slice = byteCharacters.slice(offset, offset + sliceSize);
-    
+
             const byteNumbers = new Array(slice.length);
             for (let i = 0; i < slice.length; i++) {
                 byteNumbers[i] = slice.charCodeAt(i);
             }
-    
+
             const byteArray = new Uint8Array(byteNumbers);
             byteArrays.push(byteArray);
         }
-    
+
         const blob = new Blob(byteArrays, {type: contentType});
         return blob;
     }
-    
+
     downloadAlertBtn.addEventListener('click', async () => {
         const response = await apiCall('getAlertLog', {classId});
         const b64file = await response.text();
         const blob = b64toBlob(b64file, 'application/vnd.ms-excel');
-    
+
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = 'alertLog.xlsx';
