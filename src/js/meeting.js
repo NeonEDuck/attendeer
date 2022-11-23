@@ -565,7 +565,15 @@ hangUpBtn.addEventListener('click', async () => {
 
 messageBtn.addEventListener('click', async () => {
     sidebarRight.classList.toggle("close");
-    meetingPanel.classList.toggle("close-message");
+    const close = sidebarRight.classList.contains("close");
+    if (close) {
+        meetingPanel.classList.add("close-message");
+        messageBtn.classList.remove("open");
+    }
+    else {
+        meetingPanel.classList.remove("close-message");
+        messageBtn.classList.add("open");
+    }
     Cam.resizeAll();
 });
 

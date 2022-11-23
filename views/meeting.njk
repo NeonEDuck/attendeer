@@ -12,7 +12,7 @@
 {% block prefab %}
     <div class="cam">
         <video class="cam__video" autoplay playsinline control=false></video>
-        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
+        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture" referrerpolicy="no-referrer">
         <div class="cam__menu">
             <button class="cam__pin-btn" data-tooltip="釘選"><i class='bx bx-pin'></i></button>
         </div>
@@ -129,10 +129,11 @@
                     <i class='bx bx-x-circle'></i>
                 </div>
 
-                {% include './sidebar/alert-info.njk' %}
+                <div class="floating__body">
+                    {% include './sidebar/alert-info.njk' %}
 
-                {% include './sidebar/user-media.njk' %}
-
+                    {% include './sidebar/user-media.njk' %}
+                </div>
             </div>
         </div>
 
@@ -193,11 +194,11 @@
                 <input id="photo-URL" type="text" value="{{ photoURL }}" hidden>
                 <input id="host-id" type="text" value="{{ hostId }}" hidden>
 
-                <button id="message-btn" class="btn-primary btn-round" data-tooltip="聊天室">{% include './svg/message.svg' %}</button>
             </div>
         </div>
 
         <div id="meeting-panel__right" class="sidebar-right close">
+            <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
             {# <header>
                 <div class="segmented-control">
 

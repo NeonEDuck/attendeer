@@ -5,13 +5,13 @@
             <fieldset class="fieldset-alert">
                 <legend>警醒</legend>
                 <label for="alert-interval">警醒間隔:</label>
-                <div class="field flex-center">
-                    <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                <div class="field">
+                    <input id="alert-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" required="" min="10" max="50">
                     <label for="alert-interval">分鐘</label>
                 </div>
                 <label for="alert-time">警醒持續時間:</label>
-                <div class="field flex-center">
-                    <input id="alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                <div class="field">
+                    <input id="alert-time" class="alert-time flex-item-1" name="alert-time" type="number" required="" min="1" max="3">
                     <label for="alert-time">分鐘</label>
                 </div>
             </fieldset>
@@ -54,9 +54,9 @@
                 <div class="form-inner">
                     <div class="page slidepage">
                         <div class="title">輸入題目問題</div>
-                        
-                        <div class="field flex-center">
-                            <textarea class="qst_text" cols="45" rows="10" maxlength="50"></textarea>
+
+                        <div class="field">
+                            <textarea class="qst_text flex-item-1" cols="45" rows="10" maxlength="50"></textarea>
                         </div>
                         <div class="field flex-center btns">
                             <button class="prev-1 prev">返回</button>
@@ -65,7 +65,7 @@
                     </div>
                     <div class="page page-2">
                         <div class="title">輸入選項</div>
-                        <div class="options">
+                        <div class="options gap-4">
                             <div class="field flex-center add">
                                 <button class="add_options">新增選項</button>
                             </div>
@@ -80,13 +80,13 @@
                         <fieldset>
                             <legend>警醒</legend>
                             <label for="alert-interval">警醒間隔:</label>
-                            <div class="field flex-center">
-                                <input id="alert-interval" class="alert-interval" name="alert-interval" type="number" required="" min="10" max="50">
+                            <div class="field">
+                                <input id="alert-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" required="" min="10" max="50">
                                 <label for="alert-interval">分鐘</label>
                             </div>
                             <label for="alert-time">警醒持續時間:</label>
-                            <div class="field flex-center">
-                                <input id="alert-time" class="alert-time" name="alert-time" type="number" required="" min="1" max="3">
+                            <div class="field">
+                                <input id="alert-time" class="alert-time flex-item-1" name="alert-time" type="number" required="" min="1" max="3">
                                 <label for="alert-time">分鐘</label>
                             </div>
                         </fieldset>
@@ -100,9 +100,9 @@
         </div>
     </div>
 
-    <div class="field flex-center option">
+    <div class="field option">
         <span class="span_No"></span>
-        <input type="text" class="option_input">
+        <input type="text" class="option_input flex-item-1">
         <i class="bx bx-x" style="display: none;"></i>
     </div>
 
@@ -123,19 +123,19 @@
             <fieldset class="fieldset-vote">
                 <legend>投票</legend>
                 <label>輸入投票題目:</label>
-                <div class="field flex-center">
-                    <textarea class="qst_text" cols="25" rows="5" maxlength="50"></textarea>
+                <div class="field">
+                    <textarea class="qst_text flex-item-1" cols="25" rows="5" maxlength="50"></textarea>
                 </div>
-                <div class="field flex-center">
+                <div class="field">
                     <label>輸入投票回答:</label>
-                    <select name="options" id="option-selected">
+                    <select name="options" id="option-selected" class="flex-item-1">
                         <option value="" selected >請選擇投票數量</option>
                         <option value="2" >2</option>
                         <option value="3" >3</option>
                         <option value="4" >4</option>
                     </select>
                 </div>
-                <div class="field flex-center options"></div>
+                <div class="field options"></div>
             </fieldset>
         </div>
     </div>
@@ -144,7 +144,7 @@
         <input type="text" class="option_input">
     </div>
 </div>
-    
+
     <div class = "floating-alert" id="floating-alert" hidden>
         <div class="alert-info">
             {# 警醒設定畫面 #}
@@ -152,18 +152,18 @@
             <form id="close-modal__form" class="flex flex-column flex-justify-space-between overflow-auto">
                 <fieldset>
                     <legend>警醒</legend>
-                    <div class="field flex-center"  id="alertType">
+                    <div class="field" id="alertType">
                         <label for="info-type">警醒類型:</label>
                         <label id="info-type" class="alert-type"></label>
                     </div>
                     <label for="info-interval">警醒間隔:</label>
-                    <div class="field flex-center">
-                        <input id="info-interval" class="alert-interval" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
+                    <div class="field">
+                        <input id="info-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
                         <label for="info-interval">分鐘</label>
                     </div>
                     <label for="info-time">警醒持續時間:</label>
-                    <div class="field flex-center">
-                        <input id="info-time" class="alert-time" name="alert-time" type="number" readonly='readonly' min="1" max="3" required>
+                    <div class="field">
+                        <input id="info-time" class="alert-time flex-item-1" name="alert-time" type="number" readonly='readonly' min="1" max="3" required>
                         <label for="info-time">分鐘</label>
                     </div>
                 </fieldset>
