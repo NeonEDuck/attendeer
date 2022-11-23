@@ -3,6 +3,7 @@ import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
 import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
+import { async } from '@firebase/util';
 
 const socket = io('/');
 
@@ -12,6 +13,7 @@ const body = document.querySelector('body');
 const camPrefab    = prefab.querySelector('.cam');
 const msgPrefab    = prefab.querySelector('.msg');
 const myMsgPrefab  = prefab.querySelector('.my-msg');
+const toastPrefab  = prefab.querySelector('.toast');
 const notificationPrefab  = prefab.querySelector('.notification');
 
 const sidebarRight      = document.querySelector(".sidebar-right");
@@ -43,6 +45,7 @@ const toolbar               = document.querySelector('#toolbar');
 const chat                  = document.querySelector('#chat');
 const chatRoom              = document.querySelector('#chat__room')
 const msgInput              = document.querySelector('#msg-input');
+const toasts              = document.querySelector('#toasts');
 const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
 const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
 const userName              = document.querySelector('#user-name')?.value?.trim() || document.querySelector('#user-name').innerHTML?.trim();
@@ -89,6 +92,24 @@ export function setGlobalAlert(alertType, interval, time, question, answear, glo
     globalMultipleChoice = globalmultipleChoice;
 }
 
+export async function setWebcamStream(constraints) {
+    webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
+    await resetWebcam();
+    if (webcamOn) {
+        localCams.webcam.profile.hidden = true;
+        localCams.webcam.video.srcObject = webcamStream;
+    }
+    else {
+        localCams.webcam.profile.hidden = false;
+        localCams.webcam.video.srcObject = null;
+    }
+}
+export async function setLocalStreams(constraints) {
+    localStreams.audio = await navigator.mediaDevices.getUserMedia(constraints);
+    localStreams.audio.getAudioTracks()[0].enabled = unmute;
+    await resetAudio();
+}
+
 // Default state
 webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
@@ -129,7 +150,8 @@ micBtn.addEventListener('click', async () => {
 
 webcamBtn.addEventListener('click', async () => {
     try {
-        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({video: {undefined}, audio: false});
+        console.log(webcamStream);
     }
     catch {
         webcamOn = false;
@@ -147,6 +169,13 @@ webcamBtn.addEventListener('click', async () => {
     }
     await refreshStream();
 });
+
+// export async function aaa(videoSource) {
+    
+//     webcamStream = videoSource || await navigator.mediaDevices.getUserMedia(constraints).then(gotStream);
+//     await refreshStream();
+// }
+
 
 screenShareBtn.addEventListener('click', async () => {
 
@@ -473,6 +502,60 @@ enterBtn.addEventListener('click', async () => {
 
     socket.on('catch-text-message', async (messageId) => {
         await getNewMessage(messageId);
+
+        const response =  await apiCall('getClassMessage', { classId, messageId });
+        const message  = await response.json();
+        
+        if (!message.IsSelf && document.querySelector('.close-message')){
+
+            const toastAlert = toastPrefab.cloneNode(true);
+            const closeToast = toastAlert.querySelector('.close-toast');
+            const toastContent = toastAlert.querySelector('.toast-content');
+            const progress = toastAlert.querySelector('.progress');
+            const text1 = toastAlert.querySelector('.text-1');
+            const text2 = toastAlert.querySelector('.text-2');
+            toasts.appendChild(toastAlert);
+            const toast = toasts.lastChild;
+
+            
+            toast.classList.add('active');
+            progress.classList.add('active');
+
+            text1.innerHTML = message.UserName;
+            text2.innerHTML = message.Content;
+
+            toasts.scrollTop = toasts.scrollHeight;
+
+            toastContent.addEventListener("click", () => {
+                sidebarRight.classList.remove("close");
+                meetingPanel.classList.remove("close-message");
+                if (!document.querySelector('.close-message')) {
+                    toasts.innerHTML = '';
+                }
+                
+                Cam.resizeAll();
+            })
+
+            setTimeout(() =>{
+                toast.classList.remove('active');
+            }, 3000);
+
+
+            setTimeout(() => {
+                progress.classList.remove('active');
+            }, 3300)
+        
+            closeToast.addEventListener("click", () => {
+                toast.classList.remove('active');
+            
+                setTimeout(() => {
+                    progress.classList.remove('active');
+                }, 300)
+            })
+            
+            await delay(3300);
+            toast.remove();
+        }
     });
 
     if (isHost) {
@@ -569,6 +652,10 @@ hangUpBtn.addEventListener('click', async () => {
 messageBtn.addEventListener('click', async () => {
     sidebarRight.classList.toggle("close");
     meetingPanel.classList.toggle("close-message");
+    if (!document.querySelector('.close-message')) {
+        toasts.innerHTML = '';
+    }
+    
     Cam.resizeAll();
 });
 
@@ -616,7 +703,7 @@ msgInput.addEventListener("keyup", function(event) {
 //     }
 // });
 
-async function requestStreamPermission() {
+export async function requestStreamPermission() {
     try {
         localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     }
@@ -625,8 +712,9 @@ async function requestStreamPermission() {
         Button.toggleOpen(micBtn, false);
         unmute = false;
     }
+
     try {
-        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({video: {undefined}, audio: false})
     }
     catch {
         console.log('webcam request failed');
@@ -634,8 +722,33 @@ async function requestStreamPermission() {
     }
 }
 
-async function refreshStream() {
-    if (webcamOn && localStreams.webcam === null) {
+async function resetWebcam() {
+    localStreams.webcam = null;
+    for (const [id, peer] of Object.entries(Peer.peers)) {
+        for (const sender of peer.senders.webcam) {
+            console.log(`remove webcam from ${id} ${sender}`)
+            peer.pc.removeTrack(sender);
+        }
+        peer.senders.webcam = [];
+    }
+
+    await refreshStream();
+}
+
+async function resetAudio() {
+    for (const [id, peer] of Object.entries(Peer.peers)) {
+        for (const sender of peer.senders.audio) {
+            console.log(`remove audio from ${id} ${sender}`)
+            peer.pc.removeTrack(sender);
+        }
+        peer.senders.audio = [];
+    }
+
+    await refreshStream();
+}
+
+export async function refreshStream() {
+    if (webcamOn) {
         localStreams.webcam = webcamStream;
         for (const [id, peer] of Object.entries(Peer.peers)) {
             localStreams.webcam.getTracks().forEach((track) => {
@@ -644,7 +757,7 @@ async function refreshStream() {
             });
         }
     }
-    else if (!webcamOn && localStreams.webcam !== null) {
+    else if (!webcamOn) {
         localStreams.webcam = null;
         for (const [id, peer] of Object.entries(Peer.peers)) {
             for (const sender of peer.senders.webcam) {
@@ -656,7 +769,7 @@ async function refreshStream() {
     }
 
     for (const [id, peer] of Object.entries(Peer.peers)) {
-        if (!peer.senders.audio) {
+        if (!peer.senders.audio[0]) {
             localStreams.audio?.getTracks().forEach((track) => {
                 console.log(`add audio to ${id}`)
                 peer.senders.audio.push(peer.pc.addTrack(track, localStreams.audio));
@@ -1219,7 +1332,6 @@ async function addMessageToChat(message) {
     let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() :date.getMinutes();
     let YMDhm = YY + "/" + MM + "/" + DD +" " + hh + ":" + mm;
 
-    console.log(message)
     const uuid = message.UUID ? numberArrayToUUIDString(message.UUID.data) : 'host';
 
     if (message.IsSelf){

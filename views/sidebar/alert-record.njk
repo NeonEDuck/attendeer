@@ -1,0 +1,48 @@
+<div class="floating-alert-record" id="floating-alert-record" data-catagory="alert" hidden>
+    <div class="alert-record flex flex-column gap-2">
+        <h1 class="class-modal__title">警醒紀錄</h1>
+        <div class="alert_icon_buttons" id="download-alert-btn">
+            <i class='bx bxs-download'></i>
+        </div>
+        {% if isHost %}
+            <div id="alert-lookup">
+
+                <input type="text" id="alert-lookup__search" class="search" placeholder="Search for the keyword..">
+
+                <div id="lookup__detail" hidden></div>
+
+                <div id="alert-lookup__list" class="flex">
+                    <table class="alert-lookup__table" data-type="alert">
+                        <thead>
+                            <tr>
+                                <th>警醒類型</th>
+                                <th>警醒間隔</th>
+                                <th>持續時間</th>
+                                <th>建立時間</th>
+                                <th>問題內容</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-log">
+                        </tbody>
+                    </table>
+
+                    <table class="alert-lookup__table" data-type="alert-detail" hidden>
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>點擊狀態</th>
+                                <th>回答</th>
+                                <th>完成時間</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-detail-log">
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        {% else %}
+            <h2>目前僅提供老師端查看警醒紀錄</h1>
+        {% endif %}
+    </div>
+</div>
