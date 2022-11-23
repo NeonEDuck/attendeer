@@ -3,7 +3,6 @@ import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
 import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
-import { async } from '@firebase/util';
 
 const socket = io('/');
 
@@ -171,7 +170,7 @@ webcamBtn.addEventListener('click', async () => {
 });
 
 // export async function aaa(videoSource) {
-    
+
 //     webcamStream = videoSource || await navigator.mediaDevices.getUserMedia(constraints).then(gotStream);
 //     await refreshStream();
 // }
@@ -505,7 +504,7 @@ enterBtn.addEventListener('click', async () => {
 
         const response =  await apiCall('getClassMessage', { classId, messageId });
         const message  = await response.json();
-        
+
         if (!message.IsSelf && document.querySelector('.close-message')){
 
             const toastAlert = toastPrefab.cloneNode(true);
@@ -517,7 +516,7 @@ enterBtn.addEventListener('click', async () => {
             toasts.appendChild(toastAlert);
             const toast = toasts.lastChild;
 
-            
+
             toast.classList.add('active');
             progress.classList.add('active');
 
@@ -532,7 +531,7 @@ enterBtn.addEventListener('click', async () => {
                 if (!document.querySelector('.close-message')) {
                     toasts.innerHTML = '';
                 }
-                
+
                 Cam.resizeAll();
             })
 
@@ -544,15 +543,15 @@ enterBtn.addEventListener('click', async () => {
             setTimeout(() => {
                 progress.classList.remove('active');
             }, 3300)
-        
+
             closeToast.addEventListener("click", () => {
                 toast.classList.remove('active');
-            
+
                 setTimeout(() => {
                     progress.classList.remove('active');
                 }, 300)
             })
-            
+
             await delay(3300);
             toast.remove();
         }
@@ -651,11 +650,16 @@ hangUpBtn.addEventListener('click', async () => {
 
 messageBtn.addEventListener('click', async () => {
     sidebarRight.classList.toggle("close");
-    meetingPanel.classList.toggle("close-message");
-    if (!document.querySelector('.close-message')) {
+    const close = sidebarRight.classList.contains("close");
+    if (close) {
+        meetingPanel.classList.add("close-message");
+        messageBtn.classList.remove("open");
+    }
+    else {
+        meetingPanel.classList.remove("close-message");
+        messageBtn.classList.add("open");
         toasts.innerHTML = '';
     }
-    
     Cam.resizeAll();
 });
 
