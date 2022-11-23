@@ -80,7 +80,7 @@ async function generateAlertLog() {
                 <td class="alert-record__interval">${alertRecord.Interval}</td>
                 <td class="alert-record__duration">${alertRecord.Duration}</td>
                 <td class="alert-record__timestamp">${new Date(alertRecord.Timestamp).toLocaleString()}</td>
-                <td class="alert-record__question">${alertRecord.Question}</td>
+                <td class="alert-record__question">${(alertRecord.AlertTypeId !== AlertTypeEnum.Click)?alertRecord.Question:'-'}</td>
             </tr>
         `);
         record.addEventListener('click', async (e) => {
@@ -122,7 +122,7 @@ async function generateAlertLog() {
             generateAlertSummary(alertRecord, alertReacts);
 
             for (const alertReact of alertReacts) {
-                alertReact.Answer = (alertRecord.MultipleChoice)?alertRecord.MultipleChoice[Number(alertReact.Answer)] : alertReact.Answer;
+                alertReact.Answer = (alertRecord.MultipleChoice)?alertRecord.MultipleChoice[Number(alertReact.Answer)-1] : alertReact.Answer;
                 generateReactDetail(alertRecord.AlertTypeId, alertReact);
             }
 
@@ -171,11 +171,13 @@ async function generateReactDetail(alertType, alertReact) {
     let clickColor = 'var(--text-color)';
     let clicked = '未加入會議';
     let answer  = '-';
+    let timeStamp = '-';
     if (alertReact.Clicked !== null) {
         if (alertReact.Clicked) {
             clicked = '完成';
             answer = alertReact.Answer;
             clickColor = '#7CFC00'
+            timeStamp = new Date(alertReact.Timestamp).toLocaleString();
         }
         else {
             clicked = '未完成';
@@ -189,7 +191,7 @@ async function generateReactDetail(alertType, alertReact) {
             <td class="alert-react__name">${alertReact.UserName}</td>
             <td class="alert-react__click" style="color: ${clickColor}">${clicked}</td>
             <td class="alert-react__ans">${(alertType !== 1)?answer:'-'}</td>
-            <td class="alert-react__timestamp">${new Date(alertReact.Timestamp).toLocaleString()}</td>
+            <td class="alert-react__timestamp">${timeStamp}</td>
         </tr>
     `);
     alertDetailLog.insertBefore(alertReactElement, alertDetailLog.firstChild);

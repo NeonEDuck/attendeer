@@ -195,12 +195,7 @@ router.post('/api/getSchools', async (req, res) => {
 router.post('/api/getSchoolPeriods', async (req, res) => {
     const { schoolId } = req.body;
     send(req, res, async () => {
-        const result = await getSchoolPeriods(schoolId)
-        return result.map((e) => {
-            e.StartTime = new Date(e.StartTime);
-            e.EndTime = new Date(e.EndTime);
-            return e;
-        });
+        return await getSchoolPeriods(schoolId);
     });
 });
 
