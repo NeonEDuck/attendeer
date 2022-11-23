@@ -96,7 +96,7 @@ export let dataMultipleChoice = {};
 let isHost = localUserId === hostId;
 
 //開關sidebar
-toggle.addEventListener("click", () =>{
+function toggleSidebar() {
     sidebar.classList.toggle("close");
     if (sidebar.classList.contains("close")) {
         clock.classList.add("close");
@@ -104,7 +104,9 @@ toggle.addEventListener("click", () =>{
     else {
         clock.classList.remove("close");
     }
-});
+}
+
+toggle.addEventListener("click", toggleSidebar);
 
 //黑白模式
 if (document.documentElement.classList.contains("dark")) {
@@ -177,7 +179,7 @@ export function sidebarListener() {
             }else if( navText === '警醒紀錄' ) {
                 floatingAlertRecord.hidden = false;
             }
-            sidebar.classList.toggle("close");
+            toggleSidebar();
         });
     });
 }

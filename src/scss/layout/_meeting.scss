@@ -471,7 +471,7 @@ body.dark {
         align-items: center;
         position: absolute;
         top: 2%;
-        left: 2%;
+        right: 2%;
         font-size: 2rem;
         cursor: pointer;
         color: var(--button-icon-color);
@@ -551,6 +551,12 @@ body.dark {
         height: 100%;
         padding: 2em;
         overflow: hidden;
+    }
+
+    &__content {
+        width: 100%;
+        flex: 1 0 0;
+        overflow: scroll;
     }
 
     .floating-alert {
@@ -811,6 +817,7 @@ body.dark {
         display: flex;
         flex-direction: column;
         gap: 1em;
+        height: 100%;
 
         > h1:first-child {
             text-align: center;
