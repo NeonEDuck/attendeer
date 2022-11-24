@@ -9,6 +9,19 @@ const pool = createPool({
     database: process.env.DB_DATABASE,
     timezone: 'utc',
 });
+pool.on('error', (err) => {
+    console.log('caught error!');
+    console.log(err);
+    if (err.code === 'ETIMEDOUT') {
+        pool = createPool({
+            host    : process.env.DB_HOST,
+            user    : process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_DATABASE,
+            timezone: 'utc',
+        });
+    }
+})
 
 const statusCode200 = (product) => {
     return {statusCode: 200, message: "Request has been successfully fulfilled.", product}

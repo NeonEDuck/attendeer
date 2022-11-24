@@ -4,8 +4,6 @@ import { getClasses, getSchools } from './sql.js';
 const router = Router();
 
 router.get('/', async (req, res) => {
-    // let { uid, name, email, picture } = req.local.decodedToken;
-
     const { id: userId, displayName, photos } = req.session?.passport?.user || {};
     const photoURL = photos?.[0]?.value;
     const classes = await getClasses(userId);

@@ -58,13 +58,23 @@ export async function isAuth(userId, classId) {
     if (!userId) {
         return false;
     }
-    const attendees = await getClassAttendees(classId);
-    return (await isHost(userId, classId)) || attendees.find(e => e.UserId === userId);
+    try {
+        const attendees = await getClassAttendees(classId);
+        return (await isHost(userId, classId)) || attendees.find(e => e.UserId === userId);
+    }
+    catch {
+        return false;
+    }
 }
 
 export async function isHost(userId, classId) {
-    const [ classInfo ] = await getClass(classId);
-    return classInfo?.HostId === userId;
+    try {
+        const [ classInfo ] = await getClass(classId);
+        return classInfo?.HostId === userId;
+    }
+    catch {
+        return false;
+    }
 }
 
 const checkAuth = async (req, res, next) => {
