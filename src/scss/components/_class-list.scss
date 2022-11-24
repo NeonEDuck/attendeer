@@ -1,8 +1,9 @@
 .class-list {
-    // display: flex;
-    // flex-direction: row;
-    // flex-wrap: wrap;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
-    gap: 1em
+    grid-template-columns: repeat(auto-fill, minmax(25em, 1fr));
+    gap: 2em;
+    padding: 1em 2em;
+    @media only screen and (max-width: 570px) {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    }
 }

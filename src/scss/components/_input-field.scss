@@ -37,6 +37,7 @@ textarea {
 }
 
 textarea.auto-resize {
+    height: 2em;
     border-radius: $border-radius;
     resize: none;
 }

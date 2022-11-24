@@ -15,7 +15,8 @@
 
 .calendar-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
+    flex-wrap: wrap;
     align-items: center;
     font-size: 1.25em;
     font-weight: 600;
@@ -45,6 +46,7 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 0em;
     color: var(--clr-text-500);
+    z-index: 50;
 }
 
 .calendar-days div {
@@ -53,46 +55,65 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5em;
+    margin: 0.25em;
     position: relative;
     cursor: pointer;
-    animation: to-top 0.5s forwards;
+    outline-width: 0;
+    outline-style: solid;
+    outline-color: var(--clr-primary-300);
+    outline-offset: 0em;
     border-radius: 50%;
-    transition: var(--transition-color);
+    animation: hover-in var(--transition-duration) forwards;
+    transition: var(--transition-color),
+                outline var(--transition-timing),
+                outline-color var(--transition-timing),
+                outline-offset var(--transition-timing);
 }
 
 .calendar-days div:hover {
-    background-color: var(--clr-component-300);
+    animation: hover-out var(--transition-duration) forwards;
+    background-color: hsl(var(--hsl-component-300) / 0.5);
+    z-index: 50;
 }
 
 .calendar-days .current-selected-day{
     background-color: var(--clr-primary-500);
     color: var(--clr-text-white);
     border-radius: 50%;
+    outline: 0.25em solid var(--clr-primary-500);
+    outline-width: 0.25em;
+    outline-color: var(--clr-primary-500);
+    outline-offset: 0.125em;
     &:hover  {
         background-color: var(--clr-primary-300);
+        outline-color: var(--clr-primary-300);
     }
 }
+
 
 .calendar-days .curr-date,
 .calendar-days .curr-date:hover {
     background-color: var(--clr-primary-300);
+    outline-color: var(--clr-primary-300);
     color: var(--clr-text-white);
     border-radius: 50%;
 
     &.current-selected-day {
         background-color: var(--clr-primary-700);
+        outline-color: var(--clr-primary-700);
     }
 }
 
 .calendar-days .detailed-date,
 .calendar-days .detailed-date:hover {
     background-color: var(--clr-primary-300);
+    outline-color: var(--clr-primary-300);
     color: var(--white);
     border-radius: 50%;
 
     &.current-selected-day {
         background-color: var(--clr-primary-700);
+        outline-color: var(--clr-primary-700);
     }
 }
 
@@ -104,6 +125,7 @@
 .year-picker {
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 span#month {
@@ -117,11 +139,13 @@ span#month {
     border-radius: 50%;
     display: grid;
     place-items: center;
-    margin-inline: 0.25em;
     cursor: pointer;
     user-select: none;
+    animation: hover-in var(--transition-duration) forwards;
+    transition: var(--transition-color);
 
     &:hover {
+        animation: hover-out var(--transition-duration) forwards;
         background-color: var(--clr-component-300);
     }
 }
@@ -133,6 +157,27 @@ span#month {
     justify-content: flex-start;
     align-items: flex-end;
     gap: 0.5em;
+    .detail {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+
+        &__text {
+            word-break: break-all;
+        }
+    }
+    .toolbar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5em;
+        .button-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5em;
+        }
+    }
 }
 
 .month-list {
@@ -176,6 +221,38 @@ span#month {
     background-color: var(--clr-component-300);
 }
 
+@media only screen and (max-width: 900px) and (min-width: 750px) {
+    .calendar {
+        display: grid;
+        grid-auto-columns: 1fr 1fr;
+        grid-auto-rows: auto 1fr;
+        grid-template-areas: "header body" "footer body";
+    }
+    .calendar-header {
+        grid-area: header;
+    }
+    .calendar-body {
+        grid-area: body;
+    }
+    .calendar-footer {
+        grid-area: footer;
+        align-items: flex-start;
+        justify-content: space-between;
+        .detail {
+            align-items: flex-start;
+            &__date {
+                font-size: 2em;
+                font-weight: 600;
+            }
+        }
+        .toolbar {
+            margin-inline-start: auto;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+    }
+}
+
 @keyframes to-top {
     0% {
         transform: translateY(100%);
@@ -184,5 +261,22 @@ span#month {
     100% {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@keyframes hover-out {
+    0% {
+        transform: perspective(500px) translateZ(0px);
+    }
+    100% {
+        transform: perspective(500px) translateZ(100px);
+    }
+}
+@keyframes hover-in {
+    0% {
+        transform: perspective(500px) translateZ(100px);
+    }
+    100% {
+        transform: perspective(500px) translateZ(0px);
     }
 }

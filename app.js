@@ -14,7 +14,6 @@ app.use(compression());
 
 // static folder
 app.use('/', express.static('public'));
-app.use('/js/firebase', express.static('node_modules/firebase'));
 
 // body parser
 import bodyParser from 'body-parser';
@@ -50,33 +49,74 @@ app.use(session({
 // csrf middleware
 import csrf from 'csurf';
 const csrfMiddleware = csrf({ cookie: { secure: true, httpOnly: true, sameSite: 'strict' } });
-app.use(csrfMiddleware);
-app.all('*', (req, res, next) => {
-    res.locals.csrfToken = req.csrfToken();
-    next();
+// app.use(csrfMiddleware);
+// app.all('*', (req, res, next) => {
+//     res.locals.csrfToken = req.csrfToken();
+//     next();
+// });
+
+import passport from 'passport';
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.serializeUser(function(user, cb) {
+    cb(null, user);
 });
 
-// auth check
-import { adminAuth } from './firebase-admin.js';
-app.all('*', async (req, res, next) => {
-    const sessionCookie = req.session.idToken || '';
+passport.deserializeUser(function(obj, cb) {
+    cb(null, obj);
+});
 
-    req.local = {};
-    await adminAuth.verifySessionCookie(sessionCookie, true)
-        .then((decodedToken) => {
-            req.local.decodedToken = decodedToken;
-        }, (error) => {
-            req.local.decodedToken = {};
+import { OAuth2Strategy } from 'passport-google-oauth';
+passport.use(new OAuth2Strategy(
+    {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: "/auth/google/callback"
+    },
+    (accessToken, refreshToken, profile, done) => {
+        if (profile) {
+            return done(null, profile);
+        }
+        else {
+            return done(null, false);
+        }
+    }
+));
+
+app.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
+
+import { query } from './routes/sql.js';
+app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/error' }), async (req, res) => {
+    const userExist = await query(`SELECT UserId FROM Users WHERE UserId = :userId`, {userId: req.session.passport.user.id})
+    if (userExist.length === 0) {
+        await query(`INSERT INTO Users VALUES (:userId, :email, :userName, :photoURL)`, {
+            userId:   req.session.passport.user.id,
+            email:    req.session.passport.user.emails[0].value,
+            userName: req.session.passport.user.displayName,
+            photoURL: req.session.passport.user.photos[0].value,
         });
-    next();
+    }
+    res.redirect('/');
+});
+
+app.get('/logout', function(req, res){
+    req.logout((err) => {
+        if (err) {
+            return next(err);
+        }
+        res.redirect('/');
+    });
 });
 
 // router
+import api from './routes/api.js';
 import index from './routes/index.js';
 import meeting from './routes/meeting.js';
 import login from './routes/login.js';
 import classroom from './routes/classroom.js';
 
+app.use(api);
 app.use(index);
 app.use(meeting);
 app.use(login);

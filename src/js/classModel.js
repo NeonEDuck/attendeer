@@ -1,7 +1,5 @@
-import { collection, doc, getDoc, deleteDoc, setDoc, updateDoc, getDocs, query, where, limit } from "firebase/firestore";
-import { firestore } from "./firebase-config.js";
 import { prefab } from './prefab.js'
-import { generateCallId, htmlToElement, fetchData, showErrorMessage, getUser } from './util.js';
+import { apiCall } from './util.js';
 
 const attendeeRowPrefab = prefab.querySelector('.attendee-row');
 
@@ -9,9 +7,10 @@ const classModal         = document.querySelector('#class-modal');
 const classModalForm     = document.querySelector('#close-modal__form');
 const classModalTitle    = classModal.querySelector('#class-modal__title');
 
-const classId            = document.querySelector('#class-modal__class-id');
 const className          = document.querySelector('#class-modal__class-name');
 const schoolSelect       = document.querySelector('#class-modal__school-select');
+const colorGroup         = document.querySelector('#class-modal__color-group');
+const colorGroupLabels   = colorGroup.querySelectorAll('nav label');
 const alertInterval      = document.querySelector('#class-modal__alert-interval');
 const alertTime          = document.querySelector('#class-modal__alert-time');
 
@@ -31,24 +30,11 @@ const confirmDeleteModal         = document.querySelector('#confirm-delete-modal
 const closeConfirmDeleteModalBtn = document.querySelector('#close-confirm-delete-modal-btn');
 const confirmDeleteBtn           = document.querySelector('#confirm-delete');
 
-const calls = collection(firestore, 'calls');
-const users = collection(firestore, 'users');
-
 export class ClassModal {
     action = '';
-    attendeeDict = {};
-    callId = '';
+    attendeeList = [];
+    classId = '';
     constructor() {
-        fetchData('/school_time_table.json')
-            .then((data) => {
-                for (const s of data) {
-                    schoolSelect.appendChild(htmlToElement(`
-                        <option value="${s.id}">
-                            ${s.name}
-                        </option>
-                    `));
-                }
-            });
         closeModalBtn.addEventListener('click', (e) => {
             this._closeModal(e);
         });
@@ -76,57 +62,71 @@ export class ClassModal {
         attendeeInput.addEventListener('keydown', (e) => {
             this._attendeeInput(e);
         });
+        colorGroup.querySelectorAll('input[type="radio"]').forEach((r) => {
+            const label = colorGroup.querySelector(`nav label[for="${r.id}"]`);
+            r.addEventListener('click', (_) => {
+                colorGroupLabels.forEach((e) => {
+                    e.classList.remove('checked');
+                })
+                label.classList.add('checked');
+            })
+        });
     }
 
     resetModal() {
-        classId.value       = '';
         className.value     = '';
+        schoolSelect.value  = '';
+        colorGroup.querySelector('input[type="radio"]:first-child').click();
         alertInterval.value = '';
         alertTime.value     = '';
         attendeeInput.value = '';
         attendeeTableTBody.innerHTML = '';
-        this.attendeeDict = {};
+        this.attendeeList = [];
     }
 
     openAddModal() {
         this.resetModal();
         submitClassBtn.hidden = false;
+        submitDeleteBtn.hidden = true;
         submitSettingBtn.hidden = true;
         classModalTitle.innerHTML = '新增課程';
 
         classModal.showModal();
     }
 
-    async openModifyModal(callId) {
-        this.callId = callId;
-        const callDoc = await getDoc(doc(calls, callId));
-        const { name, school, alert, attendees } = callDoc.data();
+    async openModifyModal(classId) {
+        const classInfo = await (await apiCall('getClass', {classId})).json();
+        const attendees = await (await apiCall('getClassAttendees', {classId})).json();
 
-        classId.value       = callDoc.id;
-        className.value     = name;
-        schoolSelect.value  = school;
-        alertInterval.value = alert.interval;
-        alertTime.value     = alert.time;
+        console.log(classId)
+
+        className.value     = classInfo.ClassName;
+        schoolSelect.value  = classInfo.SchoolId;
+        colorGroup.querySelectorAll('input[type="radio"]')?.[classInfo.ClassColor-1]?.click();
+        alertInterval.value = classInfo.Interval;
+        alertTime.value     = classInfo.Duration;
         attendeeInput.value = '';
 
         attendeeTableTBody.innerHTML = '';
-        for (const userId of attendees) {
-            const user = doc(users, userId);
-            const data = (await getDoc(user)).data();
-            this.attendeeDict[data.email] = user.id;
+        for (const attnedee of attendees) {
+            // const user = doc(users, userId);
+            // const data = (await getDoc(user)).data();
+            this.attendeeList.push(attnedee.Email);
 
             const row = attendeeRowPrefab.cloneNode(true);
-            console.log(row);
+            // console.log(row);
             const rowName  = row.querySelector('.attendee-row__name');
             const rowEmail = row.querySelector('.attendee-row__email');
-            row.dataset.id = user.id;
-            rowName.innerHTML  = data.name;
-            rowEmail.innerHTML = data.email;
+            // row.dataset.id = attnedee.UserId;
+            rowName.innerHTML  = attnedee.UserName;
+            rowEmail.innerHTML = attnedee.Email;
 
             attendeeTableTBody.append(row);
         }
 
+        this.classId = classId;
         submitClassBtn.hidden = true;
+        submitDeleteBtn.hidden = false;
         submitSettingBtn.hidden = false;
         classModalTitle.innerHTML = '設定';
         classModal.showModal();
@@ -164,76 +164,54 @@ export class ClassModal {
 
     async _confirmDelete(e) {
         console.log('confirmDelete');
-        const callDoc = doc(calls, this.callId);
-
-        // const participants = collection(callDoc, 'participants');
-        // const userDocs = await getDocs(participants);
-        // for (const userDoc of userDocs.docs) {
-        //     const clients = collection(userDoc.ref, 'clients');
-        //     const clientDocs = await getDocs(clients);
-        //     for (const clientDoc of clientDocs.docs) {
-        //         const candidates = collection(clientDoc.ref, 'candidates');
-        //         const candidateDocs = await getDocs(candidates);
-        //         for (const c of candidateDocs.docs) {
-        //             await deleteDoc(c.ref);
-        //         }
-        //         await deleteDoc(clientDoc.ref);
-        //     }
-        //     await deleteDoc(userDoc.ref);
-        // }
-
-        // const messages = collection(callDoc, 'messages');
-        // const messageDocs = await getDocs(messages);
-        // for (const msg of messageDocs.docs) {
-        //     await deleteDoc(msg.ref);
-        // }
-
-        //! 警醒加進來後要更新
-
-        await deleteDoc(callDoc);
-
-        window.location.href = '/';
+        const response = await apiCall('deleteClass', {classId: this.classId});
+        if (response.status !== 400) {
+            window.location.href = '/';
+        }
     }
 
     async _submitForm(e) {
         e.preventDefault()
+        submitClassBtn.disabled = true;
+        submitSettingBtn.disabled = true;
 
         const name     = className.value.trim();
-        const school   = schoolSelect.value;
+        const schoolId = schoolSelect.value;
+        const color    = colorGroup.querySelector('input[type="radio"]:checked').value;
         const interval = Number(alertInterval.value);
-        const time     = Number(alertTime.value);
-        const notifies = false;
+        const duration = Number(alertTime.value);
 
-        if (school === '') {
-            console.log('no');
-            return;
-        }
-
-        const { uid } = await getUser();
-        console.log(this.attendeeDict);
-        const attendees = Object.values(this.attendeeDict);
-        if (!attendees.includes(uid)) {
-            attendees.push(uid);
-        }
         const data = {
-            name,
-            school,
-            alert: {
-                interval,
-                time,
-                notifies,
-            },
-            attendees,
-            host: uid,
+            classId: this.classId,
+            className: name,
+            classColor: color,
+            schoolId,
+            interval,
+            duration,
+            attendees: this.attendeeList,
         }
 
         if (this.action === 'add') {
-            const callDoc = doc(calls, generateCallId());
-            await setDoc(callDoc, data);
+            const response = await apiCall('addClass', data);
+
+            if (response.status === 400) {
+                submitClassBtn.disabled = false;
+                submitSettingBtn.disabled = false;
+                this._showErrorMessage(attendeeTable, '鍵入的資料有錯誤');
+                return false;
+            }
         }
         else if (this.action === 'update') {
-            const callDoc = doc(calls, classId.value);
-            await updateDoc(callDoc, data);
+            console.log(data);
+            const response = await apiCall('updateClass', data);
+
+            if (response.status === 400) {
+                submitClassBtn.disabled = false;
+                submitSettingBtn.disabled = false;
+                this._showErrorMessage(attendeeTable, '鍵入的資料有錯誤');
+                console.error(await response.json())
+                return false;
+            }
         }
 
         classModal.close();
@@ -242,28 +220,25 @@ export class ClassModal {
 
     async _addAttendee(e) {
         let email;
-        if ((email = attendeeInput.value?.trim()) && !this.attendeeDict[email]) {
-            const q = query(users, where('email', '==', email), limit(1))
-            const userDocs = await getDocs(q);
-            if (userDocs.docs.length === 0) {
+        if ((email = attendeeInput.value?.trim()) && !this.attendeeList.includes(email)) {
+            const response = await apiCall('getUserInfo', {email});
+            const user = await response.json();
+
+            if (!user.UserId) {
                 this._showErrorMessage(attendeeInput, '找不到使用者');
-            }
-            else {
-                userDocs.forEach((user) => {
-                    const data = user.data();
-                    this.attendeeDict[email] = user.id;
-                    const row = attendeeRowPrefab.cloneNode(true);
-                    const rowName  = row.querySelector('.attendee-row__name');
-                    const rowEmail = row.querySelector('.attendee-row__email');
-                    row.dataset.id = user.id;
-                    rowName.innerHTML  = data.name;
-                    rowEmail.innerHTML = data.email;
-                    const tBody = attendeeTable.querySelector('tbody');
-                    tBody.append(row);
-                    attendeeInput.value = '';
-                });
+                return;
             }
 
+            this.attendeeList.push(email);
+            const row = attendeeRowPrefab.cloneNode(true);
+            const rowName  = row.querySelector('.attendee-row__name');
+            const rowEmail = row.querySelector('.attendee-row__email');
+            row.dataset.email = email;
+            rowName.innerHTML  = user.UserName;
+            rowEmail.innerHTML = email;
+            const tBody = attendeeTable.querySelector('tbody');
+            tBody.append(row);
+            attendeeInput.value = '';
         }
     }
 
@@ -277,7 +252,7 @@ export class ClassModal {
         const modalRect = classModal.getBoundingClientRect();
         const rect = element.getBoundingClientRect();
         errorMessage.style.left = `${rect.left - modalRect.left}px`;
-        errorMessage.style.top = `${rect.bottom - modalRect.top}px`;
+        errorMessage.style.top = `${classModal.scrollTop + rect.bottom - modalRect.top}px`;
         errorMessage.innerHTML = msg;
         errorMessage.classList.add('show');
     }
