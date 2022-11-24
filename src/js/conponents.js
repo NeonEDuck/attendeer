@@ -176,7 +176,7 @@ export class Cam {
         }
         //! 現在有用 但一定有問題
         if (mediaStream.getVideoTracks()[0]) {
-            mediaStream.getVideoTracks()[0].onended = function () {
+            mediaStream.getVideoTracks()[0].onended = () => {
                 this.turnOff();
             };
         }
