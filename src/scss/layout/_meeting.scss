@@ -12,11 +12,12 @@
 }
 
 #meeting-panel {
+    --chat-width: 320px;
     position: fixed;
     display: grid;
     height: 100%;
-    right: 320px;
-    width: calc(100% - 320px);
+    right: var(--chat-width);
+    width: calc(100% - var(--chat-width));
     background-color: var(--clr-body);
     z-index: 10;
     transition: var(--tran-03);
@@ -39,14 +40,14 @@
         top: 0;
         right: 0;
         height: 100%;
-        width: 320px;
+        width: var(--chat-width);
         z-index: 100;
         transition: var(--tran-03);
         background-color: var(--clr-body);
         box-shadow: 0.8rem 0.8rem 0.4rem var(--sidebar-color), -0.01rem -0.2rem 0.5rem var(--body-color-2);
 
         @media only screen and (max-width: 570px) {
-            width: calc(100vw - var(--message-btn-width));
+            --chat-width: calc(100vw - var(--message-btn-width));
         }
 
         &.close {
@@ -137,29 +138,10 @@
     padding: 10px 0 10px 14px;
     background: var(--sidebar-color);
     z-index: 100;
-    transition: var(--tran-05);
+    transition: transform var(--transition-timing);
 
     &.close {
-        width: 0px;
-        padding-inline: 0;
-
-        .text,
-        .icon,
-        .image,
-        button {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .toggle i {
-            transform: rotate(0deg);
-        }
-
-        .toggle {
-            right: -25px;
-            border-radius: 0 10px 10px 0;
-        }
-
+        transform: translateX(-100%);
     }
 
     .image-text img {
@@ -471,7 +453,7 @@ body.dark {
     &__content {
         width: 100%;
         flex: 1 0 0;
-        overflow: scroll;
+        overflow: auto;
     }
 
     .floating-alert {
@@ -1065,7 +1047,7 @@ body.dark {
         max-height: 100%;
         max-width: 100%;
         height: 100%;
-        transition: var(--tran-05);
+        transition: opacity var(--transition-timing);
 
         &:hover {
             opacity: 0.3;
@@ -1304,7 +1286,7 @@ body.dark {
     grid-area: chat;
     // margin: 1em;
     height: calc(100%);
-    width: 100%;
+    width: var(--chat-width);
     min-height: 0;
     position: relative;
     font-size: 0.9em;
