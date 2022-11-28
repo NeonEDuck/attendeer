@@ -285,7 +285,8 @@
                 background-color: var(--clr-text-500);
             }
             &.open {
-                background: var(--primary-color);
+                color: var(--clr-text-white);
+                background: var(--clr-primary-500);
                 width: 100%;
                 border-radius: 30px 0 0 30px;
                 transition: var(--tran-05);
@@ -920,9 +921,10 @@ body.dark {
             .process-bar {
                 display: inline-flex;
                 margin: 4px 0;
-                width: 484px;
+                width: 100%;
                 color: var(--text-color);
                 .step {
+                    --bullet-size: 2em;
                     position: relative;
                     text-align: center;
                     width: 100%;
@@ -931,52 +933,17 @@ body.dark {
                         font-weight: 500;
                         margin-bottom: 8px;
                         transition: 0.2s;
-                        &.active {
-                            color: #d43f8d;
-                        }
-                    }
-                    &:last-child {
-                        .bullet::before,
-                        .bullet::after {
-                            display: none;
-                        }
                     }
                     .bullet {
                         position: relative;
-                        height: 35px;
-                        width: 35px;
-                        border: 2px solid var(--text-color);
+                        height: var(--bullet-size);
+                        width: var(--bullet-size);
+                        border: 0.1em solid var(--text-color);
+                        background: var(--clr-component-500);
                         display: inline-block;
                         border-radius: 50%;
                         transition: 0.2s;
-                        &.active {
-                            border-color: #d43f8d;
-                            background: #d43f8d;
-                            span {
-                                display: none;
-                            }
-                        }
-                        &::before,
-                        &::after {
-                            position: absolute;
-                            content: "";
-                            height: 3px;
-                            width: 130px;
-                            right: -130px;
-                            bottom: 14px;
-                            background: var(--text-color);
-                        }
-                        &.active::after {
-                            background: #d43f8d;
-                            transform: scaleX(0);
-                            transform-origin: left;
-                            animation: animate 0.3s linear forwards;
-                        }
-                        @keyframes animate {
-                            100% {
-                                transform: scaleX(1);
-                            }
-                        }
+                        z-index: 50;
                         span {
                             font-weight: 500;
                             font-size: 17px;
@@ -993,11 +960,51 @@ body.dark {
                         font-size: 22px;
                         transform: translate(-50%, -50%);
                         display: none;
+                        z-index: 50;
                         &.active {
                             display: block;
                             color: #fff;
                         }
                     }
+
+                    &:not(:last-child) {
+                        &::before,
+                        &::after {
+                            position: absolute;
+                            content: "";
+                            height: 0.1em;
+                            width: 100%;
+                            right: -50%;
+                            bottom: calc(var(--bullet-size) / 2);
+                            background: var(--text-color);
+                        }
+
+                        &.active {
+                            .bullet {
+                                border-color: #d43f8d;
+                                background: #d43f8d;
+                                span {
+                                    display: none;
+                                }
+                            }
+                            p {
+                                color: #d43f8d;
+                            }
+                            &::after {
+                                background: #d43f8d;
+                                transform: scaleX(0);
+                                transform-origin: left;
+                                animation: animate 0.3s linear forwards;
+                            }
+                        }
+                    }
+
+                    @keyframes animate {
+                        100% {
+                            transform: scaleX(1);
+                        }
+                    }
+
                 }
             }
             .form-outer {
@@ -1022,16 +1029,16 @@ body.dark {
                             padding: 5px;
                         }
                         .field {
-                            button {
-                                width: 90%;
-                                height: 45px;
-                                border-radius: 5px;
-                            }
-                            i {
-                                color: #f00;
-                                font-size: 40px;
-                                display: none;
-                            }
+                            // button {
+                            //     width: 90%;
+                            //     height: 45px;
+                            //     border-radius: 5px;
+                            // }
+                            // i {
+                            //     color: #f00;
+                            //     font-size: 40px;
+                            //     display: none;
+                            // }
                         }
                         input {
                             height: 45px;

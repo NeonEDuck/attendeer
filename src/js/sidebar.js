@@ -869,6 +869,7 @@ function addEventListeners() {
         const next3          = alert.querySelector(".next-3");
         const addBtn         = alert.querySelector(".add_options");
         const fieldAdd       = alert.querySelector(".add");
+        const steps          = alert.querySelectorAll(".step");
         const progressText   = alert.querySelectorAll(".step p");
         const progressCheck  = alert.querySelectorAll(".step .check");
         const bullet         = alert.querySelectorAll(".step .bullet");
@@ -889,6 +890,7 @@ function addEventListeners() {
         });
         prev2.addEventListener('click', () => {
             slidePage.style.marginLeft = "0%";
+            steps[current-1].classList.remove("active");
             bullet[current-1].classList.remove("active");
             progressText[current-1].classList.remove("active");
             progressCheck[current-1].classList.remove("active");
@@ -896,6 +898,7 @@ function addEventListeners() {
         });
         prev3.addEventListener('click', () => {
             slidePage.style.marginLeft = "-25%";
+            steps[current-1].classList.remove("active");
             bullet[current-1].classList.remove("active");
             progressText[current-1].classList.remove("active");
             progressCheck[current-1].classList.remove("active");
@@ -904,6 +907,7 @@ function addEventListeners() {
         next1.addEventListener('click', () => {
             if(qstText[0].value != ''){
                 slidePage.style.marginLeft = "-25%";
+                steps[current].classList.add("active");
                 bullet[current].classList.add("active");
                 progressText[current].classList.add("active");
                 progressCheck[current].classList.add("active");
@@ -924,6 +928,7 @@ function addEventListeners() {
             const answearChosen = multipleChoiceSetting.querySelector(".answear");
             if(x === optionInput.length && answearChosen != null ){
                 slidePage.style.marginLeft = "-50%";
+                steps[current].classList.add("active");
                 bullet[current].classList.add("active");
                 progressText[current].classList.add("active");
                 progressCheck[current].classList.add("active");
