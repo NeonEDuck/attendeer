@@ -31,7 +31,7 @@ router.get('/:classId', async (req, res, next) => {
             classSchedule.push({ periodName: period.PeriodName, week });
         }
 
-        res.render('classroom', { classId, displayName, photoURL, schools, classInfo, schedule: classSchedule, isHost: classInfo?.HostId === userId });
+        res.render('classroom', { classId, displayName, photoURL, schools, classInfo, title: classInfo?.ClassName, schedule: classSchedule, isHost: classInfo?.HostId === userId });
     }
     else {
         res.redirect('/');

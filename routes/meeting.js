@@ -14,7 +14,7 @@ router.get('/:classId/meeting', async (req, res) => {
     }
     else if (isAuth) {
         const [ classInfo ] = await getClass(classId);
-        res.render('meeting', { userId, displayName, photoURL, hostId: classInfo.HostId, className: classInfo.ClassName, classId, isHost: classInfo.HostId === userId });
+        res.render('meeting', { userId, displayName, photoURL, hostId: classInfo.HostId, title: classInfo.ClassName, className: classInfo.ClassName, classId, isHost: classInfo.HostId === userId });
     }
     else {
         res.redirect('/');
