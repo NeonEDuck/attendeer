@@ -67,6 +67,7 @@ export class Cam {
         const camHeight = camWidth/16*9;
         const x = 1 + Math.floor((containerWidth - camWidth) / (camWidth + 1.0*em));
         const y = 1 + Math.floor((containerHeight - camHeight) / (camHeight + 1.0*em));
+        const maxCamSpaces = Math.max(x*y, x, y, 1);
         const reorderedArray = [...Cam.container.children];
         reorderedArray.sort((a, b) => {return (a.id < b.id)?1:-1});
         reorderedArray.forEach((e) => {
@@ -75,14 +76,14 @@ export class Cam {
         });
         let cams = [...Cam.container.querySelectorAll('.cam:not([hidden], [id*="-audio"], [id="status-cam"])')];
         const count = cams.length;
-        if (count > x*y) {
-            Cam.container.insertBefore(Cam.statusCam, cams[x*y-1]);
+        if (count > maxCamSpaces) {
+            Cam.container.insertBefore(Cam.statusCam, cams[maxCamSpaces-1]);
             Cam.statusCam.hidden = false;
-            const overflowCount = count - x*y;
+            const overflowCount = count - maxCamSpaces;
             Cam.statusCam.querySelector('.cam__name').innerHTML = `其他參與者${overflowCount}人`;
             Cam.statusCam.querySelectorAll('.cam__profile').forEach((e, idx) => {
                 if (idx < overflowCount) {
-                    e.src = cams[x*y+idx].querySelector('cam__profile')?.src || '/imgs/dummy_profile.png';
+                    e.src = cams[maxCamSpaces+idx].querySelector('cam__profile')?.src || '/imgs/dummy_profile.png';
                     e.hidden = false;
                     return;
                 }
@@ -96,10 +97,10 @@ export class Cam {
 
         const firstCam = cams[0];
 
-        cams.slice(0, Math.max(x*y, x, y, 1)).forEach((cam) => {
+        cams.slice(0, maxCamSpaces).forEach((cam) => {
             cam.removeAttribute('overflowed');
         });
-        cams.slice(Math.max(x*y, x, y, 1)).forEach((cam) => {
+        cams.slice(maxCamSpaces).forEach((cam) => {
             cam.setAttribute('overflowed', '');
         });
 
