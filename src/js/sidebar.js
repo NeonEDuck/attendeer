@@ -62,23 +62,6 @@ const alertDetailLog         = document.querySelector('#alert-detail-log');
 const alertLookupDetail      = document.querySelector('#lookup__detail');
 const downloadAlertBtn       = document.querySelector('#download-alert-btn');
 
-const clock  = document.querySelector('.clock');
-const deg = 6,
-      hr  = document.querySelector('#hr'),
-      mn  = document.querySelector('#mn'),
-      sc  = document.querySelector('#sc');
-
-setInterval(() => {
-    let day = new Date();
-    let hh = day.getHours() * 30;
-    let mm = day.getMinutes() * deg;
-    let ss = day.getSeconds() * deg;
-
-    hr.style.transform = `rotateZ(${(hh)+(mm/12)}deg)`;
-    mn.style.transform = `rotateZ(${mm}deg)`;
-    sc.style.transform = `rotateZ(${ss}deg)`;
-})
-
 const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
 const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
 const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
@@ -98,12 +81,6 @@ let isHost = localUserId === hostId;
 //開關sidebar
 function toggleSidebar() {
     sidebar.classList.toggle("close");
-    if (sidebar.classList.contains("close")) {
-        clock.classList.add("close");
-    }
-    else {
-        clock.classList.remove("close");
-    }
 }
 
 toggle.addEventListener("click", toggleSidebar);
