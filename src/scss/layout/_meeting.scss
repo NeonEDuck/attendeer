@@ -67,10 +67,12 @@
     padding: 10px 0 10px 14px;
     background: var(--sidebar-color);
     z-index: 100;
-    transition: transform var(--transition-timing);
+    box-shadow: var(--box-shadow-700);
+    transition: transform var(--transition-timing), box-shadow var(--transition-timing);
 
     &.close {
         transform: translateX(-100%);
+        box-shadow: none;
     }
 
     .image-text img {
@@ -1235,8 +1237,8 @@ body.dark {
         display: flex;
         flex-direction: column;
         padding: 0.5em;
-        border-top: 1px solid var(--clr-component-300);
-        border-bottom: 1px solid var(--clr-component-300);
+        border-top: 2px solid var(--clr-component-300);
+        border-bottom: 2px solid var(--clr-component-300);
 
         .my-msg__date {
             position: relative;
@@ -1308,7 +1310,7 @@ body.dark {
     flex-direction: column;
     flex: 1 0 0;
     overflow: auto;
-    border-top: 1px solid var(--clr-component-300);
+    border-top: 2px solid var(--clr-component-300);
 }
 
 .member-item {
