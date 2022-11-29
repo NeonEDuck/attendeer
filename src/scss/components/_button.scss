@@ -139,7 +139,7 @@ a.btn {
     @include content-color(var(--clr-text-500));
 
     &:hover {
-        background-color: var(--clr-transparennt-500);
+        background-color: var(--clr-transparent-500);
     }
 }
 

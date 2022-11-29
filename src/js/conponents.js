@@ -216,6 +216,8 @@ export class Peer {
     static localUserId = null;
     static localStreams = null;
     static socket = null;
+    static onNewPeer = [];
+    static onReleasePeer = [];
 
     static init(localUserId, localStreams, socket) {
         Peer.localUserId = localUserId;
@@ -340,6 +342,10 @@ export class Peer {
             console.log('onnegotiationneeded');
             offerToUserDebounce(this.userId);
         };
+
+        for (const f of Peer.onNewPeer) {
+            f(this);
+        }
     }
 
     release() {
@@ -361,5 +367,11 @@ export class Peer {
                 cam.destory();
             }
         }
+
+        for (const f of Peer.onReleasePeer) {
+            f(this);
+        }
+
+        delete Peer.peers[this.userId];
     }
 }

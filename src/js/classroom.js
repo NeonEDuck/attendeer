@@ -30,10 +30,7 @@ const scheduleCancelBtn = document.querySelector('#class-schedule__cancel');
 const scheduleSaveBtn   = document.querySelector('#class-schedule__save');
 const scheduleEditBtn   = document.querySelector('#class-schedule__edit');
 
-const tabGroup          = document.querySelector('#tab-group');
-const tabGroupTabs      = tabGroup.querySelectorAll('input[type="radio"]');
-const tabGroupLabels    = tabGroup.querySelectorAll('label');
-const tabGroupSlider    = tabGroup.querySelector('.slider');
+const tabGroupTabs      = document.querySelectorAll('#tab-group input[type="radio"]');
 const writeTab          = document.querySelector('#write-tab');
 const entireTab         = document.querySelector('#entire-tab');
 const catagoryTabs      = document.querySelectorAll(':where(#feature-tab) [data-catagory]');
@@ -326,28 +323,9 @@ scheduleEditBtn?.addEventListener('click', () => {
 });
 
 let generator = null;
-let currentIndex = 0;
-tabGroup.style.setProperty('--length', tabGroupTabs.length);
-tabGroupLabels.forEach((e, idx) => {
-    e.addEventListener('mouseleave', () => {
-        tabGroupSlider.style.setProperty('--offset', '0');
-    });
-    e.addEventListener('mouseenter', () => {
-        const offset = Math.sign(idx - currentIndex);
-        tabGroupSlider.style.setProperty('--offset', offset);
-    });
-});
+
 tabGroupTabs.forEach((tab, idx) => {
-
     tab.addEventListener('click', async () => {
-        currentIndex = idx;
-        tabGroupSlider.style.setProperty('--index', currentIndex);
-        tabGroupSlider.style.setProperty('--offset', 0);
-        tabGroupLabels.forEach((e) => {
-            e.classList.remove('checked');
-        });
-        tabGroupLabels[currentIndex].classList.add('checked');
-
         const catagory = tab.dataset.catagory;
         pages.forEach((p) => {p.hidden = true});
         const targetPage = document.querySelector(`#bulletin > [data-catagory="${catagory}"]`);

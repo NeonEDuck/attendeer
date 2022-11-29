@@ -40,11 +40,15 @@ const camContainer          = document.querySelector('#cam-container');
 const pinnedCamContainer    = document.querySelector('#pinned-cam-container');
 const camArea               = document.querySelector('#cam-area');
 const notificationContainer = document.querySelector('#notification-container');
-const toolbar               = document.querySelector('#toolbar');
+const sectionTabGroup       = document.querySelector('#tab-group--section');
+const sectionTabs           = sectionTabGroup.querySelectorAll('input[type="radio"]');
+const sections              = document.querySelectorAll('#section > [data-section]');
+const memberSection         = document.querySelector('#section > [data-section="member"]');
 const chat                  = document.querySelector('#chat');
 const chatRoom              = document.querySelector('#chat__room')
 const msgInput              = document.querySelector('#msg-input');
-const toasts              = document.querySelector('#toasts');
+const chatTab               = document.querySelector('#tab--chat');
+const toasts                = document.querySelector('#toasts');
 const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
 const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
 const userName              = document.querySelector('#user-name')?.value?.trim() || document.querySelector('#user-name').innerHTML?.trim();
@@ -118,6 +122,24 @@ localCams.screenShare.video.muted = true;
 
 export let intervalID;
 
+Peer.onNewPeer.push(async (peer) => {
+    const userId = peer.userId;
+    const user = await getUserData(userId);
+
+    memberSection.appendChild(htmlToElement(`
+        <div class="member-item" data-user-id="${userId}">
+            <img src="${user.PhotoURL}" alt="profile_picture" referrerpolicy="no-referrer">
+            <p>${user.UserName}</p>
+        </div>
+    `))
+})
+Peer.onReleasePeer.push(async (peer) => {
+    const userId = peer.userId;
+
+    let member = memberSection.querySelector(`[data-user-id="${userId}"]`);
+    member && memberSection.removeChild(member);
+})
+
 document.onreadystatechange = async () => {
     localCams.webcam.name.innerHTML = userName;
     localCams.webcam.profile.src = photoURL;
@@ -127,9 +149,19 @@ document.onreadystatechange = async () => {
     webcamBtn.disabled = false;
     screenShareBtn.disabled = false;
     enterBtn.disabled = false;
+    chatTab.click();
     await requestStreamPermission();
     await refreshStream();
 }
+
+sectionTabs.forEach((tab) => {
+    tab.addEventListener('click', async () => {
+        const section = tab.dataset.section;
+        sections.forEach((p) => {p.hidden = true});
+        const targetPage = document.querySelector(`#section > [data-section="${section}"]`);
+        targetPage.hidden = false;
+    });
+});
 
 micBtn.addEventListener('click', async () => {
     try {
@@ -286,7 +318,6 @@ enterBtn.addEventListener('click', async () => {
         }
 
         Peer.peers[userId].release();
-        delete Peer.peers[userId];
     });
 
     socket.on('catch-offer', async (socketId, data) => {
