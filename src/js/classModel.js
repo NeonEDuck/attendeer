@@ -115,11 +115,19 @@ export class ClassModal {
 
             const row = attendeeRowPrefab.cloneNode(true);
             // console.log(row);
-            const rowName  = row.querySelector('.attendee-row__name');
-            const rowEmail = row.querySelector('.attendee-row__email');
+            const rowName   = row.querySelector('.attendee-row__name');
+            const rowEmail  = row.querySelector('.attendee-row__email');
+            const rowRemove = row.querySelector('.attendee-row__remove-btn');
             // row.dataset.id = attnedee.UserId;
             rowName.innerHTML  = attnedee.UserName;
             rowEmail.innerHTML = attnedee.Email;
+            rowRemove.addEventListener('click', () => {
+                const i = this.attendeeList.indexOf(attnedee.Email);
+                this.attendeeList.splice(i, 1);
+                attendeeTableTBody.removeChild(row);
+                console.log(this.attendeeList);
+            });
+            console.log(this.attendeeList);
 
             attendeeTableTBody.append(row);
         }
@@ -222,20 +230,27 @@ export class ClassModal {
         let email;
         if ((email = attendeeInput.value?.trim()) && !this.attendeeList.includes(email)) {
             const response = await apiCall('getUserInfo', {email});
-            const user = await response.json();
-
-            if (!user.UserId) {
+            if (response.status !== 200) {
                 this._showErrorMessage(attendeeInput, '找不到使用者');
                 return;
             }
+            const user = await response.json();
 
             this.attendeeList.push(email);
             const row = attendeeRowPrefab.cloneNode(true);
-            const rowName  = row.querySelector('.attendee-row__name');
-            const rowEmail = row.querySelector('.attendee-row__email');
+            const rowName   = row.querySelector('.attendee-row__name');
+            const rowEmail  = row.querySelector('.attendee-row__email');
+            const rowRemove = row.querySelector('.attendee-row__remove-btn');
             row.dataset.email = email;
             rowName.innerHTML  = user.UserName;
             rowEmail.innerHTML = email;
+            rowRemove.addEventListener('click', () => {
+                const i = this.attendeeList.indexOf(email);
+                this.attendeeList.splice(i, 1);
+                attendeeTableTBody.removeChild(row);
+                console.log(this.attendeeList);
+            });
+            console.log(this.attendeeList);
             const tBody = attendeeTable.querySelector('tbody');
             tBody.append(row);
             attendeeInput.value = '';
