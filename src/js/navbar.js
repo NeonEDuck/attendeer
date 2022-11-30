@@ -1,10 +1,10 @@
-const profile    = document.querySelector('#navbar-profile');
-const profilePic = document.querySelector('#navbar-profile__picture');
-const loginText  = document.querySelector('#login-text');
-const signInBtn  = document.querySelector('#sign-in');
-const signOutBtn = document.querySelector('#sign-out');
-const modeText   = document.querySelector('#mode-text');
-const modeSwitch = document.querySelector('#mode-switch');
+const profile           = document.querySelector('#navbar-profile');
+const profileCloseBtn   = document.querySelector('#navbar-profile__close-btn');
+const loginText         = document.querySelector('#login-text');
+const signInBtn         = document.querySelector('#sign-in');
+const signOutBtn        = document.querySelector('#sign-out');
+const modeText          = document.querySelector('#mode-text');
+const modeSwitch        = document.querySelector('#mode-switch');
 
 if (document.querySelector('#navbar') !== null) {
 
@@ -16,13 +16,13 @@ if (document.querySelector('#navbar') !== null) {
         window.location.href = "/logout";
     });
 
-    profilePic.addEventListener('click', () => {
-        if (profile.classList.contains('open')) {
-            profile.classList.remove('open');
-        }
-        else {
-            profile.classList.add('open');
-        }
+    profile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profile.classList.add('open');
+    });
+    profileCloseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profile.classList.remove('open');
     });
 
     if (localStorage.getItem('color-scheme') === "dark") {

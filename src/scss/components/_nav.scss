@@ -68,7 +68,6 @@
             aspect-ratio: 1/1;
             border-radius: 100%;
             height: calc( var(--navbar-height) - ( var(--navbar-padding) + var(--profile-padding) ) * 2 );
-            cursor: pointer;
         }
 
         &__summary {
@@ -94,6 +93,15 @@
                     margin-inline: auto;
                 }
             }
+        }
+
+        &:not(.open) {
+            transition: background-color var(--transition-timing), box-shadow var(--transition-timing);
+            &:hover {
+                background-color: var(--clr-component-500);
+                box-shadow: var(--box-shadow-500);
+            }
+            cursor: pointer;
         }
 
         &.open {
