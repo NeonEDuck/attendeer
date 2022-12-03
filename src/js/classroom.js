@@ -43,6 +43,8 @@ const writeContent      = document.querySelector('#write-content');
 const writeSubmitBtn    = document.querySelector('#write-submit-btn');
 
 const chatLog           = document.querySelector('#chat-log');
+const loadMessageBtn    = document.querySelector('#load-message-btn');
+const finishMessage     = document.querySelector('#finish-message');
 const downloadChatBtn   = document.querySelector('#download-chat-btn');
 const downloadAlertBtn  = document.querySelector('#download-alert-btn');
 
@@ -369,13 +371,15 @@ tabGroupTabs.forEach((tab, idx) => {
             const messages = await response.json()
             for (const message of messages) {
                 const msg = htmlToElement(`
-                    <li>
+                    <li data-message-id="${message.MessageId}">
                         <p>${message.UserName} - ${new Date(message.Timestamp).toLocaleString()}</p>
                         <p>${message.Content}</p>
                     </li>
                 `);
                 chatLog.appendChild(msg);
             }
+            loadMessageBtn.disabled = false;
+            finishMessage.hidden = true;
         }
         else if (catagory === 'alert') {
             generateAlertLog();
@@ -404,6 +408,33 @@ writeSubmitBtn.addEventListener('click', async () => {
     writeTitle.value = '';
     writeContent.value = '';
     entireTab.click();
+});
+
+loadMessageBtn.addEventListener('click', async () => {
+    loadMessageBtn.disabled = true;
+    const lastMessage = chatLog.firstChild;
+    if (chatLog.firstChild) {
+        const response = await apiCall('getClassMessages', {classId, messageId: lastMessage.dataset.messageId});
+        if (response.status === 400) {
+            return;
+        }
+        const messages = await response.json()
+        if (messages.length === 0) {
+            finishMessage.hidden = false;
+        }
+        else {
+            for (const message of messages) {
+                const msg = htmlToElement(`
+                    <li data-message-id="${message.MessageId}">
+                        <p>${message.UserName} - ${new Date(message.Timestamp).toLocaleString()}</p>
+                        <p>${message.Content}</p>
+                    </li>
+                `);
+                chatLog.insertBefore(msg, lastMessage);
+                loadMessageBtn.disabled = false;
+            }
+        }
+    }
 });
 
 downloadChatBtn.addEventListener('click', async () => {
