@@ -93,3 +93,28 @@ path, circle, polygon {
     fill: var(--clr-text-500);
     background-color: var(--clr-text-500);
 }
+
+$scroolbar-width: 1em;
+$scroolbar-border-width: 4px;
+
+::-webkit-scrollbar {
+    width: $scroolbar-width;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border: $scroolbar-border-width solid transparent;
+    background-clip: content-box;
+    border-radius: $scroolbar-width;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    border: $scroolbar-border-width solid transparent;
+    background-clip: content-box;
+    border-radius: $scroolbar-width;
+}
