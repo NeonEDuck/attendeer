@@ -11,6 +11,9 @@ export const AlertTypeEnum = {
 export function getKeyByValue(object, value) {
     return Object.keys(object).find(key => object[key] === value);
 }
+export function approximatelyEqual(a, b, error) {
+    return Math.abs(a - b) < error;
+}
 
 export function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
@@ -29,6 +32,9 @@ export function dateToMinutes(date) {
 }
 
 export function numberArrayToUUIDString(arr) {
+    if (!arr) {
+        return null;
+    }
     return arr.map(x => x.toString(16)).join('')
 }
 
@@ -67,8 +73,9 @@ export async function apiCall(route, data) {
 }
 
 export function setIntervalImmediately(callback, ms) {
-    callback();
-    return setInterval(callback, ms);
+    const interval = setInterval(callback, ms);
+    callback(interval);
+    return interval;
 }
 
 export function debounce(cb, delay=1000) {
