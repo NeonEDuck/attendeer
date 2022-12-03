@@ -337,15 +337,43 @@ export function getUserInfo(userId, email) {
     return query(`SELECT * FROM Users WHERE ${(userId)?'UserId = :userId' : 'Email = :email'}`, {userId, email});
 }
 
-export function getClassMessages(classId, userId) {
+export function getAllClassMessages(classId, userId) {
     return query(`
         SELECT Messages.UserId = :userId as IsSelf, Messages.UserId = HostId as IsHost, UUID, UserName, Content, Timestamp FROM Messages
         LEFT JOIN Users ON Messages.UserId = Users.UserId
         LEFT JOIN Classes ON Messages.ClassId = Classes.ClassId
         LEFT JOIN ClassAttendees ON Messages.ClassId = ClassAttendees.ClassId AND Messages.UserId = ClassAttendees.UserId
         WHERE Messages.ClassId = :classId
-        ORDER BY Timestamp ASC
+        ORDER BY Timestamp ASC;
     `, {classId, userId});
+}
+
+export function getClassMessages(classId, userId, messageId) {
+    return query(`
+        SELECT MessageId, IsSelf, IsHost, UUID, UserName, Content, Timestamp FROM (
+            SELECT * FROM (
+                SELECT MessageId, Messages.UserId = :userId as IsSelf, Messages.UserId = HostId as IsHost, UUID, UserName, Content, Timestamp, ROW_NUMBER() OVER() AS RowNumber FROM Messages
+                LEFT JOIN Users ON Messages.UserId = Users.UserId
+                LEFT JOIN Classes ON Messages.ClassId = Classes.ClassId
+                LEFT JOIN ClassAttendees ON Messages.ClassId = ClassAttendees.ClassId AND Messages.UserId = ClassAttendees.UserId
+                WHERE Messages.ClassId = :classId
+                ORDER BY Timestamp DESC, MessageId DESC
+            ) as msg
+            WHERE RowNumber > IFNULL(
+                (
+                    SELECT RowNumber FROM
+                    (
+                        SELECT MessageId, Timestamp, ROW_NUMBER() OVER() AS RowNumber FROM Messages
+                        WHERE Messages.ClassId = :classId
+                        ORDER BY Timestamp DESC, MessageId DESC
+                    ) as msg
+                    WHERE MessageId = :messageId
+                ), 0
+            )
+            LIMIT 20
+        ) as tmp
+        ORDER BY Timestamp ASC, MessageId ASC
+    `, {classId, userId, messageId});
 }
 
 export function getClassMessage(classId, userId, messageId) {

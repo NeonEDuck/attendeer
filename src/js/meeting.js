@@ -1,7 +1,7 @@
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString, approximatelyEqual } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
@@ -11,7 +11,6 @@ const body = document.querySelector('body');
 
 const camPrefab    = prefab.querySelector('.cam');
 const msgPrefab    = prefab.querySelector('.msg');
-const myMsgPrefab  = prefab.querySelector('.my-msg');
 const toastPrefab  = prefab.querySelector('.toast');
 const notificationPrefab  = prefab.querySelector('.notification');
 
@@ -207,9 +206,9 @@ webcamBtn.addEventListener('click', async () => {
 //     await refreshStream();
 // }
 
+let lastMessageId;
 
 screenShareBtn.addEventListener('click', async () => {
-
     const turnOffScreenShare = async () => {
         console.log('turn off screen share');
         localStreams.screenShare.getTracks().forEach(function(track) {
@@ -529,6 +528,9 @@ enterBtn.addEventListener('click', async () => {
     for (const message of messages) {
         await addMessageToChat(message);
     }
+
+    chatRoom.scrollTop = chatRoom.scrollHeight;
+    lastMessageId = messages[0].MessageId;
 
     socket.on('catch-text-message', async (messageId) => {
         await getNewMessage(messageId);
@@ -1344,21 +1346,74 @@ export async function setupAlertListener(alertRecord) {
 
 window.onresize = () => {Cam.resizeAll()};
 
+chatRoom.addEventListener("scroll", async () => {
+    if (chatRoom.scrollTop === 0 && chatRoom.dataset.status === 'idle'){
+        try {
+            chatRoom.dataset.status = 'fetching';
+            const response = await apiCall('getClassMessages', { classId, messageId: lastMessageId });
+            if (response.status !== 200) {
+                return;
+            }
+            await delay(200);
+            const messages = await response.json();
+            if (messages.length === 0) {
+                chatRoom.dataset.status = 'finish'
+            }
+            else {
+                insertMessagesToChat(messages);
+            }
+        }
+        finally {
+            if (chatRoom.dataset.status === 'fetching') {
+                chatRoom.dataset.status = 'idle'
+            }
+        }
+    }
+});
+
 async function getNewMessage(messageId) {
     const response =  await apiCall('getClassMessage', { classId, messageId });
     const message = await response.json();
 
+    const originalScroll = chatRoom.scrollTop;
+    const originalHeight = chatRoom.scrollHeight;
     await addMessageToChat( message );
 
-    await delay(100);
-
-    chatRoom.scrollTop = chatRoom.scrollHeight;
+    if (approximatelyEqual(originalScroll+chatRoom.clientHeight, originalHeight, 5)) {
+        setIntervalImmediately((interval) => {
+            if (originalHeight !== chatRoom.scrollHeight) {
+                chatRoom.scrollTop = chatRoom.scrollHeight;
+                clearInterval(interval);
+            }
+        }, 10);
+    }
 }
 
-let userAbove = null;
+async function insertMessagesToChat(messages) {
+    let userAbove;
+    const lastMessage = chatRoom.firstChild;
+    const lastUuid = (lastMessage.dataset.userUuid === 'null')? null : lastMessage.dataset.userUuid;
+    const originalHeight = chatRoom.scrollHeight;
+    const originalScroll = chatRoom.scrollHeight - chatRoom.scrollTop;
+    for (const message of messages) {
+        const uuid = numberArrayToUUIDString(message.UUID?.data);
+        chatRoom.insertBefore(generateMessage(message, uuid === userAbove), lastMessage);
+        userAbove = uuid;
+    }
+    if (lastUuid === userAbove) {
+        lastMessage.querySelector('.msg__header').remove();
+    }
+    lastMessageId = messages[0].MessageId;
 
-async function addMessageToChat(message) {
-    // {UserId, Email, UserName, PhotoURL, Content, Timestamp}
+    setIntervalImmediately((interval) => {
+        if (originalHeight !== chatRoom.scrollHeight) {
+            chatRoom.scrollTop = chatRoom.scrollHeight - originalScroll;
+            clearInterval(interval);
+        }
+    }, 10);
+}
+
+function generateMessage(message, noHeader) {
     const date = new Date(message.Timestamp);
     let YY = date.getFullYear();
     let MM = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth();
@@ -1367,60 +1422,49 @@ async function addMessageToChat(message) {
     let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() :date.getMinutes();
     let YMDhm = YY + "/" + MM + "/" + DD +" " + hh + ":" + mm;
 
-    const uuid = message.UUID ? numberArrayToUUIDString(message.UUID.data) : 'host';
+    const uuid = numberArrayToUUIDString(message.UUID?.data);
 
-    if (message.IsSelf){
-        if(uuid === userAbove) {
-            const msg = myMsgPrefab.cloneNode(true);
-            const msgText = msg.querySelector('.my-msg__text');
-            const myMsgDate = msg.querySelector('.my-msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            msgText.innerHTML = message.Content;
-            chatRoom.appendChild(msg);
-        }else {
-            const msg = myMsgPrefab.cloneNode(true);
-            const msgUser = msg.querySelector('.my-msg__user');
-            const msgTime = msg.querySelector('.my-msg__timestamp');
-            const msgText = msg.querySelector('.my-msg__text');
-            const myMsgDate = msg.querySelector('.my-msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            msgUser.innerHTML = '你';
-            msgTime.innerHTML = hh + ":" + mm;
-            msgText.innerHTML = message.Content;
-            chatRoom.appendChild(msg);
-        }
+    const msg = msgPrefab.cloneNode(true);
+
+
+    if (message.IsSelf) {
+        msg.classList.add('my')
+    }
+    const msgUser   = msg.querySelector('.msg__user');
+    const msgTime   = msg.querySelector('.msg__timestamp');
+    const msgText   = msg.querySelector('.msg__text');
+    const msgDate   = msg.querySelector('.msg__date');
+
+    msg.dataset.userUuid = uuid;
+    msgDate.dataset.contentAfter = YMDhm;
+    msgText.innerHTML = message.Content;
+    msgTime.innerHTML = hh + ":" + mm;
+    if (message.isSelf) {
+        msgUser.innerHTML = '你';
     }
     else {
-        if(uuid === userAbove) {
-            const msg = msgPrefab.cloneNode(true);
-            const msgText = msg.querySelector('.msg__text');
-            const myMsgDate = msg.querySelector('.msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            msgText.innerHTML = message.Content;
-            chatRoom.appendChild(msg);
-        }else {
-            const msg = msgPrefab.cloneNode(true);
-            const msgUser = msg.querySelector('.msg__user');
-            const msgTime = msg.querySelector('.msg__timestamp');
-            const msgText = msg.querySelector('.msg__text');
-            const myMsgDate = msg.querySelector('.msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            msgUser.innerHTML = message.UserName;
-            if ( message.IsHost ) {
-                msgUser.classList.add('host');
-            }
-            msgTime.innerHTML = hh + ":" + mm;
-            msgText.innerHTML = message.Content;
-            chatRoom.appendChild(msg);
+        msgUser.innerHTML = message.UserName;
+        if (message.IsHost) {
+            msgUser.classList.add('host');
         }
     }
 
-    if (message.IsHost) {
-        userAbove = 'host';
+    if (noHeader) {
+        msg.querySelector('.msg__header').remove();
     }
-    else {
-        userAbove = uuid;
-    }
+
+    return msg;
+}
+
+let userAbove;
+
+async function addMessageToChat(message) {
+    // {UserId, Email, UserName, PhotoURL, Content, Timestamp}
+
+    const uuid = numberArrayToUUIDString(message.UUID?.data);
+    chatRoom.appendChild(generateMessage(message, uuid === userAbove));
+
+    userAbove = uuid;
 }
 
 function dockListener() {

@@ -33,6 +33,7 @@ import {
     addClassPost,
     getPostReplys,
     addPostReply,
+    getAllClassMessages,
     getClassMessages,
     uploadSQL,
     getAlertRecords,
@@ -293,9 +294,9 @@ router.post('/api/getUserInfo', async (req, res) => {
 
 router.post('/api/getClassMessages', checkAuth, async (req, res) => {
     const { id: userId } = req.session?.passport?.user || {id: req.body._userId};
-    const { classId } = req.body;
+    const { classId, messageId } = req.body;
     send(req, res, async () => {
-        const messages = await getClassMessages(classId, userId);
+        const messages = await getClassMessages(classId, userId, messageId);
         if (await isHost(userId, classId)) {
             return messages;
         }
@@ -330,7 +331,7 @@ router.post('/api/addClassMessage', checkAuth, async (req, res) => {
 
 router.post('/api/getChatLog', checkAuth, async (req, res) => {
     const { classId } = req.body;
-    const messages = await getClassMessages(classId);
+    const messages = await getAllClassMessages(classId);
     let log = '';
     messages.forEach((msg) => {
         log += `${msg.UserName} - ${new Date(msg.Timestamp).toISOString()}\n${msg.Content}\n`;

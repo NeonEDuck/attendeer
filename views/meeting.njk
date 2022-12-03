@@ -20,21 +20,12 @@
         <span class="cam__warning" hidden>!</span>
     </div>
     <li class="msg">
-        <p>
+        <div class="msg__header">
             <span class="msg__user"></span>
             <span class="msg__timestamp"></span>
-        </p>
+        </div>
         <div class="msg__date" data-content-after=":after">
             <p class="msg__text" ></p>
-        </div>
-    </li>
-    <li class="my-msg">
-        <p>
-            <span class="my-msg__timestamp"></span>
-            <span class="my-msg__user"></span>
-        </p>
-        <div class="my-msg__date" data-content-before=":before">
-            <p class="my-msg__text" ></p>
         </div>
     </li>
 
@@ -235,7 +226,7 @@
 
             <div id="section">
                 <div id="chat" data-section="chat">
-                    <ul id="chat__room" class="margin-block-end-2"></ul>
+                    <ul id="chat__room" data-fetching-message="讀取中..." data-finish-message="已到最頂點" data-status="idle" class="margin-block-end-2"></ul>
 
                     <div id="chat__bar">
                         <input

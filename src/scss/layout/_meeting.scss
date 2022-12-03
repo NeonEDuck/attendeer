@@ -73,6 +73,9 @@
     &.close {
         transform: translateX(-100%);
         box-shadow: none;
+        .toggle i {
+            transform: rotate(0deg);
+        }
     }
 
     .image-text img {
@@ -682,10 +685,12 @@ body.dark {
 
                 #alert-lookup__list {
                     height: calc(100% - 6% );
+                    overflow: auto;
 
                     .alert-lookup__table {
                         height: 100%;
                         background-color: transparent;
+                        min-width: 35em;
                         #alert-log {
                             height: 100%;
                             overflow: auto;
@@ -1231,6 +1236,7 @@ body.dark {
     font-size: 0.9em;
 
     &__room {
+        position: relative;
         flex-grow: 1;
         overflow-x: hidden;
         overflow-y: scroll;
@@ -1240,32 +1246,59 @@ body.dark {
         border-top: 2px solid var(--clr-component-300);
         border-bottom: 2px solid var(--clr-component-300);
 
-        .my-msg__date {
-            position: relative;
+        &::before {
+            content: attr(data-fetching-message);
+            position: sticky;
+            display: grid;
+            top: 0;
+            left: 0;
+            margin-inline: auto;
+            padding: 0.5em;
+            place-items: center;
+            border-radius: 0.5em;
+            transform: translateY(-200%);
+            background-color: var(--clr-component-500);
+            box-shadow: var(--box-shadow-300);
+            transition: transform var(--transition-timing);
+            z-index: 100;
         }
 
-        .msg__date {
-            position: relative;
+        &[data-status="fetching"]::before {
+            transform: translateY(0%);
         }
 
-        .my-msg__date:hover::after {
+        &[data-status="finish"]::before {
+            content: attr(data-finish-message);
+            position: relative;
+            margin-inline: initial;
+            top: initial;
+            left: initial;
+            transform: initial;
+            background-color: initial;
+            box-shadow: initial;
+            transition: initial;
+        }
+
+        .my.msg .msg__date:hover::after {
+            content: attr(data-content-after);
             position: absolute;
+            width: fit-content;
             bottom: 0;
             left: 10px;
             color: var(--clr-text);
             font-size: 1px;
             padding: 5px;
-            content: attr(data-content-before);
         }
 
         .msg__date:hover::after {
+            content: attr(data-content-after);
             position: absolute;
+            width: fit-content;
             bottom: 0;
             right: 10px;
             color: var(--clr-text);
             font-size: 1px;
             padding: 5px;
-            content: attr(data-content-after);
         }
     }
 
@@ -1290,11 +1323,6 @@ body.dark {
             &:-ms-input-placeholder,
             &::placeholder {
                 color: var(--clr-text-300);
-            }
-
-            &:focus {
-                outline: none;
-                box-shadow: 0.3rem 0.3rem 0.6rem var(--body-color-2), -0.2rem -0.2rem 0.5rem var(--sidebar-color);
             }
         }
 
