@@ -1,8 +1,16 @@
 .msg {
+    position: relative;
     text-align: left;
 
     p {
         min-height: 0;
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0.5em;
     }
 
     &__user {
@@ -30,32 +38,18 @@
         color: #fff;
     }
 }
-.my-msg {
+.my.msg {
     text-align: right;
-    position: relative;
 
-    p {
-        min-height: 0;
-    }
+    .msg {
+        &__header {
+            flex-direction: row-reverse;
+        }
 
-    &__user {
-        font-weight: 500;
-        color: var(--text-color);
-    }
-
-    &__timestamp {
-        color: var(--time--text-color);
-        font-size: 10px;
-    }
-
-    &__text {
-        width: 60%;
-        word-wrap: break-word;
-        background-color: #77b3d4c7;
-        padding: 7px 10px;
-        border-radius: 10px 10px 0 10px;
-        margin: 5px 0 0 auto;
-        font-weight: 300;
-        color: #fff;
+        &__text {
+            background-color: #77b3d4c7;
+            border-radius: 10px 10px 0 10px;
+            margin: 5px 0 0 auto;
+        }
     }
 }

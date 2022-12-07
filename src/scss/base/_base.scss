@@ -3,8 +3,9 @@ html, body {
 }
 
 body {
-    background-color: var(--body-color);
-    color: var(--text-color);
+    background-color: var(--clr-body);
+    color: var(--clr-text-500);
+    transition: var(--transition-color);
 }
 
 html, body, input, button, textarea {
@@ -19,15 +20,15 @@ fieldset {
     display: flex;
     flex-direction: column;
     gap: 0.5em;
-    border: 1px solid black;
-    border-radius: 1em;
-    padding: 0.5em;
+    border-top: 1px solid var(--clr-text-500);
+    padding: 1em;
 }
 
 legend {
     vertical-align: super;
-    margin-inline-start: 0.5em;
-    color: var(--text-color);
+    padding-inline: 0.5em;
+    font-size: 1.25em;
+    color: var(--clr-text-500);
 }
 
 .field {
@@ -35,7 +36,8 @@ legend {
     justify-content: flex-start;
     align-items: center;
     gap: 0.5em;
-    color: var(--text-color);
+    color: var(--clr-text-500);
+    flex-wrap: wrap;
 }
 
 .content {
@@ -43,10 +45,6 @@ legend {
     flex-direction: column;
     min-height: 100vh;
     width: 100%;
-}
-
-main {
-    padding: 1rem;
 }
 
 table {
@@ -61,27 +59,62 @@ table {
 }
 
 h1 {
-    font-size: 2rem;
+    font-size: 2em;
 }
 
 h2 {
-    font-size: 1.75rem;
+    font-size: 1.75em;
 }
 
 h3 {
-    font-size: 1.5rem;
-    color: var(--text-color);
+    font-size: 1.5em;
+    color: var(--clr-text-500);
 }
 
 h1, h2, h3, h4, h5, h6, p, span {
     line-height: 1.5em;
     min-height: 1.5em;
+    color: var(--clr-text-500);
 }
 
 a {
-    color: blue;
+    color: var(--clr-primary-500);
 }
 
 label {
-    color: var(--text-color);
+    color: var(--clr-text-500);
+}
+
+svg {
+    width: 100%;
+}
+
+path, circle, polygon {
+    fill: var(--clr-text-500);
+    background-color: var(--clr-text-500);
+}
+
+$scroolbar-width: 1em;
+$scroolbar-border-width: 4px;
+
+::-webkit-scrollbar {
+    width: $scroolbar-width;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border: $scroolbar-border-width solid transparent;
+    background-clip: content-box;
+    border-radius: $scroolbar-width;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    border: $scroolbar-border-width solid transparent;
+    background-clip: content-box;
+    border-radius: $scroolbar-width;
 }

@@ -1,694 +1,597 @@
-import { firestore } from './firebase-config.js';
-import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, orderBy } from 'firebase/firestore';
 import 'webrtc-adapter';
-import { MINUTE, delay, debounce, getUser, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
-import { setupAlertScheduler, setupAlertListener, intervalID, alertDocCurrently } from './meeting.js';
+import { htmlToElement, getKeyByValue, apiCall, AlertTypeEnum } from './util.js';
+import { prefab } from './prefab.js';
+import { setupAlertScheduler, globalAlertType, setGlobalAlert, globalInterval, globalTime, globalQuestion, globalAnswear, globalMultipleChoice, setWebcamStream, setLocalStreams } from './meeting.js';
 
 // HTML elements
-const body       = document.querySelector('body'),
-      sidebar    = body.querySelector(".sidebar"),
+
+const body       = document.querySelector("body");
+const sidebar    = document.querySelector(".sidebar"),
       toggle     = sidebar.querySelector(".toggle"),
       modeSwitch = sidebar.querySelector(".toggle-switch"),
       modeText   = sidebar.querySelector(".mode-text"),
       navBtn     = sidebar.querySelectorAll('.nav-btn');
 
-const fltCntr             = body.querySelector(".floating-container"),
-      closeFloatingButton = fltCntr.querySelector('.close-floating_button');
+const alertSetting               = prefab.querySelector('.alert-setting');
+const alertButtonSetting         = document.querySelector('.button-setting');
 
-const floatingAlert      = fltCntr.querySelector('#floating-alert'),
-      alertInfo          = floatingAlert.querySelector('.alert-info'),
-      classModel         = alertInfo.querySelector('.class-modal'),
-      alertType          = alertInfo.querySelector('.alert-type'),
-      alertInterval      = floatingAlert.querySelectorAll(".alert-interval"),
-      alertTime          = floatingAlert.querySelectorAll(".alert-time"),
-      centerBtns         = floatingAlert.querySelectorAll('.center-btn'),
-      settingBtn         = classModel.querySelector('#setting'),
-      submitSettingBtn   = classModel.querySelector('#submit-setting'),
-      cancelSettingBtn   = classModel.querySelector('#cancel-setting');
+const alertMultipleChoiceSetting = prefab.querySelector('.alert-multiple-choice-setting');
+const fieldOption                = prefab.querySelector('.option');
+const multipleChoiceSetting      = document.querySelector('.multiple-choice-setting');
 
-const alertInfoErrorText= alertInfo.querySelector('.error-text'),
-      alertChoose       = floatingAlert.querySelector('.alert-choose'),
-      alertExchange     = floatingAlert.querySelector('#alert-exchange'),
-      alertReturn              = floatingAlert.querySelector('#alert-return'),
-      alertBtnReturn           = floatingAlert.querySelector('#alert-btn-return'),
-      alertEssayQuestionReturn = floatingAlert.querySelector('#alert-essay-question-return'),
-      voteSettingReturn = floatingAlert.querySelector('#vote-setting-return'),
-      alertStepProgress = floatingAlert.querySelectorAll('.alert-step-progress'),
-      buttonSetting = floatingAlert.querySelector('.button-setting'),
-      multipleChoiceSetting = floatingAlert.querySelector('.multiple-choice-setting'),
-      essayQuestion = floatingAlert.querySelector('.essay-question'),
-      voteSetting = floatingAlert.querySelector('.vote-setting'),
-      alertBtnFinish = buttonSetting.querySelector('#alert-btn-finish'),
-      essayQuestionFinish = essayQuestion.querySelector('#essay-question-finish'),
-      voteSettingFinish = voteSetting.querySelector('#vote-setting-finish'),
-      btnSettingErrorText = buttonSetting.querySelector('.error-text'),
-      errorText = alertStepProgress[1].querySelectorAll('.error-text'),
-      container = floatingAlert.querySelectorAll('.container'),
-      choose1    = floatingAlert.querySelector('#choose-1'),
-      choose2    = floatingAlert.querySelector('#choose-2'),
-      choose3    = floatingAlert.querySelector('#choose-3'),
-      choose4    = floatingAlert.querySelector('#choose-4');
+const alertEssayQuestionSetting  = prefab.querySelector('.alert-essay-question-setting');
+const essayQuestionSetting       = document.querySelector('.essay-question-setting');
 
-//multiple choice
-const slidePage = container[1].querySelector(".slidepage");
-const options = container[1].querySelector(".options");
-const prev1 = container[1].querySelector(".prev-1");
-const next1 = container[1].querySelector(".next-1");
-const addBtn = container[1].querySelector(".add_options");
-const fieldAdd = container[1].querySelector(".add");
-let bxX = container[1].querySelectorAll(".bx-x");
-const prev2 = container[1].querySelector(".prev-2");
-const next2 = container[1].querySelector(".next-2");
-const prev3 = container[1].querySelector(".prev-3");
-const next3 = container[1].querySelector(".next-3");
-const progressText = container[1].querySelectorAll(".step p");
-const progressCheck = container[1].querySelectorAll(".step .check");
-const bullet = container[1].querySelectorAll(".step .bullet");
-const qstText = container[1].querySelectorAll(".qst_text");
+const alertVoteSetting           = prefab.querySelector('.alert-vote-setting');
+const voteOptionInput            = prefab.querySelector('.vote-option_input');
+const voteSetting                = document.querySelector('.vote-setting');
 
-//essay-question
-const qstText3 = container[2].querySelector(".qst_text");
 
-//vote-settig
-const optionSelected = container[3].querySelector("#option-selected");
+const fltCntr             = document.querySelector(".floating-container"),
+      closeFloatingButton = fltCntr.querySelector('.close-floating_button'),
+      floatingAlert       = fltCntr.querySelector('#floating-alert'),
+      floatingUserMedia   = fltCntr.querySelector('#floating-user-media'),
+      floatingAlertRecord   = fltCntr.querySelector('#floating-alert-record'),
+      alertInfo           = fltCntr.querySelector('.alert-info'),
+      infoType            = fltCntr.querySelector('#info-type'),
+      infoInterval        = fltCntr.querySelector("#info-interval"),
+      infoTime            = fltCntr.querySelector("#info-time"),
+      centerBtns          = fltCntr.querySelectorAll('.center-btn'),
+      settingBtn          = fltCntr.querySelector('#setting'),
+      submitSettingBtn    = fltCntr.querySelector('#submit-setting'),
+      cancelSettingBtn    = fltCntr.querySelector('#cancel-setting');
 
+const fieldset            = document.querySelector('.fieldset');
+
+const alertInfoErrorText       = fltCntr.querySelector('.error-text'),
+      alertChoose              = fltCntr.querySelector('.alert-choose'),
+      alertExchange            = fltCntr.querySelector('#alert-exchange'),
+      alertReturn              = fltCntr.querySelector('#alert-return'),
+      buttonSetting            = fltCntr.querySelector('.button-setting'),
+      essayQuestion            = fltCntr.querySelector('.essay-question-setting'),
+      choose1                  = fltCntr.querySelector('#choose-1'),
+      choose2                  = fltCntr.querySelector('#choose-2'),
+      choose3                  = fltCntr.querySelector('#choose-3'),
+      choose4                  = fltCntr.querySelector('#choose-4');
+
+const alertSearch            = document.querySelector('#alert-lookup__search');
+const alertLookupTable       = document.querySelector('.alert-lookup__table[data-type="alert"]');
+const alertDetailLookupTable = document.querySelector('.alert-lookup__table[data-type="alert-detail"]');
+const alertLog               = document.querySelector('#alert-log');
+const alertDetailLog         = document.querySelector('#alert-detail-log');
+const alertLookupDetail      = document.querySelector('#lookup__detail');
+const downloadAlertBtn       = document.querySelector('#download-alert-btn');
+
+const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
+const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
+const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
 
 // Global variable
 let current = 0;
 let optionsTotal = 0;
-let globalInterval;
-let globalTime;
-let globalTpye;
-let globalmultipleChoice;
+let alertType;
+let interval;
+let time;
+let question;
 let answearID;
-let question, answear;
-export let dataMultipleChoice = {}; 
-let localUserId = null;
+let multipleChoice;
+export let dataMultipleChoice = {};
+let isHost = localUserId === hostId;
 
-// Firestore
-const calls = collection(firestore, 'calls');
-const callId     = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
-const callDoc = doc(calls, callId);
+//開關sidebar
+function toggleSidebar() {
+    sidebar.classList.toggle("close");
+}
 
-optionSelected.addEventListener("change",Selected);
+toggle.addEventListener("click", toggleSidebar);
 
-function Selected(event){
-    console.log(event.target.value);
+//黑白模式
+if (document.documentElement.classList.contains("dark")) {
+    modeSwitch.classList.add("open");
+    modeText.innerHTML = "燈光模式";
+}
 
-    const fieldOptions = container[3].querySelector(".options");
-    const optionInput = fieldOptions.querySelectorAll(".option_input");
+modeSwitch.addEventListener("click", () =>{
+    modeSwitch.classList.toggle("open");
 
-    optionInput.forEach( optionInput => {
-        optionInput.remove();
-    })
-
-    if(event.target.value != '') {
-
-        for(let i = 0; i < parseInt(event.target.value); i++) {
-            const input = document.createElement('input');
-            input.setAttribute("type", "text");
-            input.classList.add("option_input");
-            fieldOptions.appendChild(input);
-        }
+    if (modeSwitch.classList.contains("open")){
+        document.documentElement.classList.add("dark");
+        localStorage.setItem('color-scheme', 'dark');
+        modeText.innerHTML = "燈光模式";
     }
-}
-
-for(let i = 0; i < 2; i++){
-    addOptions();
-}
-
-addBtn.addEventListener('click', () => {
-    addOptions();
+    else{
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem('color-scheme', 'light');
+        modeText.innerHTML = "黑暗模式";
+    }
 });
 
-function addOptions(){
-    optionsTotal += 1;
-    const div = document.createElement('div');
-    div.classList.add("field", "option");
-    options.insertBefore(div,fieldAdd);
-    const divNo = document.createElement('div');
-    divNo.classList.add("div_no");
-    div.appendChild(divNo);
-    const spanNo = document.createElement('span');
-    spanNo.classList.add("span_no");
-    divNo.appendChild(spanNo);
-    const input = document.createElement('input');
-    input.setAttribute("type", "text");
-    input.classList.add("option_input");
-    div.appendChild(input);
-    const icon = document.createElement('i');
-    icon.classList.add("bx", "bx-x");
-    div.appendChild(icon);
-    icon.addEventListener('click', () => {
-        div.remove();
-        optionsTotal -= 1;
-        bxX = container[1].querySelectorAll(".bx-x");
-        let spansNo = container[1].querySelectorAll(".span_no");
-        let x = 0;
-        Array.from(bxX).forEach((item) => {
-            spansNo[x].innerHTML = x+1;
-            x += 1;
-            if(optionsTotal <= 2){
-                item.style.display = "none";
-            }else if(optionsTotal < 5){
-                addBtn.style.display = "block";
-            }else{
-                item.style.display = "block";
+if (isHost){
+    addEventListeners();
+    generateAlertLog();
+    alertSearch.addEventListener('keyup', () => {
+        const filter = alertSearch.value.toUpperCase();
+        const rows = alertLog.querySelectorAll('tr');
+
+        for (const row of rows) {
+            const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
+
+            if (text.indexOf(filter) !== -1) {
+                row.style.display = "none";
             }
-        });
-    });
-    divNo.addEventListener('click', () => {
-        let no = container[1].querySelectorAll(".div_no");
-        Array.from(no).forEach((item) => {
-            item.classList.remove("answear-chosen");
-        });
-        divNo.classList.toggle("answear-chosen");
-    });
-    bxX = container[1].querySelectorAll(".bx-x");
-    let spansNo = container[1].querySelectorAll(".span_no");
-    let x = 0;
-    Array.from(bxX).forEach((item) => {
-        spansNo[x].innerHTML = x+1;
-        x += 1;
-        if(optionsTotal >= 3){
-            item.style.display = "block";
-        }else{
-            item.style.display = "none";
+            else {
+                row.style.display = "";
+            }
         }
-    });
-    if(optionsTotal >= 5){
-        addBtn.style.display = "none";
+    })
+
+    multipleChoiceSetting.onkeydown = function() {
+        if (event.keyCode == 9) {
+            return false;
+         }
     }
 }
 
-alertBtnReturn.addEventListener('click', () => {
-    buttonSetting.classList.toggle("close");
-    alertChoose.classList.remove("close");
-
-    const errorText = buttonSetting.querySelector('.error-text');
-    errorText.innerHTML = '';
-});
-
-alertEssayQuestionReturn.addEventListener('click', () => {
-    essayQuestion.classList.toggle("close");
-    alertChoose.classList.remove("close");
-
-    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
-    essayQuestionErrorText.innerHTML = '';
-    qstText3.value = '';
-});
-
-voteSettingReturn.addEventListener('click', () => {
-    voteSetting.classList.toggle("close");
-    alertChoose.classList.remove("close");
-
-    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
-    voteSettingErrorText.innerHTML = '';
-    
-    const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
-    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
-
-    voteQst.value = '';
-    optionSelected.value = '';
-    optionInput.forEach( optionInput => {
-        optionInput.remove();
-    })
-});
-
-prev1.addEventListener('click', () => {
-    multipleChoiceSetting.classList.toggle("close");
-    alertChoose.classList.remove("close");
-
-    errorText.forEach(errorText => {
-        errorText.innerHTML = '';
-    })
-});
-prev2.addEventListener('click', () => {
-    slidePage.style.marginLeft = "0%";
-    bullet[current-1].classList.remove("active");
-    progressText[current-1].classList.remove("active");
-    progressCheck[current-1].classList.remove("active");
-    current -= 1;
-});
-prev3.addEventListener('click', () => {
-    slidePage.style.marginLeft = "-25%";
-    bullet[current-1].classList.remove("active");
-    progressText[current-1].classList.remove("active");
-    progressCheck[current-1].classList.remove("active");
-    current -= 1;
-});
-next1.addEventListener('click', () => {
-    if(qstText[0].value != ''){
-        slidePage.style.marginLeft = "-25%";
-        bullet[current].classList.add("active");
-        progressText[current].classList.add("active");
-        progressCheck[current].classList.add("active");
-        current += 1;
-        errorText.forEach(errorText => {
-            errorText.innerHTML = '';
-        })
-    }else {
-        errorText[0].innerHTML = '禁止輸入空字串！';
-    }
-
-    
-});
-next2.addEventListener('click', () => {
-    let optionInput = container[1].querySelectorAll('.option_input');
-    let x = 0;
-    for(let i = 0; i < optionInput.length; i++){
-        if(optionInput[i].value != ''){
-            x += 1;
-        }
-    }
-
-    const answearChosen = container[1].querySelector(".answear-chosen");
-
-    if(answearChosen != null) {
-        answear = answearChosen.children[0].innerHTML;
-    }
-
-    if(x === optionInput.length && answearChosen != null ){
-        slidePage.style.marginLeft = "-50%";
-        bullet[current].classList.add("active");
-        progressText[current].classList.add("active");
-        progressCheck[current].classList.add("active");
-        current += 1;
-        errorText[1].innerHTML = ''
-    }else if( x != optionInput.length ){
-        errorText[1].innerHTML = '選項禁止為空字串！'
-    }else if( answearChosen === null ) {
-        errorText[1].innerHTML = '請選擇答案選項！'
-    }
-});
-
-alertBtnFinish.addEventListener('click', async () => {
-    const errorText = buttonSetting.querySelector('.error-text');
-    const alertInterval = document.querySelectorAll(".alert-interval");
-    const alertTime     = document.querySelectorAll(".alert-time");
-
-    const interval = Number(alertInterval[1].value);
-    const time     = Number(alertTime[1].value);
-    const alertType = 'click';
-    if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
-
-        const data = {
-            alert: {
-                interval,
-                time,
-                alertType,
-            },
-        }
-
-        const callDoc = doc(calls, callId);
-        await updateDoc(callDoc, data);
-
-        alertInfo.classList.remove("close");
-        alertChoose.classList.toggle("close");
-        fltCntr.classList.remove("show");
-        buttonSetting.classList.toggle("close");
-        alertChoose.classList.toggle("close");
-        Array.from(navBtn).forEach((item) => {
-            item.className = "nav-btn";
-        });
-
-        AlertReplace();
-
-        errorText.innerHTML = '';
-    }else if( interval < 10 || interval >50 ) {
-        errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-    }else if( time < 1 || time > 3 ) {
-        errorText.innerHTML = '持續時間範圍：1 ~ 3';
-    }
-
-});
-
-next3.addEventListener('click', async () => {
-
-    const alertInterval = document.querySelectorAll(".alert-interval");
-    const alertTime     = document.querySelectorAll(".alert-time");
-    question = qstText[0].value;
-    const interval = Number(alertInterval[2].value);
-    const time     = Number(alertTime[2].value);
-    const alertType = 'multiple choice';
-
-    if( interval >= 10 && interval <= 50 && time >= 1 && time <= 3 ) {
-        answearID = answear;
-
-        const optionInput = container[1].querySelectorAll(".option_input");
-        let multipleChoiceDict = {};
-
-        for(let i=0; i < optionInput.length; i++){
-            multipleChoiceDict[i] = optionInput[i].value;
-        }
-
-        let multipleChoice = Object.values(multipleChoiceDict);
-
-        dataMultipleChoice = {
-            question: question,
-            answear: answearID,
-            multipleChoice: multipleChoice,
-        }
-
-        let dataAlert = {
-            alert: {
-                interval: interval,
-                time: time,
-                alertType: alertType,
-            },
-        }
-
-        const callDoc = doc(calls, callId);
-        await updateDoc(callDoc, dataAlert);
-
-        slidePage.style.marginLeft = "0%";
-        bullet[current - 1].classList.remove("active");
-        progressText[current - 1 ].classList.remove("active");
-        progressCheck[current - 1 ].classList.remove("active");
-        current -= 1;
-        bullet[current - 1 ].classList.remove("active");
-        progressText[current - 1 ].classList.remove("active");
-        progressCheck[current - 1 ].classList.remove("active");
-        current -= 1;
-        qstText[0].value = "";
-        for(let i=0; i < optionInput.length; i++){
-            optionInput[i].value = "";
-        }
-        container[1].querySelector(".answear-chosen").classList.remove("answear-chosen");
-
-        alertInfo.classList.remove("close");
-        alertChoose.classList.toggle("close");
-        fltCntr.classList.remove("show");
-        multipleChoiceSetting.classList.toggle("close");
-        alertChoose.classList.toggle("close");
-        Array.from(navBtn).forEach((item) => {
-            item.className = "nav-btn";
-        });
-
-        AlertReplace();
-
-        const option = multipleChoiceSetting.querySelectorAll('.option');
-
-        option.forEach(option => {
-            option.remove();
-        });
-
-        optionsTotal = 0;
-
-        addBtn.style.display = "block";
-
-        for(let i = 0; i < 2; i++){
-            addOptions();
-        }
-    }else if( interval < 10 || interval >50 ) {
-        errorText[2].innerHTML = '警醒間隔範圍：10 ~ 50';
-    }else if( time < 1 || time > 3 ) {
-        errorText[2].innerHTML = '持續時間範圍：1 ~ 3';
-    }
-
-});
-choose1.addEventListener('click', () => {
-    buttonSetting.classList.remove("close");
-    alertChoose.classList.toggle("close");
-    alertInterval[1].value = globalInterval;
-    alertTime[1].value     = globalTime;
-});
-
-choose2.addEventListener('click', () => {
-    multipleChoiceSetting.classList.remove("close");
-    alertChoose.classList.toggle("close");
-    alertInterval[2].value = globalInterval;
-    alertTime[2].value     = globalTime;
-});
-
-choose3.addEventListener('click', () => {
-    essayQuestion.classList.remove("close");
-    alertChoose.classList.toggle("close");
-    alertInterval[3].value = globalInterval;
-    alertTime[3].value     = globalTime;
-});
-
-choose4.addEventListener('click', () => {
-    voteSetting.classList.remove("close");
-    alertChoose.classList.toggle("close");
-    alertInterval[4].value = globalInterval;
-    alertTime[4].value     = globalTime;
-});
-
-alertExchange.addEventListener('click', () => {
-    alertInfo.classList.toggle("close");
-    alertChoose.classList.remove("close");
-    closeModalForm();
-});
-
-alertReturn.addEventListener('click', () => {
-    alertInfo.classList.remove("close");
-    alertChoose.classList.toggle("close");
-});
-
-closeFloatingButton.addEventListener('click', () => {
-
-    fltCntr.classList.remove("show");
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
-    });
-
-    floatingAlert.className = "";
-    floatingAlert.classList.add("floating-alert","a");
-    alertInfo.className = "";
-    alertInfo.classList.add("alert-info");
-    alertChoose.className = "";
-    alertChoose.classList.add("alert-choose","close");
-    buttonSetting.className = "";
-    buttonSetting.classList.add("alert-step-progress","button-setting","close");
-    multipleChoiceSetting.className = "";
-    multipleChoiceSetting.classList.add("alert-step-progress","multiple-choice-setting","close");
-    essayQuestion.className = "";
-    essayQuestion.classList.add("alert-step-progress","essay-question","close");
-    voteSetting.className = "";
-    voteSetting.classList.add("alert-step-progress","vote-setting","close");
-    slidePage.style.marginLeft = "0%";
-    let progressLength = current;
-    for (let i = 0; i < progressLength; i++) {
-        bullet[current - 1 ].classList.remove("active");
-        progressText[current - 1 ].classList.remove("active");
-        progressCheck[current - 1 ].classList.remove("active");
-        current -= 1;
-    }
-
-    qstText[0].value = "";
-    const optionInput = container[1].querySelectorAll(".option_input");
-    for(let i=0; i < optionInput.length; i++){
-        optionInput[i].value = "";
-    }
-
-    if( container[1].querySelector(".answear-chosen") != null ) {
-        container[1].querySelector(".answear-chosen").classList.remove("answear-chosen");
-    }
-
-    const option = multipleChoiceSetting.querySelectorAll('.option');
-
-    option.forEach(option => {
-        option.remove();
-    });
-
-    optionsTotal = 0;
-
-    addBtn.style.display = "block";
-
-    for(let i = 0; i < 2; i++){
-        addOptions();
-    }
-    errorText.forEach(errorText => {
-        errorText.innerHTML = '';
-    })
-    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
-    essayQuestionErrorText.innerHTML = '';
-    qstText3.value = '';
-
-    btnSettingErrorText.innerHTML = '';
-
-    alertInfoErrorText.innerHTML = '';
-
-    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
-    voteSettingErrorText.innerHTML = '';
-    
-    const voteOptionInput = alertStepProgress[3].querySelectorAll(".option_input");
-    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
-
-    voteQst.value = '';
-    optionSelected.value = '';
-    voteOptionInput.forEach( optionInput => {
-        optionInput.remove();
-    })
-});
-
-async function AlertReplace() {
-
-    // clearInterval(intervalID);
-    setupAlertScheduler();
-
-}
-
+//sidebar 點擊監聽
 export function sidebarListener() {
     Array.from(navBtn).forEach((item, index) => {
         item.addEventListener("click",async (e) => {
             Array.from(navBtn).forEach((item) => {
                 item.className = "nav-btn";
-                floatingAlert.style.opacity = 0;
             });
             navBtn[index].classList.toggle("open");
-
             let navText = navBtn[index].querySelector('.nav-text').innerHTML;
-
-            fltCntr.classList.add("show");
-
-            if(navText === '警醒資訊') {
-
-                const { alert, host } = (await getDoc(callDoc)).data();
-
-                const user = await getUser();
-                localUserId = user.uid;
-
-                if (localUserId === host){
-                    console.log('會議主辦人警醒資訊');
-
-                    closeModalForm();
-
-                }
-                else {
-                    console.log('不是主辦人只提供個人警醒資訊');
-                    const test = body.querySelector("#test");
-                    test.hidden = false;
-                    floatingAlert.hidden = true;
-                }
+            fltCntr.hidden = false;
+            if (isHost){
+                hiddenAllFloating();
             }
 
+            if(navText === '警醒資訊') {
+                floatingAlert.hidden = false;
+                console.log('會議主辦人警醒資訊');
+                closeModalForm();
+            }else if( navText === '裝置設定' ) {
+                floatingUserMedia.hidden = false;
+                userMedia();
+            }else if( navText === '警醒紀錄' ) {
+                floatingAlertRecord.hidden = false;
+            }
+            toggleSidebar();
         });
     });
 }
 
-settingBtn.addEventListener('click', async () => {
-    centerBtns[0].hidden = true;
-    centerBtns[1].hidden = false;
+//關閉浮動視窗的按鈕
+closeFloatingButton.addEventListener('click', () => {
 
-    const alertInterval = classModel.querySelector("#alert-interval");
-    const alertTime     = classModel.querySelector("#alert-time");
-    const textarea = classModel.querySelector('.info-textarea');
-    const input = classModel.querySelectorAll('.option_Input');
-    const spanNo = classModel.querySelectorAll('.span_No');
-    const fieldset = classModel.querySelector('.fieldset');
+    fltCntr.hidden = true;
+    Array.from(navBtn).forEach((item) => {
+        item.className = "nav-btn";
+    });
 
-    alertInterval.classList.add('Revise');
-    alertTime.classList.add('Revise');
+    if (isHost){
+        hiddenAllFloating();
+    }
+});
 
-    alertInterval.removeAttribute('readonly');
-    alertTime.removeAttribute('readonly');
 
-    if( globalTpye === 'multiple choice' ) {
+async function generateAlertLog() {
+    alertLog.innerHTML = '';
+    const response = await apiCall('getAlertRecords', {classId});
+    if (response.status !== 200) {
+        return;
+    }
+    const alertRecords = await response.json()
+    for (const alertRecord of alertRecords) {
+        const record = htmlToElement(`
+            <tr class="alert-record">
+                <td class="alert-record__type">${alertRecord.AlertType}</td>
+                <td class="alert-record__interval">${alertRecord.Interval}</td>
+                <td class="alert-record__duration">${alertRecord.Duration}</td>
+                <td class="alert-record__timestamp">${new Date(alertRecord.Timestamp).toLocaleString()}</td>
+                <td class="alert-record__question">${(alertRecord.AlertTypeId !== AlertTypeEnum.Click)?alertRecord.Question:'-'}</td>
+            </tr>
+        `);
+        record.addEventListener('click', async (e) => {
+            alertLookupTable.hidden = true;
+            alertSearch.hidden = true;
+            alertDetailLog.hidden = true;
+            document.querySelector('#alert-lookup__list').style.height = '80%';
 
-        let optionsTotal = 0;
+            while (alertDetailLog.lastChild) {
+                alertDetailLog.removeChild(alertDetailLog.lastChild);
+            }
 
-        textarea.removeAttribute('readonly');
-        input.forEach(input => {
-            input.removeAttribute('readonly');
-            optionsTotal +=1;
-        });
+            const alertDetail = htmlToElement(`
+                <div id="alert-detail">
+                    <button id="return-alert-list">返回</button>
+                    <div id="alert-type" class="nested">警醒類型：${alertRecord.AlertType}</div>
+                    <div id="alert-interval" class="nested">警醒間隔：${alertRecord.Interval}</div>
+                    <div id="alert-time" class="nested">警醒持續時間：${alertRecord.Duration}</div>
+                    <div id="time-start" class="nested">建立時間：${new Date(alertRecord.Timestamp).toLocaleString()}</div>
+                </div>
+            `);
 
-        spanNo.forEach(spanNo => {
-            spanNo.classList.remove('disable');
-        });
-
-        Array.from(spanNo).forEach((item, index) => {
-            item.addEventListener("click", async (e) => {
-                Array.from(spanNo).forEach((item) => {
-                    item.classList.remove("answear");
-                });
-                item.classList.add("answear");
+            alertDetail.querySelector('#return-alert-list').addEventListener('click', async (e) => {
+                alertSearch.hidden = false;
+                alertDetailLog.hidden = true;
+                alertLookupTable.hidden = false;
+                alertDetailLookupTable.hidden = true;
+                alertSearch.hidden = false;
+                alertLookupDetail.hidden = true;
+                document.querySelector('#alert-lookup__list').style.height = '94%';
+                while (alertLookupDetail.lastChild) {
+                    alertLookupDetail.removeChild(alertLookupDetail.lastChild);
+                }
             });
+            alertLookupDetail.appendChild(alertDetail);
+
+            const response = await apiCall('getAlertRecordReacts', {classId, recordId: alertRecord.RecordId})
+            const alertReacts = await response.json();
+
+            generateAlertSummary(alertRecord, alertReacts);
+
+            for (const alertReact of alertReacts) {
+                alertReact.Answer = (alertRecord.MultipleChoice)?alertRecord.MultipleChoice[Number(alertReact.Answer)-1] : alertReact.Answer;
+                generateReactDetail(alertRecord.AlertTypeId, alertReact);
+            }
+
+            alertDetailLog.hidden = false;
+            alertDetailLookupTable.hidden = false;
+            alertSearch.hidden = true;
+            alertLookupDetail.hidden = false;
         });
+        alertLog.insertBefore(record, alertLog.firstChild);
+    }
 
-        const addOption = classModel.querySelector('.addOption');
-        const button = document.createElement('button');
-        button.classList.add('infoAddBtn');
-        button.type = "button";
-        button.innerHTML = '新增';
-        addOption.appendChild(button);
+    alertSearch.addEventListener('keyup', () => {
+        const filter = alertSearch.value.toUpperCase();
+        const rows = alertLog.querySelectorAll('tr');
 
-        const field = fieldset.querySelectorAll('.field');
-        Array.from(field).forEach((item, index) => {
-            const icon = document.createElement('i');
-            icon.classList.add("bx", "bx-x");
-            item.appendChild(icon);
-            icon.addEventListener("click", async (e) => {
-                item.remove();
-                optionsTotal -= 1;
-                bxX = fieldset.querySelectorAll(".bx-x");
-                let spanNo = fieldset.querySelectorAll(".span_No");
-                let x = 0;
-                Array.from(bxX).forEach((item) => {
-                    spanNo[x].innerHTML = x+1;
-                    x += 1;
-                    if(optionsTotal <= 2){
-                        item.style.display = "none";
-                    }else if(optionsTotal < 5){
-                        button.style.display = "block";
-                    }else{
-                        item.style.display = "block";
-                    }
-                });
-            });
-        });
+        for (const row of rows) {
+            const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
 
-        button.addEventListener('click', async () => {
-            optionsTotal += 1;
-            const div = document.createElement('div');
-            div.classList.add("field");
-            fieldset.appendChild(div);
-            let spanNo = document.createElement('span');
-            spanNo.classList.add("span_No");
-            div.appendChild(spanNo);
+            if (text.indexOf(filter) !== -1) {
+                row.style.display = "none";
+            }
+            else {
+                row.style.display = "";
+            }
+        }
+    })
+
+    const b64toBlob = (b64Data, contentType='', sliceSize=512) => {
+        const byteCharacters = atob(b64Data);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, {type: contentType});
+        return blob;
+    }
+
+    downloadAlertBtn.addEventListener('click', async () => {
+        const response = await apiCall('getAlertLog', {classId});
+        const b64file = await response.text();
+        const blob = b64toBlob(b64file, 'application/vnd.ms-excel');
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = 'alertLog.xlsx';
+        link.click();
+        link.remove();
+    });
+}
+
+function generateAlertSummary(alertRecord, alertReacts) {
+    // 1 == click
+    // 2 == multiple choice
+    // 3 == essay question
+    // 4 == vote
+    if (alertRecord.AlertTypeId !== AlertTypeEnum.Click) {
+        alertLookupDetail.appendChild(htmlToElement(`
+            <div id="alert-question">題目：${alertRecord.Question}</div>
+        `));
+
+        if (alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice || alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
+            const alertSummary = htmlToElement(`<div id="alert-summary"></div>`);
+            let i = 0;
+            for (const option of alertRecord.MultipleChoice) {
+                const amount = alertReacts.filter((x) => (x.Answer === i.toString())).length;
+                const total  = alertReacts.filter((x) => (x.Answer !== null)).length;
+
+                alertSummary.appendChild(htmlToElement(`
+                    <div class="alert-summary__option ${(alertRecord.Answer === i.toString())?'answer' : ''}">
+                        <p>( ${i+1} ) ${option}</p>
+                        <p>${amount}人</p>
+                        <p>${total>0 ? amount/total*100 : 0}%</p>
+                    </div>
+                `));
+                i++;
+            }
+            alertLookupDetail.appendChild(alertSummary);
+        }
+    }
+}
+
+async function generateReactDetail(alertType, alertReact) {
+    let clickColor = 'var(--text-color)';
+    let clicked = '未加入';
+    let answer  = '-';
+    let timeStamp = '-';
+    if (alertReact.Clicked !== null) {
+        if (alertReact.Clicked) {
+            clicked = '完成';
+            answer = alertReact.Answer;
+            clickColor = '#7CFC00'
+            timeStamp = new Date(alertReact.Timestamp).toLocaleString();
+        }
+        else {
+            clicked = '未完成';
+            answer = '';
+            clickColor = '#ff0000'
+        }
+    }
+
+    const alertReactElement = htmlToElement(`
+        <tr class="alert-react">
+            <td class="alert-react__name">${alertReact.UserName}</td>
+            <td class="alert-react__click" style="color: ${clickColor}">${clicked}</td>
+            <td class="alert-react__ans">${(alertType !== 1)?answer:'-'}</td>
+            <td class="alert-react__timestamp">${timeStamp}</td>
+        </tr>
+    `);
+    alertDetailLog.insertBefore(alertReactElement, alertDetailLog.firstChild);
+}
+
+function hiddenAllFloating() {
+    optionsTotal = 0;
+    current = 0;
+    floatingAlertRecord.hidden = true;
+    floatingUserMedia.hidden = true;
+    floatingAlert.hidden = true;
+    alertInfo.hidden = true;
+    alertChoose.hidden = true;
+    buttonSetting.hidden = true;
+    multipleChoiceSetting.hidden = true;
+    essayQuestion.hidden = true;
+    voteSetting.hidden = true;
+    const alertStepProgress = document.querySelectorAll('.alert-step-progress');
+    alertStepProgress.forEach( alertStepProgress => {
+        alertStepProgress.innerHTML = '';
+    })
+    alertInfo.classList.remove('Revise');
+}
+
+//警醒浮動視窗 開啟
+async function closeModalForm() {
+
+    alertInfoErrorText.innerHTML = '';
+
+    alertInfo.hidden = false;
+
+    infoInterval.setAttribute("readonly", "readonly");
+    infoTime.setAttribute("readonly", "readonly");
+
+    infoInterval.classList.remove('Revise');
+    infoTime.classList.remove('Revise');
+    alertInfo.classList.remove('Revise');
+
+    centerBtns[0].hidden = false;
+    centerBtns[1].hidden = true;
+
+    floatingAlert.style.opacity = 1;
+
+    infoType.innerHTML = getKeyByValue(AlertTypeEnum, globalAlertType);
+    infoInterval.value = globalInterval;
+    infoTime.value     = globalTime;
+    fieldset.innerHTML = '';
+
+    const legend = document.createElement('legend');
+    const div = document.createElement('div');
+    const label = document.createElement('label');
+    const textarea = document.createElement('textarea');
+
+    if(globalAlertType === AlertTypeEnum.Click) {
+        fieldset.hidden = true;
+    }else {
+        fieldset.hidden = false;
+        fieldset.appendChild(legend);
+        div.classList.add("div-label");
+        fieldset.appendChild(div);
+        div.appendChild(label);
+        textarea.classList.add("info-textarea");
+        textarea.setAttribute("readonly", "readonly");
+        textarea.innerHTML = globalQuestion;
+        fieldset.appendChild(textarea);
+    }
+    if(globalAlertType === AlertTypeEnum.MultipleChoice) {
+        legend.innerHTML = '選擇題';
+        label.innerHTML = '問題:';
+
+        for (let i = 0; i < globalMultipleChoice.length; i++) {
+            const option    = fieldOption.cloneNode(true);
+            const spanNo = option.querySelector(".span_No");
+            const input = option.querySelector('.option_input');
+            const icon = option.querySelector('.bx-x');
+            fieldset.appendChild(option);
+            icon.remove();
+            input.setAttribute("readonly", "readonly");
+            spanNo.innerHTML = i+1;
+            input.value = globalMultipleChoice[i];
+            if(globalAnswear === (i+1).toString()){
+                answearID = globalAnswear;
+                spanNo.classList.toggle('answear');
+            }
+        }
+    }else if(globalAlertType === AlertTypeEnum.EssayQuestion) {
+        legend.innerHTML = '問答題';
+        label.innerHTML = '問題:';
+    }else if(globalAlertType === AlertTypeEnum.Vote) {
+        legend.innerHTML = '投票';
+        label.innerHTML = '投票題目:';
+        const div = document.createElement('div');
+        div.classList.add('field','select');
+        fieldset.appendChild(div);
+        const label2 = document.createElement('label');
+        label2.innerHTML = '投票選項:';
+        div.appendChild(label2);
+        const div2 = document.createElement('div');
+        div2.classList.add('field','voteOptions');
+        fieldset.appendChild(div2);
+        for (let i = 0; i < multipleChoice.length; i++) {
             const input = document.createElement('input');
-            input.classList.add("option_Input");
-            div.appendChild(input);
-            const icon = document.createElement('i');
-            icon.classList.add("bx", "bx-x");
-            div.appendChild(icon);
-            icon.addEventListener('click', () => {
-                div.remove();
-                optionsTotal -= 1;
-                bxX = fieldset.querySelectorAll(".bx-x");
-                let spanNo = fieldset.querySelectorAll(".span_No");
-                let x = 0;
-                Array.from(bxX).forEach((item) => {
-                    spanNo[x].innerHTML = x+1;
-                    x += 1;
-                    if(optionsTotal <= 2){
-                        item.style.display = "none";
-                    }else if(optionsTotal < 5){
-                        button.style.display = "block";
-                    }else{
-                        item.style.display = "block";
-                    }
-                });
+            input.classList.add("option_input");
+            input.setAttribute("type", "text");
+            input.setAttribute("readonly", "readonly");
+            input.value = multipleChoice[i];
+            div2.appendChild(input);
+        }
+    }
+}
+
+function addEventListeners() {
+    //修改警醒資訊
+    settingBtn.addEventListener('click', async () => {
+        centerBtns[0].hidden = true;
+        centerBtns[1].hidden = false;
+        alertInfo.classList.add('Revise');
+
+        const infoInterval = alertInfo.querySelector("#info-interval");
+        const infoTime     = alertInfo.querySelector("#info-time");
+        const textarea = alertInfo.querySelector('.info-textarea');
+        const input = alertInfo.querySelectorAll('.option_input');
+        const spanNo = alertInfo.querySelectorAll('.span_No');
+        const fieldset = alertInfo.querySelector('.fieldset');
+
+        infoInterval.removeAttribute('readonly');
+        infoTime.removeAttribute('readonly');
+
+        if( globalAlertType != AlertTypeEnum.Click ) {
+            textarea.removeAttribute('readonly');
+        }
+        if( globalAlertType === AlertTypeEnum.MultipleChoice ) {
+            optionsTotal = 0;
+            input.forEach(input => {
+                input.removeAttribute('readonly');
+                optionsTotal ++;
             });
-            spanNo = fieldset.querySelectorAll(".span_No");
-            Array.from(spanNo).forEach((item) => {
-                item.addEventListener('click', () => {
-                    let no = fieldset.querySelectorAll(".span_No");
-                    Array.from(no).forEach((item) => {
+            spanNo.forEach(spanNo => {
+                spanNo.classList.remove('disable');
+            });
+            Array.from(spanNo).forEach((item, index) => {
+                item.addEventListener("click", async (e) => {
+                    Array.from(spanNo).forEach((item) => {
                         item.classList.remove("answear");
                     });
-                    item.classList.toggle("answear");
+                    item.classList.add("answear");
                 });
             });
 
+            const addOption = alertInfo.querySelector('.div-label');
+            const button = document.createElement('button');
+            button.classList.add('infoAddBtn');
+            button.type = "button";
+            button.innerHTML = '新增';
+            addOption.appendChild(button);
+
+            const field = fieldset.querySelectorAll('.field');
+            Array.from(field).forEach((item, index) => {
+                const icon = document.createElement('i');
+                icon.classList.add("bx", "bx-x");
+                item.appendChild(icon);
+                icon.addEventListener("click", async (e) => {
+                    item.remove();
+                    optionsTotal -= 1;
+                    bxX = fieldset.querySelectorAll(".bx-x");
+                    let spanNo = fieldset.querySelectorAll(".span_No");
+                    let x = 0;
+                    Array.from(bxX).forEach((item) => {
+                        spanNo[x].innerHTML = x+1;
+                        x += 1;
+                        if(optionsTotal <= 2){
+                            item.style.display = "none";
+                        }else if(optionsTotal < 5){
+                            button.style.display = "block";
+                        }else{
+                            item.style.display = "block";
+                        }
+                    });
+                });
+            });
+
+            button.addEventListener('click', async () => {
+                optionsTotal += 1;
+                const div = document.createElement('div');
+                div.classList.add("field",'option');
+                fieldset.appendChild(div);
+                let spanNo = document.createElement('span');
+                spanNo.classList.add("span_No");
+                div.appendChild(spanNo);
+                const input = document.createElement('input');
+                input.classList.add("option_input");
+                input.setAttribute("type", "text");
+                div.appendChild(input);
+                const icon = document.createElement('i');
+                icon.classList.add("bx", "bx-x");
+                div.appendChild(icon);
+                icon.addEventListener('click', () => {
+                    div.remove();
+                    optionsTotal -= 1;
+                    bxX = fieldset.querySelectorAll(".bx-x");
+                    let spanNo = fieldset.querySelectorAll(".span_No");
+                    let x = 0;
+                    Array.from(bxX).forEach((item) => {
+                        spanNo[x].innerHTML = x+1;
+                        x += 1;
+                        if(optionsTotal <= 2){
+                            item.style.display = "none";
+                        }else if(optionsTotal < 5){
+                            button.style.display = "block";
+                        }else{
+                            item.style.display = "block";
+                        }
+                    });
+                });
+                spanNo = fieldset.querySelectorAll(".span_No");
+                Array.from(spanNo).forEach((item) => {
+                    item.addEventListener('click', () => {
+                        let no = fieldset.querySelectorAll(".span_No");
+                        Array.from(no).forEach((item) => {
+                            item.classList.remove("answear");
+                        });
+                        item.classList.toggle("answear");
+                    });
+                });
+
+                let bxX = fieldset.querySelectorAll(".bx-x");
+                let spansNo = fieldset.querySelectorAll(".span_No");
+                let x = 0;
+                Array.from(bxX).forEach((item) => {
+                    spansNo[x].innerHTML = x+1;
+                    x += 1;
+                    if(optionsTotal >= 3){
+                        item.style.display = "block";
+                    }else{
+                        item.style.display = "none";
+                    }
+                });
+                if(optionsTotal >= 5){
+                    button.style.display = "none";
+                }
+            });
             let bxX = fieldset.querySelectorAll(".bx-x");
-            let spansNo = fieldset.querySelectorAll(".span_No");
-            let x = 0;
             Array.from(bxX).forEach((item) => {
-                spansNo[x].innerHTML = x+1;
-                x += 1;
                 if(optionsTotal >= 3){
                     item.style.display = "block";
                 }else{
@@ -698,53 +601,647 @@ settingBtn.addEventListener('click', async () => {
             if(optionsTotal >= 5){
                 button.style.display = "none";
             }
-        });
-        let bxX = fieldset.querySelectorAll(".bx-x");
-        Array.from(bxX).forEach((item) => {
-            if(optionsTotal >= 3){
-                item.style.display = "block";
-            }else{
-                item.style.display = "none";
+        }else if( globalAlertType === AlertTypeEnum.EssayQuestion ) {
+            textarea.removeAttribute('readonly');
+        }else if( globalAlertType === AlertTypeEnum.Vote ) {
+            textarea.removeAttribute('readonly');
+            let i = 0;
+            input.forEach(input => {
+                input.removeAttribute('readonly');
+                i++;
+            });
+            const selectOptions = alertInfo.querySelector('.select');
+            const select = document.createElement('select');
+            select.setAttribute('id','option-selected');
+            selectOptions.appendChild(select);
+            let id = new Array(2,3,4);
+            let value = new Array('2','3','4');
+            select.length = 1;
+            for( let x = 0; x < id.length ; x++ ) {
+                let option = document.createElement('option');
+                option.setAttribute('value',id[x]);
+                option.appendChild(document.createTextNode(value[x]));
+                select.appendChild(option);
+            }
+            select.options[i - 1].selected = true;
+            select.addEventListener("change",alertInfoSelected);
+        }
+    });
+
+    //取消修改警醒資訊
+    cancelSettingBtn.addEventListener('click', async () => {
+        closeModalForm();
+    });
+
+    //確定修改警醒資訊
+    submitSettingBtn.addEventListener('click', async () => {
+        const infoInterval = alertInfo.querySelector("#info-interval");
+        const infoTime     = alertInfo.querySelector("#info-time");
+        const infoTextarea = alertInfo.querySelector(".info-textarea");
+        const spanNoAnswear = alertInfo.querySelector(".answear");
+        const optionInput = alertInfo.querySelectorAll(".option_input");
+
+        if( Number(infoInterval.value) < 10 || Number(infoInterval.value) > 50 ) {
+            alertInfoErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+        }else if( Number(infoTime.value) < 1 || Number(infoTime.value) > 3) {
+            alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
+        }else {
+            if (globalAlertType === AlertTypeEnum.MultipleChoice) {
+                let x = 0;
+                for(let i = 0; i < optionInput.length; i++){
+                    if(optionInput[i].value != ''){
+                        x += 1;
+                    }
+                }
+                if(infoTextarea.value === '') {
+                    alertInfoErrorText.innerHTML = '問題禁止為空字串';
+                    return;
+                }else if(spanNoAnswear === null) {
+                    alertInfoErrorText.innerHTML = '請選擇正確答案';
+                    return;
+                }else if( x != optionInput.length ){
+                    alertInfoErrorText.innerHTML = '選項禁止為空字串！'
+                    return;
+                }else {
+                    question = infoTextarea.value;
+                    answearID = spanNoAnswear.innerHTML;
+
+                    let multipleChoiceDict = {};
+                    for(let i=0; i < optionInput.length; i++){
+                        multipleChoiceDict[i] = optionInput[i].value;
+                    }
+                    multipleChoice = Object.values(multipleChoiceDict);
+
+                    dataMultipleChoice = {
+                        Question: question,
+                        Answear: answearID,
+                        MultipleChoice: multipleChoice,
+                    }
+                }
+            }else if(globalAlertType === AlertTypeEnum.EssayQuestion) {
+                if(infoTextarea.value === '') {
+                    alertInfoErrorText.innerHTML = '問題禁止為空字串';
+                    return;
+                }else {
+                    question = infoTextarea.value;
+                    dataMultipleChoice = {
+                        Question: question,
+                    }
+                }
+            }else if(globalAlertType === AlertTypeEnum.Vote) {
+                const optionSelected = alertInfo.querySelector("#option-selected");
+                if(infoTextarea.value === '') {
+                    alertInfoErrorText.innerHTML = '問題禁止為空字串';
+                    return;
+                }else if( optionSelected.value === '' ){
+                    alertInfoErrorText.innerHTML = '請選擇投票選項數量';
+                    return;
+                }
+                const optionInput = alertInfo.querySelectorAll(".option_input");
+                let i = 0;
+                optionInput.forEach( optionInput => {
+                    if( optionInput.value === '' ) {
+                        alertInfoErrorText.innerHTML = '選項必須有值';
+                        i++;
+                    }
+                })
+                if( i > 0 ) {return;}
+                question = infoTextarea.value;
+
+                let multipleChoiceDict = {};
+                for(let i=0; i < optionInput.length; i++){
+                    multipleChoiceDict[i] = optionInput[i].value;
+                }
+                multipleChoice = Object.values(multipleChoiceDict);
+
+                dataMultipleChoice = {
+                    Question: question,
+                    MultipleChoice: multipleChoice,
+                }
+            }
+
+            infoInterval.classList.remove('Revise');
+            infoTime.classList.remove('Revise');
+
+            interval = Number(infoInterval.value);
+            time     = Number(infoTime.value);
+            alertType = globalAlertType;
+
+            const data = {
+                classId,
+                interval:interval,
+                duration:time,
+            }
+            // UPDATE Classes SET Interval = :interval, Duration= :time WHERE ClassId = :classId
+            await apiCall('updateClassAlertRecord', data)
+            // const callDoc = doc(calls, classId);
+            // await updateDoc(callDoc, data);
+
+            setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+
+            centerBtns[0].hidden = false;
+            centerBtns[1].hidden = true;
+
+            infoInterval.setAttribute('readonly','true');
+            infoTime.setAttribute('readonly','true');
+
+            closeModalForm();
+            AlertReplace();
+        }
+    });
+
+    //進入警醒選項選擇畫面
+    alertExchange.addEventListener('click', () => {
+        alertInfo.hidden = true;
+        alertChoose.hidden = false;
+    });
+
+    //返回警醒資訊畫面
+    alertReturn.addEventListener('click', () => {
+        alertInfo.hidden = false;
+        alertChoose.hidden = true;
+    });
+
+    choose1.addEventListener('click', () => {
+        buttonSetting.hidden = false;
+        alertChoose.hidden = true;
+
+        const alert = alertSetting.cloneNode(true);
+        const title = alert.querySelector('.class-modal__title');
+        const container = alert.querySelector('.container');
+        const alertInterval = alert.querySelector('.alert-interval');
+        const alertTime = alert.querySelector('.alert-time');
+        const alertFinish = alert.querySelector('#alert-finish');
+        const alertReturn = alert.querySelector('#alert-return');
+        const errorText = alert.querySelector('.error-text');
+        title.innerHTML = "警醒按鈕設定";
+        alertInterval.value = globalInterval;
+        alertTime.value = globalTime;
+        alertButtonSetting.appendChild(title);
+        alertButtonSetting.appendChild(container);
+
+        alertFinish.addEventListener('click', async () => {
+            if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
+                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+                return;
+            }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3 ) {
+                errorText.innerHTML = '持續時間範圍：1 ~ 3';
+                return;
+            }else {
+                alertType = AlertTypeEnum.Click;
+                interval = Number(alertInterval.value);
+                time     = Number(alertTime.value);
+
+                // const data = {
+                //     alert: {
+                //         interval:interval,
+                //         time:time,
+                //     },
+                // }
+                // const callDoc = doc(calls, classId);
+                // await updateDoc(callDoc, data);
+
+                const data = {
+                    classId,
+                    interval:interval,
+                    duration:time,
+                }
+                await apiCall('updateClassAlertRecord', data)
+
+                setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+
+                alertInfo.hidden = false;
+                AlertReplace();
+                closeModalForm();
+                container.remove();
+                title.remove();
+                buttonSetting.hidden = true;
             }
         });
-        if(optionsTotal >= 5){
-            button.style.display = "none";
-        }
-    }else if( globalTpye === 'essay question' ) {
-        textarea.removeAttribute('readonly');
-    }else if( globalTpye === 'vote' ) {
-        textarea.removeAttribute('readonly');
-        let i = 0;
-        input.forEach(input => {
-            input.removeAttribute('readonly');
-            i++;
+
+        alertReturn.addEventListener('click', () => {
+            buttonSetting.hidden = true;
+            alertChoose.hidden = false;
+            container.remove();
+            title.remove();
         });
-        const selectOptions = classModel.querySelector('.select');
-        const select = document.createElement('select');
-        select.setAttribute('id','option-selected');
-        selectOptions.appendChild(select);
-        let id = new Array(2,3,4);
-        let value = new Array('2','3','4');
-        select.length = 1;
-        for( let x = 0; x < id.length ; x++ ) {
-            let option = document.createElement('option');
-            option.setAttribute('value',id[x]);
-            option.appendChild(document.createTextNode(value[x]));
-            select.appendChild(option);
+    });
+
+    choose2.addEventListener('click', () => {
+        multipleChoiceSetting.hidden = false;
+        alertChoose.hidden = true;
+
+        const alert          = alertMultipleChoiceSetting.cloneNode(true);
+        const title          = alert.querySelector('.class-modal__title');
+        const alertInterval  = alert.querySelector('.alert-interval');
+        const alertTime      = alert.querySelector('.alert-time');
+        const errorText      = alert.querySelector('.error-text');
+        const slidePage      = alert.querySelector(".slidepage");
+        const options        = alert.querySelector(".options");
+        const prev1          = alert.querySelector(".prev-1");
+        const next1          = alert.querySelector(".next-1");
+        const prev2          = alert.querySelector(".prev-2");
+        const next2          = alert.querySelector(".next-2");
+        const prev3          = alert.querySelector(".prev-3");
+        const next3          = alert.querySelector(".next-3");
+        const addBtn         = alert.querySelector(".add_options");
+        const fieldAdd       = alert.querySelector(".add");
+        const steps          = alert.querySelectorAll(".step");
+        const progressText   = alert.querySelectorAll(".step p");
+        const progressCheck  = alert.querySelectorAll(".step .check");
+        const bullet         = alert.querySelectorAll(".step .bullet");
+        const qstText        = alert.querySelectorAll(".qst_text");
+        const container      = alert.querySelector('.container');
+        multipleChoiceSetting.appendChild(title);
+        multipleChoiceSetting.appendChild(container);
+
+        alertInterval.value = globalInterval;
+        alertTime.value     = globalTime;
+
+        prev1.addEventListener('click', () => {
+            multipleChoiceSetting.hidden = true;
+            alertChoose.hidden = false;
+            container.remove();
+            title.remove();
+            optionsTotal = 0;
+        });
+        prev2.addEventListener('click', () => {
+            slidePage.style.marginLeft = "0%";
+            steps[current-1].classList.remove("active");
+            bullet[current-1].classList.remove("active");
+            progressText[current-1].classList.remove("active");
+            progressCheck[current-1].classList.remove("active");
+            current -= 1;
+        });
+        prev3.addEventListener('click', () => {
+            slidePage.style.marginLeft = "-25%";
+            steps[current-1].classList.remove("active");
+            bullet[current-1].classList.remove("active");
+            progressText[current-1].classList.remove("active");
+            progressCheck[current-1].classList.remove("active");
+            current -= 1;
+        });
+        next1.addEventListener('click', () => {
+            if(qstText[0].value != ''){
+                slidePage.style.marginLeft = "-25%";
+                steps[current].classList.add("active");
+                bullet[current].classList.add("active");
+                progressText[current].classList.add("active");
+                progressCheck[current].classList.add("active");
+                current += 1;
+                errorText.innerHTML = '';
+            }else {
+                errorText.innerHTML = '禁止輸入空字串！';
+            }
+        });
+        next2.addEventListener('click', () => {
+            let optionInput = multipleChoiceSetting.querySelectorAll('.option_input');
+            let x = 0;
+            for(let i = 0; i < optionInput.length; i++){
+                if(optionInput[i].value != ''){
+                    x += 1;
+                }
+            }
+            const answearChosen = multipleChoiceSetting.querySelector(".answear");
+            if(x === optionInput.length && answearChosen != null ){
+                slidePage.style.marginLeft = "-50%";
+                steps[current].classList.add("active");
+                bullet[current].classList.add("active");
+                progressText[current].classList.add("active");
+                progressCheck[current].classList.add("active");
+                current += 1;
+                errorText.innerHTML = '';
+            }else if( x != optionInput.length ){
+                errorText.innerHTML = '選項禁止為空字串！'
+            }else if( answearChosen === null ) {
+                errorText.innerHTML = '請選擇答案選項！'
+            }
+        });
+
+        next3.addEventListener('click', async () => {
+
+            if ( Number(alertInterval.value) < 10 || Number(alertInterval.value) >50 ) {
+                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+                return;
+            }else if ( Number(alertTime.value) < 1 || Number(alertTime.value) > 3 ) {
+                errorText.innerHTML = '持續時間範圍：1 ~ 3';
+                return;
+            }else {
+                const optionInput = multipleChoiceSetting.querySelectorAll(".option_input");
+                let multipleChoiceDict = {};
+                for(let i=0; i < optionInput.length; i++){
+                    multipleChoiceDict[i] = optionInput[i].value;
+                }
+                multipleChoice = Object.values(multipleChoiceDict);
+
+                const answearChosen = multipleChoiceSetting.querySelector(".answear");
+                if(answearChosen != null) {
+                    answearID = answearChosen.innerHTML;
+                }
+
+                question = qstText[0].value;
+                interval = Number(alertInterval.value);
+                time     = Number(alertTime.value);
+                alertType = AlertTypeEnum.MultipleChoice;
+
+                setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+
+                dataMultipleChoice = {
+                    Question: globalQuestion,
+                    Answear: globalAnswear,
+                    MultipleChoice: globalMultipleChoice,
+                }
+                // let dataAlert = {
+                //     alert: {
+                //         interval: globalInterval,
+                //         time: globalTime,
+                //     },
+                // }
+                // const callDoc = doc(calls, classId);
+                // await updateDoc(callDoc, dataAlert);
+
+                const data = {
+                    classId,
+                    interval:interval,
+                    duration:time,
+                }
+                await apiCall('updateClassAlertRecord', data)
+
+
+                current = 0;
+                optionsTotal = 0;
+
+                alertInfo.hidden = false;
+                multipleChoiceSetting.hidden = true;
+
+                AlertReplace();
+                closeModalForm();
+                container.remove();
+                title.remove();
+            }
+        });
+        for(let i = 0; i < 2; i++){
+            addOptions();
         }
-        select.options[i - 1].selected = true;
+        addBtn.addEventListener('click', () => {
+            addOptions();
+        });
+        function addOptions(){
+            optionsTotal += 1;
+            const option    = fieldOption.cloneNode(true);
+            const icon = option.querySelector(".bx-x");
+            const spanNo = option.querySelector(".span_No");
+            options.insertBefore(option,fieldAdd);
+            icon.addEventListener('click', () => {
+                option.remove();
+                optionsTotal -= 1;
+                const bxX = multipleChoiceSetting.querySelectorAll(".bx-x");
+                let spanNo = multipleChoiceSetting.querySelectorAll(".span_No");
+                let x = 0;
+                Array.from(bxX).forEach((item) => {
+                    spanNo[x].innerHTML = x+1;
+                    x += 1;
+                    if(optionsTotal <= 2){
+                        item.style.display = "none";
+                    }else if(optionsTotal < 5){
+                        addBtn.style.display = "block";
+                    }else{
+                        item.style.display = "block";
+                    }
+                });
+            });
+            spanNo.addEventListener('click', () => {
+                let no = multipleChoiceSetting.querySelectorAll(".span_No");
+                Array.from(no).forEach((item) => {
+                    item.classList.remove("answear");
+                });
+                spanNo.classList.add("answear");
+            });
+            const bxX = multipleChoiceSetting.querySelectorAll(".bx-x");
+            let no = multipleChoiceSetting.querySelectorAll(".span_No");
+            let x = 0;
+            Array.from(bxX).forEach((item) => {
+                no[x].innerHTML = x+1;
+                x += 1;
+                if(optionsTotal >= 3){
+                    item.style.display = "block";
+                }else{
+                    item.style.display = "none";
+                }
+            });
+            if(optionsTotal >= 5){
+                addBtn.style.display = "none";
+            }
+        }
+    });
 
-        select.addEventListener("change",alertInfoSelected);
-    }
+    choose3.addEventListener('click', () => {
+        alertChoose.hidden = true;
+        essayQuestion.hidden = false;
 
+        const alert = alertSetting.cloneNode(true);
+        const title = alert.querySelector('.class-modal__title');
+        const alertInterval = alert.querySelector('.alert-interval');
+        const alertTime = alert.querySelector('.alert-time');
+        const alertFinish = alert.querySelector('#alert-finish');
+        const alertReturn = alert.querySelector('#alert-return');
+        const errorText = alert.querySelector('.error-text');
+        const container = alert.querySelector('.container');
+        const fieldsetAlert = alert.querySelector('.fieldset-alert');
+        essayQuestionSetting.appendChild(title);
+        essayQuestionSetting.appendChild(container);
+        const alertqst = alertEssayQuestionSetting.cloneNode(true);
+        const fieldsetEssayQuestion = alertqst.querySelector('.fieldset-essay-question');
+        const qstText = alertqst.querySelector('.qst_text');
+        container.insertBefore(fieldsetEssayQuestion,fieldsetAlert);
 
-});
+        title.innerHTML = "設定問答題";
+        alertInterval.value = globalInterval;
+        alertTime.value = globalTime;
+
+        alertFinish.addEventListener('click', async () => {
+
+            if( qstText.value === '' ) {
+                errorText.innerHTML = '問題禁止為空字串';
+                return;
+            }else if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
+                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+                return;
+            }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
+                errorText.innerHTML = '持續時間範圍：1 ~ 3';
+                return;
+            }
+
+            alertType = AlertTypeEnum.EssayQuestion;
+            interval = Number(alertInterval.value);
+            time     = Number(alertTime.value);
+
+            question = qstText.value;
+
+            dataMultipleChoice = {
+                Question: question,
+            }
+
+            // let dataAlert = {
+            //     alert: {
+            //         interval: interval,
+            //         time: time,
+            //     },
+            // }
+            // const callDoc = doc(calls, classId);
+            // await updateDoc(callDoc, dataAlert);
+
+            const data = {
+                classId,
+                interval:interval,
+                duration:time,
+            }
+            await apiCall('updateClassAlertRecord', data)
+
+            setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+
+            alertInfo.hidden = false;
+            essayQuestion.hidden = true;
+
+            AlertReplace();
+            closeModalForm();
+            container.remove();
+            title.remove();
+        });
+
+        alertReturn.addEventListener('click', () => {
+            essayQuestion.hidden = true;
+            alertChoose.hidden = false;
+            container.remove();
+            title.remove();
+        });
+    });
+
+    choose4.addEventListener('click', () => {
+        alertChoose.hidden = true;
+        voteSetting.hidden = false;
+
+        const alert = alertSetting.cloneNode(true);
+        const title = alert.querySelector('.class-modal__title');
+        const alertInterval = alert.querySelector('.alert-interval');
+        const alertTime = alert.querySelector('.alert-time');
+        const alertFinish = alert.querySelector('#alert-finish');
+        const alertReturn = alert.querySelector('#alert-return');
+        const errorText = alert.querySelector('.error-text');
+        const container = alert.querySelector('.container');
+        const fieldsetAlert = alert.querySelector('.fieldset-alert');
+        voteSetting.appendChild(title);
+        voteSetting.appendChild(container);
+        const alertvote = alertVoteSetting.cloneNode(true);
+        const fieldsetVote = alertvote.querySelector('.fieldset-vote');
+        const qstText = alertvote.querySelector('.qst_text');
+        const optionSelected = alertvote.querySelector("#option-selected");
+        const fieldOptions = alertvote.querySelector(".options");
+        container.insertBefore(fieldsetVote,fieldsetAlert);
+
+        title.innerHTML = "設定投票警醒";
+        alertInterval.value = globalInterval;
+        alertTime.value = globalTime;
+
+        optionSelected.addEventListener("change",Selected);
+
+        function Selected(event){
+            const optionInput = fieldOptions.querySelectorAll(".option_input");
+
+            optionInput.forEach( optionInput => {
+                optionInput.remove();
+            })
+
+            if(event.target.value != '') {
+                for(let i = 0; i < parseInt(event.target.value); i++) {
+                    const optionsInput = voteOptionInput.cloneNode(true);
+                    const optionInput = optionsInput.querySelector('.option_input');
+                    fieldOptions.appendChild(optionInput);
+                }
+            }
+        }
+
+        alertFinish.addEventListener("click", async () =>{
+            if( qstText.value === '' ) {
+                errorText.innerHTML = '問題禁止為空字串';
+                return;
+            }else if( optionSelected.value === '' ) {
+                errorText.innerHTML = '請選擇投票選項數量';
+                return;
+            }
+
+            const optionInput = fieldOptions.querySelectorAll(".option_input");
+            let i = 0;
+            optionInput.forEach( optionInput => {
+                if( optionInput.value === '' ) {
+                    errorText.innerHTML = '選項必須有值';
+                    i++;
+                }
+            })
+            if( i > 0 ) { return; }
+            if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
+                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+                return;
+            }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
+                errorText.innerHTML = '持續時間範圍：1 ~ 3';
+                return;
+            }
+
+            alertType = AlertTypeEnum.Vote;
+            interval = Number(alertInterval.value);
+            time     = Number(alertTime.value);
+            question = qstText.value;
+
+            let multipleChoiceDict = {};
+            for(let i=0; i < optionInput.length; i++){
+                multipleChoiceDict[i] = optionInput[i].value;
+            }
+            multipleChoice = Object.values(multipleChoiceDict);
+
+            dataMultipleChoice = {
+                Question: question,
+                MultipleChoice: multipleChoice,
+            }
+
+            // let dataAlert = {
+            //     alert: {
+            //         interval: interval,
+            //         time: time,
+            //     },
+            // }
+
+            // const callDoc = doc(calls, classId);
+            // await updateDoc(callDoc, dataAlert);
+
+            const data = {
+                classId,
+                interval:interval,
+                duration:time,
+            }
+            await apiCall('updateClassAlertRecord', data)
+
+            setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
+
+            voteSetting.hidden = true;
+            alertInfo.hidden = false;
+            AlertReplace();
+            closeModalForm();
+            container.remove();
+            title.remove();
+        });
+
+        alertReturn.addEventListener('click', () => {
+            voteSetting.hidden = true;
+            alertChoose.hidden = false;
+            container.remove();
+            title.remove();
+        });
+    });
+}
 
 function alertInfoSelected(event){
-    console.log(event.target.value);
-
-    const fieldOptions = classModel.querySelector(".voteOptions");
-    const optionInput = fieldOptions.querySelectorAll(".option_Input");
+    const fieldOptions = alertInfo.querySelector(".voteOptions");
+    const optionInput = fieldOptions.querySelectorAll(".option_input");
 
     optionInput.forEach( optionInput => {
         optionInput.remove();
@@ -754,440 +1251,117 @@ function alertInfoSelected(event){
         for(let i = 0; i < parseInt(event.target.value); i++) {
             const input = document.createElement('input');
             input.setAttribute("type", "text");
-            input.classList.add("option_Input");
+            input.classList.add("option_input");
             fieldOptions.appendChild(input);
         }
     }
 }
 
-cancelSettingBtn.addEventListener('click', async () => {
-
-    closeModalForm();
-
-});
-
-submitSettingBtn.addEventListener('click', async () => {
-    const alertInterval = classModel.querySelector("#alert-interval");
-    const alertTime     = classModel.querySelector("#alert-time");
-
-    const interval = Number(alertInterval.value);
-    const time     = Number(alertTime.value);
-    const alertType = globalTpye;
-
-    const infoTextarea = classModel.querySelector(".info-textarea");
-    const spanNoAnswear = classModel.querySelector(".answear");
-    const optionInput = classModel.querySelectorAll(".option_Input");
-
-    if( interval < 10 || interval > 50 ) {
-        alertInfoErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-    }else if( time < 1 || time > 3) {
-        alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
-    }else {
-
-        if (alertType === 'multiple choice') {
-
-            let x = 0;
-            for(let i = 0; i < optionInput.length; i++){
-                if(optionInput[i].value != ''){
-                    x += 1;
-                }
-            }
-
-            if(infoTextarea.value === '') {
-                alertInfoErrorText.innerHTML = '問題禁止為空字串';
-                return;
-            }else if(spanNoAnswear === null) {
-                alertInfoErrorText.innerHTML = '請選擇正確答案';
-                return;
-            }else if( x != optionInput.length ){
-                alertInfoErrorText.innerHTML = '選項禁止為空字串！'
-                return;
-            }else {
-                question = infoTextarea.value;
-
-                answear = spanNoAnswear.innerHTML;
-
-                let multipleChoiceDict = {};
-
-                for(let i=0; i < optionInput.length; i++){
-                    multipleChoiceDict[i] = optionInput[i].value;
-                }
-
-                globalmultipleChoice = Object.values(multipleChoiceDict);
-
-                dataMultipleChoice = {
-                    question: question,
-                    answear: answear,
-                    multipleChoice: globalmultipleChoice,
-                }
-            }
-
-
-        }else if(alertType === 'essay question') {
-        
-            if(infoTextarea.value === '') {
-                alertInfoErrorText.innerHTML = '問題禁止為空字串';
-                return;
-            }else {
-                question = infoTextarea.value;
-
-                dataMultipleChoice = {
-                    question: question,
-                }
-            }
-        }else if(alertType === 'vote') {
-            const optionSelected = classModel.querySelector("#option-selected");
-            if(infoTextarea.value === '') {
-                alertInfoErrorText.innerHTML = '問題禁止為空字串';
-                return;
-            }else if( optionSelected.value === '' ){
-                alertInfoErrorText.innerHTML = '請選擇投票選項數量';
-                return;
-            }
-            const optionInput = classModel.querySelectorAll(".option_Input");
-
-            let i = 0;
-            optionInput.forEach( optionInput => {
-                if( optionInput.value === '' ) {
-                    alertInfoErrorText.innerHTML = '選項必須有值';
-                    i++;
-                }
-            })
-            if( i > 0 ) {
-                return;
-            }
-            question = infoTextarea.value;
-
-            let multipleChoiceDict = {};
-
-            for(let i=0; i < optionInput.length; i++){
-                multipleChoiceDict[i] = optionInput[i].value;
-            }
-
-            globalmultipleChoice = Object.values(multipleChoiceDict);
-
-            dataMultipleChoice = {
-                question: question,
-                multipleChoice: globalmultipleChoice,
-            }
-        }
-
-        alertInterval.classList.remove('Revise');
-        alertTime.classList.remove('Revise');
-
-        const data = {
-            alert: {
-                interval,
-                time,
-                alertType,
-            },
-        }
-        const callDoc = doc(calls, callId);
-        await updateDoc(callDoc, data);
-
-        fltCntr.classList.remove("show");
-
-        centerBtns[0].hidden = false;
-        centerBtns[1].hidden = true;
-
-        alertInterval.setAttribute('readonly','true');
-        alertTime.setAttribute('readonly','true');
-
-        Array.from(navBtn).forEach((item) => {
-            item.className = "nav-btn";
-        });
-
-        AlertReplace();
-    }
-});
-
-essayQuestionFinish.addEventListener("click", async () =>{
-
-    const alertInterval = essayQuestion.querySelector("#essay-question__alert-interval");
-    const alertTime     = essayQuestion.querySelector("#essay-question__alert-time");
-    const interval = Number(alertInterval.value);
-    const time     = Number(alertTime.value);
-    const essayQuestionErrorText = alertStepProgress[2].querySelector('.error-text');
-    if( qstText3.value === '' ) {
-        essayQuestionErrorText.innerHTML = '問題禁止為空字串';
-        return;
-    }else if( interval < 10 || interval > 50 ) {
-        essayQuestionErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-        return;
-    }else if( time < 1 || time > 3) {
-        essayQuestionErrorText.innerHTML = '持續時間範圍：1 ~ 3';
-        return;
-    }
-    question = qstText3.value;
-    const alertType = 'essay question';
-
-    dataMultipleChoice = {
-        question: question,
-    }
-
-    let dataAlert = {
-        alert: {
-            interval: interval,
-            time: time,
-            alertType: alertType,
-        },
-    }
-    const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, dataAlert);
-
-    alertInfo.classList.remove("close");
-    fltCntr.classList.remove("show");
-    essayQuestion.classList.toggle("close");
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
-    });
-
-    essayQuestionErrorText.innerHTML = '';
-    qstText3.value = '';
-
-    AlertReplace();
-});
-
-voteSettingFinish.addEventListener("click", async () =>{
-    const alertInterval = voteSetting.querySelector("#vote-setting__alert-interval");
-    const alertTime     = voteSetting.querySelector("#vote-setting__alert-time");
-    const interval = Number(alertInterval.value);
-    const time     = Number(alertTime.value);
-    const voteErrorText = alertStepProgress[3].querySelector('.error-text');
-    const voteQst = alertStepProgress[3].querySelector("#vote__qst");
-    if( voteQst.value === '' ) {
-        voteErrorText.innerHTML = '問題禁止為空字串';
-        return;
-    }else if( optionSelected.value === '' ) {
-        voteErrorText.innerHTML = '請選擇投票選項數量';
-        return;
-    }
-    
-    const optionInput = alertStepProgress[3].querySelectorAll(".option_input");
-    
-    let i = 0;
-    optionInput.forEach( optionInput => {
-        if( optionInput.value === '' ) {
-            voteErrorText.innerHTML = '選項必須有值';
-            i++;
-        }
-    })
-    
-    if( i > 0 ) {
-        return;
-    }
-
-    if( interval < 10 || interval > 50 ) {
-        voteErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
-        return;
-    }else if( time < 1 || time > 3) {
-        voteErrorText.innerHTML = '持續時間範圍：1 ~ 3';
-        return;
-    }
-
-    question = voteQst.value;
-
-    let multipleChoiceDict = {};
-
-    for(let i=0; i < optionInput.length; i++){
-        multipleChoiceDict[i] = optionInput[i].value;
-    }
-
-    globalmultipleChoice = Object.values(multipleChoiceDict);
-
-    dataMultipleChoice = {
-        question: question,
-        multipleChoice: globalmultipleChoice,
-    }
-    const alertType = 'vote';
-
-    let dataAlert = {
-        alert: {
-            interval: interval,
-            time: time,
-            alertType: alertType,
-        },
-    }
-
-    const callDoc = doc(calls, callId);
-    await updateDoc(callDoc, dataAlert);
-
-    const voteSettingErrorText = alertStepProgress[3].querySelector('.error-text');
-    voteSettingErrorText.innerHTML = '';
-    
-    const voteOptionInput = alertStepProgress[3].querySelectorAll(".option_input");
-
-    voteQst.value = '';
-    optionSelected.value = '';
-    voteOptionInput.forEach( optionInput => {
-        optionInput.remove();
-    })
-
-    fltCntr.classList.remove("show");
-    voteSetting.classList.toggle("close");
-    alertInfo.classList.remove("close");
-    
-    Array.from(navBtn).forEach((item) => {
-        item.className = "nav-btn";
-    });
-
-    AlertReplace();
-});
-
-if (body.classList.contains("dark")) {
-    modeSwitch.classList.add("open");
-    modeText.innerHTML = "燈光模式";
+async function AlertReplace() {
+    setupAlertScheduler();
+    console.log( alertType );
 }
 
-modeSwitch.addEventListener("click", () =>{
-    modeSwitch.classList.toggle("open");
+async function userMedia() {
+    // 取得標籤
+    const videoElement = document.querySelector('#video')
+    const audioInputSelect = document.querySelector('select#audioSource')
+    const videoSelect = document.querySelector('select#videoSource')
+    const selectors = [audioInputSelect, videoSelect]
 
-    if (modeSwitch.classList.contains("open")){
-        body.classList.add("dark");
-        localStorage.setItem('color-scheme', 'dark');
-        modeText.innerHTML = "燈光模式";
-    }
-    else{
-        body.classList.remove("dark");
-        localStorage.setItem('color-scheme', 'light');
-        modeText.innerHTML = "黑暗模式";
-    }
-});
-
-toggle.addEventListener("click", () =>{
-    sidebar.classList.toggle("close");
-});
-
-async function closeModalForm() {
-
-    alertInfoErrorText.innerHTML = '';
-
-    const Interval = classModel.querySelector("#alert-interval");
-    const Time     = classModel.querySelector("#alert-time");
-
-    Interval.setAttribute("readonly", "readonly");
-    Time.setAttribute("readonly", "readonly");
-
-    Interval.classList.remove('Revise');
-    Time.classList.remove('Revise');
-
-    centerBtns[0].hidden = false;
-    centerBtns[1].hidden = true;
-
-    const { alert } = (await getDoc(callDoc)).data();
-    const { interval, time: duration, alertType:type } = alert;
-    const { answear, question, multipleChoice } = (await getDoc(alertDocCurrently)).data();
-    globalInterval = interval;
-    globalTime = duration;
-    globalTpye = type;
-
-    floatingAlert.style.opacity = 1;
-                    
-    alertType.innerHTML = type;
-    alertInterval[0].value = interval;
-    alertTime[0].value     = duration;
-
-    const fieldset = document.querySelector('.fieldset');
-    if(fieldset != null){
-        fieldset.remove();
-    }
-
-    if(type === 'multiple choice') {
-
-        const typeInfo = document.querySelector('.type-info');
-        const fieldset = document.querySelector('.fieldset');
-        if(fieldset != null){
-            fieldset.remove();
-        }
-        const fieldset2 = document.createElement('fieldset');
-        fieldset2.classList.add("fieldset");
-        typeInfo.appendChild(fieldset2);
-        const legend = document.createElement('legend');
-        legend.innerHTML = '選擇題';
-        fieldset2.appendChild(legend);
-        const div = document.createElement('div');
-        div.classList.add("addOption");
-        fieldset2.appendChild(div);
-        const label = document.createElement('label');
-        label.innerHTML = '問題:';
-        div.appendChild(label);
-        const textarea = document.createElement('textarea');
-        textarea.classList.add("info-textarea");
-        textarea.setAttribute("readonly", "readonly");
-        textarea.innerHTML = question;
-        fieldset2.appendChild(textarea);
-        for (let i = 0; i < multipleChoice.length; i++) {
-            const div = document.createElement('div');
-            div.classList.add("field");
-            fieldset2.appendChild(div);
-            const span = document.createElement('span');
-            span.classList.add("span_No" , "disable");
-            span.innerHTML = i+1;
-            div.appendChild(span);
-            const input = document.createElement('input');
-            input.classList.add("option_Input");
-            input.setAttribute("readonly", "readonly");
-            input.value = multipleChoice[i];
-            div.appendChild(input);
-            if(answear === (i+1).toString()){
-                answearID = answear;
-                span.classList.toggle('answear');
+    // 將讀取到的設備加入到 select 標籤中
+    function gotDevices(deviceInfos) {
+        // Handles being called several times to update labels. Preserve values.
+        const values = selectors.map((select) => select.value)
+        selectors.forEach((select) => {
+            while (select.firstChild) {
+                select.removeChild(select.firstChild)
+            }
+        })
+        for (let i = 0; i !== deviceInfos.length; ++i) {
+            const deviceInfo = deviceInfos[i]
+            const option = document.createElement('option')
+            option.value = deviceInfo.deviceId
+            if (deviceInfo.kind === 'audioinput') {
+                option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`
+                audioInputSelect.appendChild(option)
+            } else if (deviceInfo.kind === 'videoinput') {
+                option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`
+                videoSelect.appendChild(option)
+            } else {
+                console.log('Some other kind of source/device: ', deviceInfo)
             }
         }
-    }else if(type === 'essay question') {
-        const typeInfo = document.querySelector('.type-info');
-        const fieldset2 = document.createElement('fieldset');
-        fieldset2.classList.add("fieldset");
-        typeInfo.appendChild(fieldset2);
-        const legend = document.createElement('legend');
-        legend.innerHTML = '問答題';
-        fieldset2.appendChild(legend);
-        const label = document.createElement('label');
-        label.innerHTML = '問題:';
-        fieldset2.appendChild(label);
-        const textarea = document.createElement('textarea');
-        textarea.classList.add("info-textarea");
-        textarea.setAttribute("readonly", "readonly");
-        textarea.innerHTML = question;
-        fieldset2.appendChild(textarea);
-    }else if(type === 'vote') {
-
-        const typeInfo = document.querySelector('.type-info');
-        const fieldset = document.querySelector('.fieldset');
-        if(fieldset != null){
-            fieldset.remove();
-        }
-        const fieldset2 = document.createElement('fieldset');
-        fieldset2.classList.add("fieldset");
-        typeInfo.appendChild(fieldset2);
-        const legend = document.createElement('legend');
-        legend.innerHTML = '投票';
-        fieldset2.appendChild(legend);
-        const label = document.createElement('label');
-        label.innerHTML = '投票題目:';
-        fieldset2.appendChild(label);
-        const textarea = document.createElement('textarea');
-        textarea.classList.add("info-textarea");
-        textarea.setAttribute("readonly", "readonly");
-        textarea.innerHTML = question;
-        fieldset2.appendChild(textarea);
-        const div = document.createElement('div');
-        div.classList.add('field','select');
-        fieldset2.appendChild(div);
-        const label2 = document.createElement('label');
-        label2.innerHTML = '投票選項:';
-        div.appendChild(label2);
-        const div2 = document.createElement('div');
-        div2.classList.add('field','voteOptions');
-        fieldset2.appendChild(div2);
-        for (let i = 0; i < multipleChoice.length; i++) {
-            const input = document.createElement('input');
-            input.classList.add("option_Input");
-            input.setAttribute("type", "text");
-            input.setAttribute("readonly", "readonly");
-            input.value = multipleChoice[i];
-            div2.appendChild(input);
-        }
+        selectors.forEach((select, selectorIndex) => {
+            if (
+                Array.prototype.slice
+                    .call(select.childNodes)
+                    .some((n) => n.value === values[selectorIndex])
+            ) {
+                select.value = values[selectorIndex]
+            }
+        })
     }
 
+
+
+    // 讀取設備
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        gotDevices(devices);
+    }
+    catch (err) {
+        handleError(err);
+    }
+
+    // 將視訊顯示在 video 標籤上
+    function gotStream(stream) {
+        videoElement.srcObject = stream
+        return navigator.mediaDevices.enumerateDevices()
+    }
+
+    // 錯誤處理
+    function handleError(error) {
+        console.log(
+            'navigator.MediaDevices.getUserMedia error: ',
+            error.message,
+            error.name,
+        )
+    }
+
+    // 播放自己的視訊
+    async function startVideo() {
+        const videoSource = videoSelect.value
+        let constraints = {
+            audio: false,
+            video: { deviceId: videoSource ? { exact: videoSource } : undefined },
+        }
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(gotStream)
+            .then(gotDevices)
+            .catch(handleError)
+
+        setWebcamStream(constraints);
+        localStorage.setItem('video-source', videoSource)
+    }
+    // 播放輸入音訊
+    async function startAudio() {
+        const audioSource = audioInputSelect.value
+        let constraints = {
+            audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
+            video: false ,
+        }
+        setLocalStreams(constraints);
+        localStorage.setItem('audio-source', audioSource)
+    }
+
+    audioInputSelect.value = localStorage.getItem('audio-source') || 'default';
+    videoSelect.value      = localStorage.getItem('video-source') || 'default';
+
+    audioInputSelect.onchange = startAudio
+    videoSelect.onchange = startVideo
+
+    startVideo();
+    startAudio();
 }

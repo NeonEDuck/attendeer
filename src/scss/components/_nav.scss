@@ -1,8 +1,11 @@
 @use '../abstracts' as *;
 
-#navbar {
+:root {
     --navbar-height: 5em;
     --navbar-padding: 0.5em;
+}
+
+#navbar {
     position: sticky;
     z-index: 100;
     display: flex;
@@ -43,7 +46,7 @@
 
                 &:where(a) {
                     // background: var(--clr-primary-700);
-                    color: var(--text-color);
+                    color: var(--clr-text-500);
                     cursor: pointer;
                 }
             }
@@ -65,7 +68,6 @@
             aspect-ratio: 1/1;
             border-radius: 100%;
             height: calc( var(--navbar-height) - ( var(--navbar-padding) + var(--profile-padding) ) * 2 );
-            cursor: pointer;
         }
 
         &__summary {
@@ -93,12 +95,22 @@
             }
         }
 
-        &.open {
-            background-color: var(--body-color);
-            box-shadow: 0 0 0.25em 0.25em hsla(0 0% 0% / 10%);
+        &:not([aria-expanded="true"]) {
+            transition: background-color var(--transition-timing), box-shadow var(--transition-timing);
+            &:hover,
+            &:focus {
+                background-color: var(--clr-component-500);
+                box-shadow: var(--box-shadow-500);
+            }
+            cursor: pointer;
         }
 
-        &.open &__dropdown {
+        &[aria-expanded="true"] {
+            background-color: var(--clr-component-500);
+            box-shadow: var(--box-shadow-500);
+        }
+
+        &[aria-expanded="true"] &__dropdown {
             display: flex;
             flex-direction: column;
             justify-content: center;

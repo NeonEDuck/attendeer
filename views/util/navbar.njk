@@ -2,10 +2,12 @@
     <ul>
         <li><a href="/">主頁</a>
         <li>
-            <div id="navbar-profile">
+            <div id="navbar-profile" data-behavior="menu">
                 <div id="navbar-profile__summary">
-                    <p id="login-text"></p>
-                    <img id="navbar-profile__picture" class="profile-picture" src="/imgs/dummy_profile.png" alt="">
+                    <p id="login-text">
+                        {{ displayName or '未登入' }}
+                    </p>
+                    <img id="navbar-profile__picture" class="profile-picture" src="{{ photoURL or '/imgs/dummy_profile.png' }}" alt="" referrerpolicy="no-referrer">
                 </div>
                 <div id="navbar-profile__dropdown">
                     <div class="row">
@@ -13,8 +15,14 @@
                         <button id="mode-switch" class="toggle-switch"></button>
                     </div>
                     <div class="row flex-center">
-                        <button id="sign-in" class="btn-primary">登入</button>
-                        <button id="sign-out" class="btn-primary" hidden>登出</button>
+                        {% if displayName %}
+                            <button id="sign-out" class="btn-primary">登出</button>
+                        {% else %}
+                            <button id="sign-in" class="btn-primary">登入</button>
+                        {% endif %}
+                    </div>
+                    <div class="row flex-center">
+                        <button id="navbar-profile__close-btn" class="btn-transparent flex-item-1">收起</button>
                     </div>
                 </div>
             </div>

@@ -1,9 +1,7 @@
-import { firestore } from './firebase-config.js';
-import { collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, onSnapshot, updateDoc, query, where, orderBy } from 'firebase/firestore';
 import { prefab } from './prefab.js';
 import 'webrtc-adapter';
 import { Button, Cam, Peer } from './conponents.js';
-import { MINUTE, delay, debounce, getUser, getUserData, randomLowerCaseString, replaceAll, getRandom, setIntervalImmediately } from './util.js';
+import { MINUTE, delay, debounce, getUser, getUserData, getRandom, fetchData, setIntervalImmediately, dateToMinutes, htmlToElement, apiCall, AlertTypeEnum, numberArrayToUUIDString, approximatelyEqual } from './util.js';
 import { sidebarListener, dataMultipleChoice } from './sidebar.js';
 
 const socket = io('/');
@@ -13,19 +11,22 @@ const body = document.querySelector('body');
 
 const camPrefab    = prefab.querySelector('.cam');
 const msgPrefab    = prefab.querySelector('.msg');
-const myMsgPrefab  = prefab.querySelector('.my-msg');
+const toastPrefab  = prefab.querySelector('.toast');
+const notificationPrefab  = prefab.querySelector('.notification');
 
-const sidebarRight = document.querySelector(".sidebar-right");
-const icons  = document.querySelectorAll('.ico');
-// const camMenu  = document.querySelector('#cam__menu');
+const sidebarRight      = document.querySelector(".sidebar-right");
+const icons             = document.querySelectorAll('.ico');
 
-const micBtn         = document.querySelector('#mic-btn');
-const webcamBtn      = document.querySelector('#webcam-btn');
-const enterBtn       = document.querySelector('#enter-btn');
-const screenShareBtn = document.querySelector('#screen-share-btn');
-const hangUpBtn      = document.querySelector('#hang-up-btn');
-const messageBtn     = document.querySelector('#message-btn');
-const sendMsgBtn     = document.querySelector('#send-msg-btn');
+const micBtn            = document.querySelector('#mic-btn');
+const webcamBtn         = document.querySelector('#webcam-btn');
+const enterBtn          = document.querySelector('#enter-btn');
+const screenShareBtn    = document.querySelector('#screen-share-btn');
+const notifyDismissBtn  = document.querySelector('#notify-dismiss-btn');
+const plusTestBtn       = document.querySelector('#plus-test-btn');
+const minusTestBtn      = document.querySelector('#minus-test-btn');
+const hangUpBtn         = document.querySelector('#hang-up-btn');
+const messageBtn        = document.querySelector('#message-btn');
+const sendMsgBtn        = document.querySelector('#send-msg-btn');
 // const alertBtn       = document.querySelector('#alert-btn');
 // const alertBtnTime   = document.querySelector('#alert-btn__time');
 const alertModule = document.querySelector('#alert');
@@ -33,77 +34,134 @@ const alertModule = document.querySelector('#alert');
 const confirmPanel   = document.querySelector('#confirm-panel');
 const meetingPanel   = document.querySelector('#meeting-panel');
 
-const cpCamContainer = document.querySelector('#confirm-panel__cam-container');
-const camContainer   = document.querySelector('#cam-container');
-const camArea        = document.querySelector('#cam-area');
-const toolbar        = document.querySelector('#toolbar');
-const chat           = document.querySelector('#chat');
-const chatRoom       = document.querySelector('#chat__room')
-const msgInput       = document.querySelector('#msg-input');
-const callId         = document.querySelector('#call-id')?.value?.trim() || document.querySelector('#call-id').innerHTML?.trim();
-const profession     = document.querySelector('.profession');
-const callName     = document.querySelector('.name');
+const cpCamContainer        = document.querySelector('#confirm-panel__cam-container');
+const camContainer          = document.querySelector('#cam-container');
+const pinnedCamContainer    = document.querySelector('#pinned-cam-container');
+const camArea               = document.querySelector('#cam-area');
+const notificationContainer = document.querySelector('#notification-container');
+const sectionTabGroup       = document.querySelector('#tab-group--section');
+const sectionTabs           = sectionTabGroup.querySelectorAll('input[type="radio"]');
+const sections              = document.querySelectorAll('#section > [data-section]');
+const memberSection         = document.querySelector('#section > [data-section="member"]');
+const chat                  = document.querySelector('#chat');
+const chatRoom              = document.querySelector('#chat__room')
+const msgInput              = document.querySelector('#msg-input');
+const chatTab               = document.querySelector('#tab--chat');
+const toasts                = document.querySelector('#toasts');
+const classId               = document.querySelector('#class-id')?.value?.trim()  || document.querySelector('#class-id').innerHTML?.trim();
+const localUserId           = document.querySelector('#user-id')?.value?.trim()   || document.querySelector('#user-id').innerHTML?.trim();
+const userName              = document.querySelector('#user-name')?.value?.trim() || document.querySelector('#user-name').innerHTML?.trim();
+const photoURL              = document.querySelector('#photo-URL')?.value?.trim() || document.querySelector('#photo-URL').innerHTML?.trim();
+const hostId                = document.querySelector('#host-id')?.value?.trim()   || document.querySelector('#host-id').innerHTML?.trim();
 
+// Audio
+const notificationSound = new Audio('/audio/notification_sound.wav');
 
 // Global variable
-let localUserId = null;
+let isHost = localUserId === hostId;
 let webcamStream = null;
 const localStreams = {
     'webcam': null,
     'screenShare': null,
     'audio': null,
 };
-Cam.init(camArea, camContainer);
-Peer.init(localStreams, socket);
+Cam.init(camArea, camContainer, pinnedCamContainer);
+Peer.init(localUserId, localStreams, socket);
 let unmute = true;
 let webcamOn = false;
 const localCams = {
     'webcam': new Cam('local', 'webcam', cpCamContainer),
     'screenShare': new Cam('local', 'screen-share', cpCamContainer),
 }
+const dismissTimePadding = 10;
+let schoolPeriods;
+let notifyDismissCoolDownTimeInMinute = 1;
+let inNotifyDismissCoolDown = false;
+let dismissedClasses = [];
+let currentRecordId = null;
+export let globalAlertType;
+export let globalInterval;
+export let globalTime;
+export let globalQuestion;
+export let globalAnswear;
+export let globalMultipleChoice;
+
+export function setGlobalAlert(alertType, interval, time, question, answear, globalmultipleChoice) {
+    globalAlertType = alertType;
+    globalInterval = interval;
+    globalTime = time;
+    globalQuestion = question;
+    globalAnswear = answear;
+    globalMultipleChoice = globalmultipleChoice;
+}
+
+export async function setWebcamStream(constraints) {
+    webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
+    await resetWebcam();
+    if (webcamOn) {
+        localCams.webcam.profile.hidden = true;
+        localCams.webcam.video.srcObject = webcamStream;
+    }
+    else {
+        localCams.webcam.profile.hidden = false;
+        localCams.webcam.video.srcObject = null;
+    }
+}
+export async function setLocalStreams(constraints) {
+    localStreams.audio = await navigator.mediaDevices.getUserMedia(constraints);
+    localStreams.audio.getAudioTracks()[0].enabled = unmute;
+    await resetAudio();
+}
 
 // Default state
 webcamBtn.disabled = true;
 hangUpBtn.disabled = true;
+localCams.webcam.node.querySelector('.cam__menu').hidden = true;
 localCams.screenShare.node.hidden = true;
+localCams.screenShare.video.muted = true;
 
-let userAbove = '';
 export let intervalID;
 
-// Firestore
-const calls = collection(firestore, 'calls');
-const callDoc = doc(calls, callId);
-const participants = collection(callDoc, 'participants');
-const alertRecords = collection(callDoc, 'alertRecords');
-let messages = collection(callDoc, 'messages');
+Peer.onNewPeer.push(async (peer) => {
+    const userId = peer.userId;
+    const user = await getUserData(userId);
 
-export let alertDocCurrently;
+    memberSection.appendChild(htmlToElement(`
+        <div class="member-item" data-user-id="${userId}">
+            <img src="${user.PhotoURL}" alt="profile_picture" referrerpolicy="no-referrer">
+            <p>${user.UserName}</p>
+        </div>
+    `))
+})
+Peer.onReleasePeer.push(async (peer) => {
+    const userId = peer.userId;
+
+    let member = memberSection.querySelector(`[data-user-id="${userId}"]`);
+    member && memberSection.removeChild(member);
+})
 
 document.onreadystatechange = async () => {
-    const user = await getUser();
-    let callDocSnapshot;
-
-    console.log('checking permission');
-    try {
-        callDocSnapshot = await getDoc(callDoc);
-    }
-    catch (err) {
-        console.log('no permission');
-        return;
-    }
-    localUserId = user.uid;
-    Peer.localUserId = localUserId;
-    localCams.webcam.name.innerHTML = user.displayName;
-    localCams.webcam.profile.src = user.photoURL;
-    localCams.screenShare.name.innerHTML = user.displayName;
+    localCams.webcam.name.innerHTML = userName;
+    localCams.webcam.profile.src = photoURL;
+    localCams.screenShare.name.innerHTML = userName;
     localCams.screenShare.profile.hidden = true;
     micBtn.disabled = false;
     webcamBtn.disabled = false;
     screenShareBtn.disabled = false;
     enterBtn.disabled = false;
+    chatTab.click();
     await requestStreamPermission();
     await refreshStream();
 }
+
+sectionTabs.forEach((tab) => {
+    tab.addEventListener('click', async () => {
+        const section = tab.dataset.section;
+        sections.forEach((p) => {p.hidden = true});
+        const targetPage = document.querySelector(`#section > [data-section="${section}"]`);
+        targetPage.hidden = false;
+    });
+});
 
 micBtn.addEventListener('click', async () => {
     try {
@@ -123,7 +181,8 @@ micBtn.addEventListener('click', async () => {
 
 webcamBtn.addEventListener('click', async () => {
     try {
-        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({video: {undefined}, audio: false});
+        console.log(webcamStream);
     }
     catch {
         webcamOn = false;
@@ -142,15 +201,22 @@ webcamBtn.addEventListener('click', async () => {
     await refreshStream();
 });
 
+// export async function aaa(videoSource) {
+
+//     webcamStream = videoSource || await navigator.mediaDevices.getUserMedia(constraints).then(gotStream);
+//     await refreshStream();
+// }
+
+let lastMessageId;
+
 screenShareBtn.addEventListener('click', async () => {
-    if (localStreams.screenShare) {
+    const turnOffScreenShare = async () => {
         console.log('turn off screen share');
         localStreams.screenShare.getTracks().forEach(function(track) {
             track.stop();
         });
         localStreams.screenShare = null;
-        localCams.screenShare.node.hidden = true;
-        localCams.screenShare.video.srcObject = null;
+        localCams.screenShare.turnOff();
         for (const [id, peer] of Object.entries(Peer.peers)) {
             for (let sender of peer.senders.screenShare) {
                 console.log(`remove from ${id} ${sender}`)
@@ -159,10 +225,18 @@ screenShareBtn.addEventListener('click', async () => {
             peer.senders.screenShare = [];
         }
     }
-    else {
+    const turnOnScreenShare = async () => {
         console.log('turn on screen share');
         const displayMediaStreamConstraints = {
-            localStream: true // or pass HINTS
+            localStream: true, // or pass HINTS
+            video: {
+                cursor: "always"
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
         };
         if (navigator.mediaDevices.getDisplayMedia) {
             localStreams.screenShare = await navigator.mediaDevices.getDisplayMedia(displayMediaStreamConstraints);
@@ -171,6 +245,9 @@ screenShareBtn.addEventListener('click', async () => {
         }
         localCams.screenShare.node.hidden = false;
         localCams.screenShare.video.srcObject = localStreams.screenShare;
+        localStreams.screenShare.getVideoTracks()[0].onended = function () {
+            turnOffScreenShare();
+        };
         for (const [id, peer] of Object.entries(Peer.peers)) {
             localStreams.screenShare.getTracks().forEach((track) => {
                 console.log(`add to ${id}`)
@@ -178,14 +255,52 @@ screenShareBtn.addEventListener('click', async () => {
             });
         }
     }
+
+    if (localStreams.screenShare) {
+        turnOffScreenShare();
+    }
+    else {
+        turnOnScreenShare();
+    }
 })
 
+notifyDismissBtn.addEventListener('click', async () => {
+    if (isHost) {
+        console.log('click')
+        const [ name, timeInMinute ] = getDismissTime();
+        if (name && !dismissedClasses.find(item => item.name === name)) {
+            dismissedClasses.push({name, time: new Date()});
+            console.log(dismissedClasses);
+
+            notifyDismissBtn.disabled = true;
+            notificationContainer.querySelectorAll('.notification[data-type="dismiss-class"] .notification__close-btn').forEach((e) => {
+                e.click();
+            });
+            let dismissEndTime = new Date((new Date()).getTime() + timeInMinute * MINUTE);
+            socket.emit('throw-dismiss-class', {name, time: dismissEndTime});
+            spawnDismissTimerNotification(dismissEndTime);
+        }
+    }
+    else {
+        socket.emit('throw-notify-dismiss', {localUserId});
+        notifyDismissBtn.disabled = true;
+    }
+});
+
 enterBtn.addEventListener('click', async () => {
-    console.log(`join call: ${callId} as ${localUserId}`);
-    socket.emit('join-call', callId, localUserId);
-    const { name } = (await getDoc(callDoc)).data();
-    profession.innerHTML = callId;
-    callName.innerHTML = name;
+    const response1 = await apiCall('getClass', {classId});
+    const classData = await response1.json();
+    const { Interval: interval, Duration: duration } = classData;
+    console.log(classData);
+    console.log(classData.Interval);
+    console.log(interval);
+    const response2 = await apiCall('getSchoolPeriods', {schoolId: classData.SchoolId});
+    schoolPeriods = await response2.json();
+    schoolPeriods = schoolPeriods.map((e) => {
+        e.StartTime = new Date(e.StartTime);
+        e.EndTime = new Date(e.EndTime);
+        return e;
+    })
 
     socket.on('user-connected', async (socketId, userId) => {
         console.log(`user connected: ${userId}`);
@@ -203,7 +318,6 @@ enterBtn.addEventListener('click', async () => {
         }
 
         Peer.peers[userId].release();
-        delete Peer.peers[userId];
     });
 
     socket.on('catch-offer', async (socketId, data) => {
@@ -289,7 +403,118 @@ enterBtn.addEventListener('click', async () => {
         }
     });
 
-    let chatInit = true;
+    socket.on('catch-disable-notify-dismiss', async () => {
+        console.log(`catch disable notify dismiss cooldown`);
+        notifyDismissBtn.disabled = true;
+        notifyDismissBtn.dataset.tooltip = '老師已收到下課鈴';
+    });
+
+    socket.on('catch-enable-notify-dismiss', async () => {
+        console.log(`catch enable notify dismiss cooldown`);
+        notifyDismissBtn.disabled = false;
+        delete notifyDismissBtn.dataset.tooltip;
+    });
+
+    socket.on('catch-dismiss-class', (data) => {
+        console.log(`catch dismiss class`);
+        const { name, time } = data;
+        dismissedClasses.push(data);
+
+        spawnDismissTimerNotification(new Date(time));
+    });
+
+    socket.on('catch-inform-status', async (data) => {
+        console.log(`catch inform status`);
+        console.log(data);
+
+        if (data.currentRecordId) {
+            const response = await apiCall('getAlertRecord', {classId, recordId: data.currentRecordId});
+            const alertRecord = await response.json();
+            console.log(alertRecord);
+            setupAlertListener(alertRecord);
+        }
+
+        dismissedClasses = data.dismissedClasses;
+        if (dismissedClasses.length > 0) {
+            const recentDismiss = dismissedClasses[dismissedClasses.length-1];
+            const classTimeInfo = schoolPeriods.data.find(item => item.PeriodName === recentDismiss.name);
+            const recentDismissTimeInMinute = dateToMinutes(classTimeInfo.EndTime) - dateToMinutes(classTimeInfo.StartTime);
+            const recentDismissEndTime = new Date(new Date(recentDismiss.time).getTime() + recentDismissTimeInMinute * MINUTE);
+
+            if (recentDismissEndTime - (new Date()) > 0) {
+                spawnDismissTimerNotification(recentDismissEndTime);
+            }
+        }
+
+        inNotifyDismissCoolDown = data.inNotifyDismissCoolDown;
+        const notified = !inCanNotifyTime() || inNotifyDismissCoolDown;
+        notifyDismissBtn.disabled = notified;
+        const firstDismissed = [];
+        notified && firstDismissed.push(getDismissTime()[0]);
+        // setTimeout(() => {
+        setIntervalImmediately(() => {
+            const [ name ] = getDismissTime();
+            // console.log(dismissedClasses);
+
+            if (!inCanNotifyTime() || !name || dismissedClasses.find(item => item.name === name)) {
+                notifyDismissBtn.disabled = true;
+            }
+            else if (!firstDismissed.includes(name)) {
+                firstDismissed.push(name);
+                notifyDismissBtn.disabled = false;
+            }
+        }, 1000);
+        // }, 60 - (new Date()).getSeconds());
+    });
+
+    if (isHost) {
+        socket.on('catch-notify-dismiss', async (data) => {
+            console.log(`catch notify dismiss`);
+            const { userId } = data;
+            const [ name ] = getDismissTime();
+            console.log(inNotifyDismissCoolDown)
+            // console.log(`inClassTime: ${inClassTime()}`)
+            console.log(`dismissedClasses`)
+            console.log(dismissedClasses)
+
+            if (inCanNotifyTime() && name && !dismissedClasses.find(item => item.name === name)) {
+                if (!inNotifyDismissCoolDown) {
+                    inNotifyDismissCoolDown = true
+                    console.log(`現在是下課時間`);
+                    const notification = spawnNotification();
+                    socket.emit('throw-disable-notify-dismiss');
+
+                    setTimeout(() => {
+                        inNotifyDismissCoolDown = false
+                        const [ name ] = getDismissTime();
+                        if (inCanNotifyTime() && name && !dismissedClasses.find(item => item.name === name)) {
+                            socket.emit('throw-enable-notify-dismiss');
+                        }
+                    }, notifyDismissCoolDownTimeInMinute * MINUTE);
+                }
+            }
+        });
+
+        socket.on('catch-request-status', (socketId) => {
+            console.log('catch request status');
+            socket.emit('throw-inform-status', socketId, {dismissedClasses, inNotifyDismissCoolDown, currentRecordId});
+        });
+
+        setIntervalImmediately(() => {
+            const [ name ] = getDismissTime();
+            notifyDismissBtn.disabled = !name || dismissedClasses.find(item => item.name === name);
+        }, 1000);
+    }
+
+    console.log(`join call: ${classId} as ${localUserId}`);
+    socket.emit('join-call', classId, localUserId);
+
+    if (isHost) {
+        socket.emit('throw-inform-status', 'boardcast', {dismissedClasses, inNotifyDismissCoolDown});
+    }
+    else {
+        socket.emit('throw-request-status');
+    }
 
     // async function addMessageToChat(msgData) {
     //     const { user, text, timestamp } = msgData;
@@ -305,58 +530,114 @@ enterBtn.addEventListener('click', async () => {
     //     msgText.innerHTML = text;
     //     chatRoom.appendChild(msg);
     // }
-    onSnapshot(messages, async (snapshot) => {
-        if (chatInit) {
-            chatInit = false;
 
-            const q = query(messages, orderBy('timestamp', 'asc'));
-            const messageDocs = await getDocs(q);
-            for (const msgDoc of messageDocs.docs) {
-                await addMessageToChat(msgDoc.data());
-            }
-        }
-        else {
-            snapshot.docChanges().forEach( async (change) => {
-                if (change.type === 'added') {
-                    await addMessageToChat(change.doc.data());
+    const response =  await apiCall('getClassMessages', { classId });
+    const messages = await response.json();
+    for (const message of messages) {
+        await addMessageToChat(message);
+    }
+
+    chatRoom.scrollTop = chatRoom.scrollHeight;
+    lastMessageId = messages[0].MessageId;
+
+    socket.on('catch-text-message', async (messageId) => {
+        await getNewMessage(messageId);
+
+        const response =  await apiCall('getClassMessage', { classId, messageId });
+        const message  = await response.json();
+
+        if (!message.IsSelf && document.querySelector('.close-message')){
+
+            const toastAlert = toastPrefab.cloneNode(true);
+            const closeToast = toastAlert.querySelector('.close-toast');
+            const toastContent = toastAlert.querySelector('.toast-content');
+            const progress = toastAlert.querySelector('.progress');
+            const text1 = toastAlert.querySelector('.text-1');
+            const text2 = toastAlert.querySelector('.text-2');
+            toasts.appendChild(toastAlert);
+            const toast = toasts.lastChild;
+
+
+            toast.classList.add('active');
+            progress.classList.add('active');
+
+            text1.innerHTML = message.UserName;
+            text2.innerHTML = message.Content;
+
+            toasts.scrollTop = toasts.scrollHeight;
+
+            toastContent.addEventListener("click", () => {
+                sidebarRight.classList.remove("close");
+                meetingPanel.classList.remove("close-message");
+                if (!document.querySelector('.close-message')) {
+                    toasts.innerHTML = '';
                 }
-            });
+
+                Cam.resizeAll();
+            })
+
+            setTimeout(() =>{
+                toast.classList.remove('active');
+            }, 3000);
+
+
+            setTimeout(() => {
+                progress.classList.remove('active');
+            }, 3300)
+
+            closeToast.addEventListener("click", () => {
+                toast.classList.remove('active');
+
+                setTimeout(() => {
+                    progress.classList.remove('active');
+                }, 300)
+            })
+
+            await delay(3300);
+            toast.remove();
         }
-
-        await delay(100);
-
-        chatRoom.scrollTop = chatRoom.scrollHeight;
     });
 
-    const { alert, host } = (await getDoc(callDoc)).data();
-    const { interval, time: duration, alertType} = alert;
-    if (localUserId === host){
+    if (isHost) {
         console.log('您是會議主辦人');
 
-        const q1 = query(alertRecords, where('done', '==', false ));
-        const snapshot1 = await getDocs(q1);
+        // DELETE FROM AlertRecords WHERE ClassId = :classId and Finished = 0 (true?)
+        await apiCall('deleteUnfinishedRecords', {classId})
+        console.log('del alert');
 
-        snapshot1.forEach(async (alert) => {;
-            const alertDoc  =   doc(alertRecords, alert.id);
-            await deleteDoc(alertDoc);
-            console.log('del alert');
-        });
+        // const q1 = query(alertRecords, where('done', '==', false ));
+        // const snapshot1 = await getDocs(q1);
 
-        let dataAlert = {
-            alert: {
-                interval: interval,
-                time: duration,
-                alertType: 'click',
-            },
-        }
-        await updateDoc(callDoc, dataAlert);
+        // snapshot1.forEach(async (alert) => {;
+        //     const alertDoc  =   doc(alertRecords, alert.id);
+        //     await deleteDoc(alertDoc);
+
+        // });
+
+        // let dataAlert = {
+        //     alert: {
+        //         interval: interval,
+        //         time: duration,
+        //     },
+        // }
+        // await updateDoc(callDoc, dataAlert);
+
+        globalAlertType = AlertTypeEnum.Click;
+        globalInterval = interval;
+        globalTime = duration;
 
         setupAlertScheduler();
     }
     else {
         console.log('您不是會議主辦人');
 
-        setupAlertListener();
+        socket.on('catch-alert-start', async (recordId) => {
+            console.log(`catch-alert-start`)
+            console.log(`catch ${recordId}`)
+            const response = await apiCall('getAlertRecord', {classId, recordId});
+            const alertRecord = await response.json();
+            setupAlertListener(alertRecord);
+        });
     }
 
     confirmPanel.remove();
@@ -372,7 +653,7 @@ enterBtn.addEventListener('click', async () => {
     hangUpBtn.disabled = false;
     enterBtn.disabled = true;
 
-    // document.getElementById("cam__menu").classList.remove('close');
+    localCams.webcam.node.querySelector('.cam__menu').hidden = false;
 
     sidebarListener();
 
@@ -410,23 +691,39 @@ hangUpBtn.addEventListener('click', async () => {
 
 messageBtn.addEventListener('click', async () => {
     sidebarRight.classList.toggle("close");
-    meetingPanel.classList.toggle("close-message");
+    const close = sidebarRight.classList.contains("close");
+    if (close) {
+        meetingPanel.classList.add("close-message");
+        messageBtn.classList.remove("open");
+    }
+    else {
+        meetingPanel.classList.remove("close-message");
+        messageBtn.classList.add("open");
+        toasts.innerHTML = '';
+    }
     Cam.resizeAll();
 });
 
 sendMsgBtn.addEventListener('click', async () => {
-    let text = msgInput?.value?.trim();
-    if (text) {
-        const msgDoc = doc(messages);
-        const data = {
-            user: localUserId,
-            text,
-            timestamp: new Date(),
-        };
+    sendMsgBtn.disabled = true;
+    let content = msgInput?.value?.trim();
+    if (content) {
+        const response = await apiCall('addClassMessage',{classId, content} )
+        const { insertId: messageId } = await response.json();
+        socket.emit('throw-text-message', messageId);
+        await getNewMessage(messageId)
+        // const msgDoc = doc(messages);
+        // const data = {
+        //     user: localUserId,
+        //     text,
+        //     timestamp: new Date(),
+        // };
 
-        await setDoc(msgDoc, data);
+        // await setDoc(msgDoc, data);
     }
     msgInput.value = '';
+    sendMsgBtn.disabled = false;
+
 });
 
 msgInput.addEventListener("keyup", function(event) {
@@ -451,7 +748,7 @@ msgInput.addEventListener("keyup", function(event) {
 //     }
 // });
 
-async function requestStreamPermission() {
+export async function requestStreamPermission() {
     try {
         localStreams.audio = localStreams.audio || await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     }
@@ -460,8 +757,9 @@ async function requestStreamPermission() {
         Button.toggleOpen(micBtn, false);
         unmute = false;
     }
+
     try {
-        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({ video: {undefined}, audio: false });
+        webcamStream = webcamStream || await navigator.mediaDevices.getUserMedia({video: {undefined}, audio: false})
     }
     catch {
         console.log('webcam request failed');
@@ -469,8 +767,33 @@ async function requestStreamPermission() {
     }
 }
 
-async function refreshStream() {
-    if (webcamOn && localStreams.webcam === null) {
+async function resetWebcam() {
+    localStreams.webcam = null;
+    for (const [id, peer] of Object.entries(Peer.peers)) {
+        for (const sender of peer.senders.webcam) {
+            console.log(`remove webcam from ${id} ${sender}`)
+            peer.pc.removeTrack(sender);
+        }
+        peer.senders.webcam = [];
+    }
+
+    await refreshStream();
+}
+
+async function resetAudio() {
+    for (const [id, peer] of Object.entries(Peer.peers)) {
+        for (const sender of peer.senders.audio) {
+            console.log(`remove audio from ${id} ${sender}`)
+            peer.pc.removeTrack(sender);
+        }
+        peer.senders.audio = [];
+    }
+
+    await refreshStream();
+}
+
+export async function refreshStream() {
+    if (webcamOn) {
         localStreams.webcam = webcamStream;
         for (const [id, peer] of Object.entries(Peer.peers)) {
             localStreams.webcam.getTracks().forEach((track) => {
@@ -479,7 +802,7 @@ async function refreshStream() {
             });
         }
     }
-    else if (!webcamOn && localStreams.webcam !== null) {
+    else if (!webcamOn) {
         localStreams.webcam = null;
         for (const [id, peer] of Object.entries(Peer.peers)) {
             for (const sender of peer.senders.webcam) {
@@ -491,7 +814,7 @@ async function refreshStream() {
     }
 
     for (const [id, peer] of Object.entries(Peer.peers)) {
-        if (!peer.senders.audio) {
+        if (!peer.senders.audio[0]) {
             localStreams.audio?.getTracks().forEach((track) => {
                 console.log(`add audio to ${id}`)
                 peer.senders.audio.push(peer.pc.addTrack(track, localStreams.audio));
@@ -500,12 +823,150 @@ async function refreshStream() {
     }
 }
 
+function getStartAndEndTimeOfTheDay() {
+    const start = schoolPeriods[0].StartTime;
+    const end = schoolPeriods[schoolPeriods.length-1].EndTime;
+
+    return [dateToMinutes(start), dateToMinutes(end)]
+}
+
+function inCanNotifyTime() {
+    const now = new Date();
+    const minuteOfToday = dateToMinutes(now);
+    const [startTimeOfTheDay, endTimeOfTheDay] = getStartAndEndTimeOfTheDay();
+
+    if (minuteOfToday < startTimeOfTheDay || minuteOfToday >= endTimeOfTheDay) {
+        return true;
+    }
+
+    for (const period of schoolPeriods) {
+        const startTime = dateToMinutes(period.StartTime);
+        const endTime   = dateToMinutes(period.EndTime);
+        if (minuteOfToday >= startTime + dismissTimePadding && minuteOfToday < endTime) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function inClassTime() {
+    const now = new Date();
+    const minuteOfToday = dateToMinutes(now);
+    const [startTimeOfTheDay, endTimeOfTheDay] = getStartAndEndTimeOfTheDay();
+
+    if (minuteOfToday < startTimeOfTheDay || minuteOfToday >= endTimeOfTheDay) {
+        return true;
+    }
+
+    for (const period of schoolPeriods) {
+        const startTime = dateToMinutes(period.StartTime);
+        const endTime   = dateToMinutes(period.EndTime);
+        if (minuteOfToday >= startTime && minuteOfToday < endTime) {
+            console.log(`現在是第${period.PeriodName}節課`);
+            return true;
+        }
+    }
+    return false;
+}
+
+function getDismissTime() {
+    const now = new Date();
+    const minuteOfToday = dateToMinutes(now);
+
+    let prevEndTime = 0;
+    let prevName = '';
+    let i = 0;
+    for (const period of schoolPeriods) {
+        const startTime = dateToMinutes(period.StartTime);
+        const endTime   = dateToMinutes(period.EndTime);
+        if (minuteOfToday >= startTime && minuteOfToday < endTime) {
+            const percentage = (minuteOfToday - startTime) / (endTime - startTime);
+            if (percentage < 0.5) {
+                if (minuteOfToday - startTime < dismissTimePadding) {
+                    // console.log(`現在下課會是第${prevName}節下課`);
+                    return [prevName, startTime - prevEndTime];
+                }
+            }
+            else {
+                if (endTime - minuteOfToday < dismissTimePadding) {
+                    // console.log(`現在下課會是第${period.PeriodName}節下課`);
+                    if (i < schoolPeriods.length - 1) {
+                        const nextStartTime = dateToMinutes(schoolPeriods[i+1].StartTime);
+                        return [period.PeriodName, nextStartTime - endTime];
+                    }
+                    return [period.PeriodName, 24 * 60 - endTime];
+                }
+            }
+            // console.log(`現在是第${period.PeriodName}節上課`);
+            return [null, 0];
+        }
+        else {
+            if (startTime > minuteOfToday) {
+                // console.log(`現在是第${prevName}節下課`);
+                // console.log(`${startTime - prevEndTime}`);
+                return [prevName, startTime - prevEndTime];
+            }
+        }
+        prevEndTime = endTime;
+        prevName = period.PeriodName;
+        i++;
+    }
+
+    // console.log(`現在放學了`);
+    return [null, 0];
+}
+
+
+function spawnNotification() {
+    const notification = notificationPrefab.cloneNode(true);
+    notificationSound.play();
+    const closeBtn = notification.querySelector('.notification__close-btn');
+    notificationContainer.appendChild(notification);
+    notification.dataset.type = 'dismiss-class';
+    notification.style.height = `${notification.scrollHeight}px`;
+    notification.style.opacity = '1';
+    closeBtn.addEventListener('click', () => {
+        notification.style.height = '';
+        notification.style.paddingBlock = '0px';
+        notification.style.opacity = '';
+        notification.addEventListener('transitionend', () => {
+            notification.remove();
+        })
+    });
+    return notification;
+}
+
+function spawnDismissTimerNotification(endTime) {
+    const notification = spawnNotification();
+    const closeBtn = notification.querySelector('.notification__close-btn');
+    closeBtn.remove();
+    const timerElement = htmlToElement(`
+        <span></span>
+    `);
+    const timer = setIntervalImmediately(() => {
+        const timeLeft = endTime - (new Date());
+        const min = `${Math.floor(timeLeft/MINUTE)}`.padStart(2, '0');
+        const sec = `${Math.floor((timeLeft%MINUTE)/1000)}`.padStart(2, '0');
+        timerElement.innerHTML = `${min}:${sec}`;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            closeBtn.click();
+        }
+    }, 1000);
+
+    const title = notification.querySelector('.notification__title');
+    const text = notification.querySelector('.notification__text');
+    title.innerHTML = '距離上課還有：'
+    text.innerHTML = '';
+    text.appendChild(timerElement)
+}
+
 let alertSchedulerVersion = 0;
 
 export async function setupAlertScheduler() {
     console.log('setupAlertScheduler');
 
-    startAlert();
+    await startAlert();
 
     // intervalID = setIntervalImmediately(async () => {
 
@@ -574,65 +1035,93 @@ async function startAlert() {
     alertSchedulerVersion++;
     const currentAlertSchedulerVersion = alertSchedulerVersion;
 
-    const q1 = query(alertRecords, where('done', '==', false ));
-    const snapshot1 = await getDocs(q1);
-    snapshot1.forEach(async (alert) => {;
-        const alertDoc  =   doc(alertRecords, alert.id);
-        await updateDoc(alertDoc, {outdated: true});
-    });
+    //UPDATE AlertRecords SET Outdated = 1 WHERE ClassId = :classId and Finished = 0
+    await apiCall('expireUnfinishedRecords', {classId})
+
+    // const q1 = query(alertRecords, where('done', '==', false ));
+    // const snapshot1 = await getDocs(q1);
+    // snapshot1.forEach(async (alert) => {;
+    //     const alertDoc  =   doc(alertRecords, alert.id);
+    //     await updateDoc(alertDoc, {outdated: true});
+    // });
 
     while (true) {
         try {
 
-            const { alert } = (await getDoc(callDoc)).data();
-            const { interval, time: duration, alertType} = alert;
-
-            alertDocCurrently = doc(alertRecords);
+            // alertDocCurrently = doc(alertRecords);
 
             let dataNormal = {
-                timestamp: new Date(),
-                duration: duration, //時長
-                alertType: alertType,
-                interval: interval,
-                started: false,
-                done: false,
-                outdated: false,
+                classId,
+                alertType: globalAlertType,
+                interval: globalInterval,
+                duration: globalTime,
             };
 
-            if(alertType === 'multiple choice' || alertType === 'essay question' || alertType === 'vote') {
+            if( globalAlertType != AlertTypeEnum.Click ) {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
-            setDoc(alertDocCurrently, dataNormal);
+            //INSERT INTO AlertRecords VALUES (dataNormal)
+            const response = await apiCall('addAlertRecord', dataNormal)
+            const { insertId: recordId } = await response.json();
+
+            // setDoc(alertDocCurrently, dataNormal);
 
             console.log('add alert');
 
-            let alertPrevious = alertDocCurrently;
+            // let alertPrevious = alertDocCurrently;
+            console.log(MINUTE);
+            await delay( globalInterval * MINUTE );
 
-            await delay( interval * MINUTE );
+            await apiCall('turnOnRecord', { classId, recordId });
+            currentRecordId = recordId;
+            socket.emit('throw-alert-start', recordId);
+            console.log(`throw ${recordId}`)
 
-            updateDoc(alertPrevious, {started: true});
+            // updateDoc(alertPrevious, {started: true});
 
             console.log('alert started');
 
-            await delay( duration * MINUTE );
+            await delay( globalTime * MINUTE );
 
-            if ((await getDoc(alertPrevious))?.data()?.outdated === true) {
-                deleteDoc(alertPrevious);
-            }
-            else {
-                updateDoc(alertPrevious, {done: true});
-                console.log('alert done');
-
-                let dataAlert = {
-                    alert: {
-                        interval: interval,
-                        time: duration,
-                        alertType: 'click',
-                    },
+            const response2 = await apiCall('finishRecord', { classId, recordId })
+            if (response2.status === 200) {
+                const { action } = await response2.json();
+                if (action === "update") { // finished
+                    globalAlertType = AlertTypeEnum.Click;
                 }
-                updateDoc(callDoc, dataAlert);
+                else { // outdated
+
+                }
+                currentRecordId = null;
             }
+            // if (outdated === true) {
+            //     await apiCall('DeleteAlertRecord', { classId, recordId })
+            // }
+            // else {
+            //     await apiCall('UpdateAlertRecord', { classId, recordId, finished: true})
+
+            //     console.log('alert done');
+            //     globalAlertType = AlertTypeEnum.Click
+            // }
+
+            // if ((await getDoc(alertPrevious))?.outdated === true) {
+            //     deleteDoc(alertPrevious);
+            // }
+            // else {
+            //     updateDoc(alertPrevious, {done: true});
+            //     console.log('alert done');
+
+            //     let dataAlert = {
+            //         alert: {
+            //             interval: globalInterval,
+            //             time: globalTime,
+            //         },
+            //     }
+            //     updateDoc(callDoc, dataAlert);
+
+            //     globalAlertType = AlertTypeEnum.Click
+            // }
 
         } catch (error) {
 
@@ -647,264 +1136,302 @@ async function startAlert() {
     }
 }
 
-export function setupAlertListener() {
+async function listenToAlert(data) {
+    const response = await apiCall('addAlertRecordReacts', {recordId: data.RecordId});
+}
+
+export async function setupAlertListener(alertRecord) {
     console.log('setupAlertListener');
-    let unsubscribe = onSnapshot(alertRecords, (snapshot) => {
-        snapshot.docChanges().forEach(async (change) => {
-            if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == false) {
+    if (alertRecord.Finished == false && alertRecord.Outdated == false) {
+        console.log('alert started');
+        alertRecord.TimestampDate = new Date(alertRecord.Timestamp);
+        const timestampEnd = new Date(alertRecord.TimestampDate.getTime() + (alertRecord.Interval + alertRecord.Duration) * MINUTE);
+        console.log((new Date()).toISOString())
+        console.log(timestampEnd.toISOString())
+        const response = await apiCall('getAlertRecordReact', {classId, recordId: alertRecord.RecordId});
+        let click = true
 
-                console.log('alert started');
+        let reactId = null;
+        if (response.status === 200) {
+            const recordReact = await response.json();
+            reactId = recordReact.ReactId;
+            click = recordReact.Clicked == 1;
+        }
 
-                const alertDoc     = doc(alertRecords, change.doc.id);
-                const participants = collection(alertDoc, 'participants');
-                const userDoc      = doc(participants, localUserId);
-                const { alertType, duration, timestamp, interval, done, answear, question, multipleChoice } = change.doc.data();
-                const timestampStart = new Date(timestamp.toMillis() + interval * MINUTE);
-                const timestampEnd = new Date(timestamp.toMillis() + (interval + duration) * MINUTE);
+        if( !reactId ) {
+            console.log('no react')
+            const response = await apiCall('addAlertRecordReact', {classId,  recordId: alertRecord.RecordId})
+            const { insertId } = await response.json()
+            reactId = insertId;
+            click = false;
+            console.log('click:' + click)
+        }
+
+        console.log("REACTID: " + reactId);
+
+        if( click == false ) {
+            console.log('see alert');
+            alertModule.hidden = false;
+            const alertShow = document.createElement('div');
+            alertShow.classList.add('alert-show')
+            alertModule.appendChild(alertShow);
+
+            if(alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice) {
+                const textarea = document.createElement('textarea');
+                textarea.setAttribute("readonly", "readonly");
+                textarea.classList.add('qst_show')
+                textarea.innerHTML = alertRecord.Question;
+                alertShow.appendChild(textarea);
+                for (let i = 0; i < alertRecord.MultipleChoice.length; i++) {
+                    const field = document.createElement('div');
+                    field.classList.add('field')
+                    alertShow.appendChild(field);
+                    const span = document.createElement('span');
+                    span.classList.add('span_No');
+                    span.innerHTML = i+1;
+                    field.appendChild(span);
+                    const input = document.createElement('input');
+                    input.classList.add('option_input')
+                    input.setAttribute("readonly", "readonly");
+                    input.value = alertRecord.MultipleChoice[i];
+                    field.appendChild(input);
+
+                    span.addEventListener('click', () => {
+                        let no = alertShow.querySelectorAll(".span_No");
+                        Array.from(no).forEach((item) => {
+                            item.classList.remove("chosen");
+                        });
+                        span.classList.toggle("chosen");
+                    });
+                }
+            }else if(alertRecord.AlertTypeId === AlertTypeEnum.EssayQuestion) {
+                const textarea = document.createElement('textarea');
+                textarea.setAttribute("readonly", "readonly");
+                textarea.classList.add('qst_show')
+                textarea.innerHTML = alertRecord.Question;
+                alertShow.appendChild(textarea);
+                const div = document.createElement('div');
+                alertShow.appendChild(div);
+                const textarea1 = document.createElement('textarea');
+                textarea1.classList.add('qst_show_answear')
+                div.appendChild(textarea1);
+            }else if(alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
+                const textarea = document.createElement('textarea');
+                textarea.setAttribute("readonly", "readonly");
+                textarea.classList.add('qst_show')
+                textarea.innerHTML = alertRecord.Question;
+                alertShow.appendChild(textarea);
+                const divRadios = document.createElement('div');
+                divRadios.classList.add('radios')
+                alertShow.appendChild(divRadios);
+                for (let i = 0; i < alertRecord.MultipleChoice.length; i++) {
+                    const divRadio = document.createElement('div');
+                    divRadio.classList.add('radio')
+                    divRadios.appendChild(divRadio);
+                    const input = document.createElement('input');
+                    input.setAttribute("id", "radio" + (i+1) );
+                    input.setAttribute("type", "radio");
+                    input.setAttribute("name", "radio");
+                    input.setAttribute("value", i+1 );
+                    divRadio.appendChild(input);
+                    const label = document.createElement('label');
+                    label.setAttribute("for", "radio" + (i+1) );
+                    divRadio.appendChild(label);
+                    label.innerHTML = alertRecord.MultipleChoice[i];
+                }
+            }
+
+            const alertBtnDiv = document.createElement('div');
+            alertBtnDiv.classList.add('alert-btn-div')
+            alertShow.appendChild(alertBtnDiv);
+            const alertBtn = document.createElement('button');
+            alertBtn.setAttribute('id','alert-btn');
+            alertBtnDiv.appendChild(alertBtn);
+            const alertBtnText = document.createElement('p');
+            alertBtnText.setAttribute('id','alert-btn__text');
+            alertBtnText.innerHTML = '警醒按鈕';
+            alertBtn.appendChild(alertBtnText);
+            const alertBtnTime = document.createElement('span');
+            alertBtnTime.setAttribute('id','alert-btn__time');
+            alertBtnTime.innerHTML = '00:00';
+            alertBtn.appendChild(alertBtnTime);
+
+            alertBtn.addEventListener('click', async () => {
+                const answearChosen = document.querySelector(".chosen");
+                const qstShowAnswear = document.querySelector(".qst_show_answear");
+
+                let DoneClick = false;
+                let data;
+
+                if( alertRecord.AlertTypeId === AlertTypeEnum.Click) {
+                    DoneClick = true;
+                    data = {
+                        click : true,
+                    }
+                }else if(alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice) {
+                    if(answearChosen != null) {
+
+                        DoneClick = true;
+                        data = {
+                            click: true,
+                            answear: answearChosen.innerHTML,
+                        }
+                    }
+                }else if(alertRecord.AlertTypeId === AlertTypeEnum.EssayQuestion) {
+                    if(qstShowAnswear.value != '') {
+                        DoneClick = true;
+                        data = {
+                            click: true,
+                            answear: qstShowAnswear.value,
+                        }
+                    }
+                }else if(alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
+                    const radio = document.querySelector(".radios").querySelectorAll('input');
+                    for (let x = 0; x < radio.length; x ++) {
+                        if (radio[x].checked) {
+                            DoneClick = true;
+                            data = {
+                                click: true,
+                                answear: radio[x].value,
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if ( DoneClick === true ) {
+                    await apiCall('updateAlertRecordReact', {classId, reactId, data})
+                    // await updateDoc(userDoc, data);
+                    alertBtnTime.hidden = true;
+                    alertBtnText.innerHTML = '簽到完成';
+                    alertBtn.classList.add('active');
+                    await delay(1000);
+                    alertBtn.hidden = true;
+                    alertBtnTime.hidden = false;
+                    alertBtnText.innerHTML = '警醒按鈕';
+                    alertBtn.classList.remove('active');
+                    alertModule.hidden = true;
+                }
+            });
+
+            // alertBtn.dataset.id = alertRecord.RecordId;
+
+            if (Math.random() < 0.5) {
+                alertModule.style.left  = `${getRandom(50)}%`;
+                alertModule.style.right = `initial`;
+            }
+            else {
+                alertModule.style.right = `${getRandom(50)}%`;
+                alertModule.style.left  = `initial`;
+            }
+
+            if (Math.random() < 0.5) {
+                alertModule.style.top     = `${getRandom(50)}%`;
+                alertModule.style.bottom  = `initial`;
+            }
+            else {
+                alertModule.style.bottom  = `${getRandom(50)}%`;
+                alertModule.style.top     = `initial`;
+            }
+
+            const countDownInterval = setIntervalImmediately(() => {
                 const now = new Date();
 
-                    if( (await getDoc(userDoc)).data() === undefined ) {
-                        const data = {
-                            click : false,
-                        }
-                        await setDoc(userDoc, data);
-                    }
-                    const {click} = (await getDoc(userDoc)).data();
-                    if( click === false ) {
-                        console.log('see alert');
-                        alertModule.hidden = false;
-                        const alertShow = document.createElement('div');
-                        alertShow.classList.add('alert-show')
-                        alertModule.appendChild(alertShow);
+                const distance = timestampEnd.getTime() - now.getTime();
 
-                        if(alertType === 'multiple choice') {
-                            const textarea = document.createElement('textarea');
-                            textarea.setAttribute("readonly", "readonly");
-                            textarea.classList.add('qst_show')
-                            textarea.innerHTML = question;
-                            alertShow.appendChild(textarea);
-                            for (let i = 0; i < multipleChoice.length; i++) {
-                                const field = document.createElement('div');
-                                field.classList.add('field')
-                                alertShow.appendChild(field);
-                                const span = document.createElement('span');
-                                span.classList.add('span_No');
-                                span.innerHTML = i+1;
-                                field.appendChild(span);
-                                const input = document.createElement('input');
-                                input.classList.add('option_Input')
-                                input.setAttribute("readonly", "readonly");
-                                input.value = multipleChoice[i];
-                                field.appendChild(input);
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                                span.addEventListener('click', () => {
-                                    let no = alertShow.querySelectorAll(".span_No");
-                                    Array.from(no).forEach((item) => {
-                                        item.classList.remove("chosen");
-                                    });
-                                    span.classList.toggle("chosen");
-                                });
-                            }
-                        }else if(alertType === 'essay question') {
-                            const textarea = document.createElement('textarea');
-                            textarea.setAttribute("readonly", "readonly");
-                            textarea.classList.add('qst_show')
-                            textarea.innerHTML = question;
-                            alertShow.appendChild(textarea);
-                            const div = document.createElement('div');
-                            alertShow.appendChild(div);
-                            const textarea1 = document.createElement('textarea');
-                            textarea1.classList.add('qst_show_answear')
-                            div.appendChild(textarea1);
-                        }else if(alertType === 'vote') {
-                            const textarea = document.createElement('textarea');
-                            textarea.setAttribute("readonly", "readonly");
-                            textarea.classList.add('qst_show')
-                            textarea.innerHTML = question;
-                            alertShow.appendChild(textarea);
-                            const divRadios = document.createElement('div');
-                            divRadios.classList.add('radios')
-                            alertShow.appendChild(divRadios);
-                            for (let i = 0; i < multipleChoice.length; i++) {
-                                const divRadio = document.createElement('div');
-                                divRadio.classList.add('radio')
-                                divRadios.appendChild(divRadio);
-                                const input = document.createElement('input');
-                                input.setAttribute("id", "radio" + (i+1) );
-                                input.setAttribute("type", "radio");
-                                input.setAttribute("name", "radio");
-                                input.setAttribute("value", i+1 );
-                                divRadio.appendChild(input);
-                                const label = document.createElement('label');
-                                label.setAttribute("for", "radio" + (i+1) );
-                                divRadio.appendChild(label);
-                                label.innerHTML = multipleChoice[i];
-                            }
-                        }
+                alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
+            }, 1000);
 
-                        const alertBtnDiv = document.createElement('div');
-                        alertBtnDiv.classList.add('alert-btn-div')
-                        alertShow.appendChild(alertBtnDiv);
-                        const alertBtn = document.createElement('button');
-                        alertBtn.setAttribute('id','alert-btn');
-                        alertBtnDiv.appendChild(alertBtn);
-                        const alertBtnText = document.createElement('p');
-                        alertBtnText.setAttribute('id','alert-btn__text');
-                        alertBtnText.innerHTML = '警醒按鈕';
-                        alertBtn.appendChild(alertBtnText);
-                        const alertBtnTime = document.createElement('span');
-                        alertBtnTime.setAttribute('id','alert-btn__time');
-                        alertBtnTime.innerHTML = '00:00';
-                        alertBtn.appendChild(alertBtnTime);
+            const now = new Date();
+            setTimeout(() => {
+                clearInterval(countDownInterval);
+                alertModule.hidden = true;
+                alertShow.remove();
+            }, timestampEnd.getTime() - now.getTime());
+        }
 
-                        alertModule.hidden = false;
-
-                        alertBtn.addEventListener('click', async () => {
-                            if (alertBtn.dataset.id) {
-                                const alertDoc     = doc(alertRecords, alertBtn.dataset.id);
-                                const participants = collection(alertDoc, 'participants');
-                                const userDoc      = doc(participants, localUserId);
-                                const answearChosen = document.querySelector(".chosen");
-                                const qstShowAnswear = document.querySelector(".qst_show_answear");
-
-                                if(alertType === 'click') {
-                                    const data = {
-                                        click : true,
-                                        timestamp: new Date()
-                                    }
-                                    await updateDoc(userDoc, data);
-                                    alertBtnTime.hidden = true;
-                                    alertBtnText.innerHTML = '簽到完成';
-                                    alertBtn.classList.add('active');
-
-                                    await delay(1000);
-                                    alertBtn.hidden = true;
-                                    alertBtnTime.hidden = false;
-                                    alertBtnText.innerHTML = '警醒按鈕';
-                                    alertBtn.classList.remove('active');
-
-                                    alertModule.hidden = true;
-                                }else if(alertType === 'multiple choice') {
-                                    if(answearChosen != null) {
-                                        const data = {
-                                            click: true,
-                                            answear: answearChosen.innerHTML,
-                                            timestamp: new Date(),
-                                        }
-                                        await updateDoc(userDoc, data);
-                                        alertBtnTime.hidden = true;
-                                        alertBtnText.innerHTML = '簽到完成';
-                                        alertBtn.classList.add('active');
-
-                                        await delay(1000);
-                                        alertBtn.hidden = true;
-                                        alertBtnTime.hidden = false;
-                                        alertBtnText.innerHTML = '警醒按鈕';
-                                        alertBtn.classList.remove('active');
-
-                                        alertModule.hidden = true;
-                                    }
-                                }else if(alertType === 'essay question') {
-                                    if(qstShowAnswear.value != '') {
-                                        const data = {
-                                            click: true,
-                                            answear: qstShowAnswear.value,
-                                            timestamp: new Date(),
-                                        }
-                                        await updateDoc(userDoc, data);
-                                        alertBtnTime.hidden = true;
-                                        alertBtnText.innerHTML = '簽到完成';
-                                        alertBtn.classList.add('active');
-
-                                        await delay(1000);
-                                        alertBtn.hidden = true;
-                                        alertBtnTime.hidden = false;
-                                        alertBtnText.innerHTML = '警醒按鈕';
-                                        alertBtn.classList.remove('active');
-
-                                        alertModule.hidden = true;
-                                    }
-                                }else if(alertType === 'vote') {
-                                    const radio = document.querySelector(".radios").querySelectorAll('input');
-                                    for (let x = 0; x < radio.length; x ++) {
-                                        if (radio[x].checked) {
-                                            const data = {
-                                                click: true,
-                                                answear: radio[x].value,
-                                                timestamp: new Date(),
-                                            }
-                                            await updateDoc(userDoc, data);
-                                            alertBtnTime.hidden = true;
-                                            alertBtnText.innerHTML = '簽到完成';
-                                            alertBtn.classList.add('active');
-    
-                                            await delay(1000);
-                                            alertBtn.hidden = true;
-                                            alertBtnTime.hidden = false;
-                                            alertBtnText.innerHTML = '警醒按鈕';
-                                            alertBtn.classList.remove('active');
-    
-                                            alertModule.hidden = true;
-                                        }
-                                    }
-                                }
-                            }
-                        });
-
-                        alertBtn.dataset.id = change.doc.id;
-
-                        if (Math.random() < 0.5) {
-                            alertModule.style.left  = `${getRandom(50)}%`;
-                            alertModule.style.right = `initial`;
-                        }
-                        else {
-                            alertModule.style.right = `${getRandom(50)}%`;
-                            alertModule.style.left  = `initial`;
-                        }
-
-                        if (Math.random() < 0.5) {
-                            alertModule.style.top     = `${getRandom(50)}%`;
-                            alertModule.style.bottom  = `initial`;
-                        }
-                        else {
-                            alertModule.style.bottom  = `${getRandom(50)}%`;
-                            alertModule.style.top     = `initial`;
-                        }
-
-                        const countDownInterval = setIntervalImmediately(() => {
-                            const now = new Date();
-
-                            const distance = timestampEnd.getTime() - now.getTime();
-
-                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                            alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
-                        }, 1000);
-
-                        const now = new Date();
-                        setTimeout(() => {
-                            clearInterval(countDownInterval);
-                            alertModule.hidden = true;
-                            alertShow.remove();
-                        }, timestampEnd.getTime() - now.getTime());
-                    }
-
-            }else if (change.type === 'modified' && change.doc.data().done == false && change.doc.data().outdated == true) {
-                const alertShows = document.querySelectorAll('.alert-show');
-                alertShows.forEach(alertShow => {
-                    alertShow.remove();
-                });
-            }
+    }else if (alertRecord.Finished == false && alertRecord.Outdated == true) {
+        const alertShows = document.querySelectorAll('.alert-show');
+        alertShows.forEach(alertShow => {
+            alertShow.remove();
         });
-    });
+    }
 }
 
 window.onresize = () => {Cam.resizeAll()};
 
-async function addMessageToChat(msgData) {
-    const { user, text, timestamp } = msgData;
-    const date = new Date(timestamp.seconds * 1000);
+chatRoom.addEventListener("scroll", async () => {
+    if (chatRoom.scrollTop === 0 && chatRoom.dataset.status === 'idle'){
+        try {
+            chatRoom.dataset.status = 'fetching';
+            const response = await apiCall('getClassMessages', { classId, messageId: lastMessageId });
+            if (response.status !== 200) {
+                return;
+            }
+            await delay(200);
+            const messages = await response.json();
+            if (messages.length === 0) {
+                chatRoom.dataset.status = 'finish'
+            }
+            else {
+                insertMessagesToChat(messages);
+            }
+        }
+        finally {
+            if (chatRoom.dataset.status === 'fetching') {
+                chatRoom.dataset.status = 'idle'
+            }
+        }
+    }
+});
+
+async function getNewMessage(messageId) {
+    const response =  await apiCall('getClassMessage', { classId, messageId });
+    const message = await response.json();
+
+    const originalScroll = chatRoom.scrollTop;
+    const originalHeight = chatRoom.scrollHeight;
+    await addMessageToChat( message );
+
+    if (approximatelyEqual(originalScroll+chatRoom.clientHeight, originalHeight, 5)) {
+        setIntervalImmediately((interval) => {
+            if (originalHeight !== chatRoom.scrollHeight) {
+                chatRoom.scrollTop = chatRoom.scrollHeight;
+                clearInterval(interval);
+            }
+        }, 10);
+    }
+}
+
+async function insertMessagesToChat(messages) {
+    let userAbove;
+    const lastMessage = chatRoom.firstChild;
+    const lastUuid = (lastMessage.dataset.userUuid === 'null')? null : lastMessage.dataset.userUuid;
+    const originalHeight = chatRoom.scrollHeight;
+    const originalScroll = chatRoom.scrollHeight - chatRoom.scrollTop;
+    for (const message of messages) {
+        const uuid = numberArrayToUUIDString(message.UUID?.data);
+        chatRoom.insertBefore(generateMessage(message, uuid === userAbove), lastMessage);
+        userAbove = uuid;
+    }
+    if (lastUuid === userAbove) {
+        lastMessage.querySelector('.msg__header').remove();
+    }
+    lastMessageId = messages[0].MessageId;
+
+    setIntervalImmediately((interval) => {
+        if (originalHeight !== chatRoom.scrollHeight) {
+            chatRoom.scrollTop = chatRoom.scrollHeight - originalScroll;
+            clearInterval(interval);
+        }
+    }, 10);
+}
+
+function generateMessage(message, noHeader) {
+    const date = new Date(message.Timestamp);
     let YY = date.getFullYear();
     let MM = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth();
     let DD = date.getDate() < 10 ? "0" + date.getDate() :date.getDate();
@@ -912,57 +1439,49 @@ async function addMessageToChat(msgData) {
     let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() :date.getMinutes();
     let YMDhm = YY + "/" + MM + "/" + DD +" " + hh + ":" + mm;
 
-    if (localUserId === user){
-        if(user === userAbove) {
-            const msg = myMsgPrefab.cloneNode(true);
-            const msgText = msg.querySelector('.my-msg__text');
-            const myMsgDate = msg.querySelector('.my-msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            msgText.innerHTML = text;
-            chatRoom.appendChild(msg);
-        }else {
-            const msg = myMsgPrefab.cloneNode(true);
-            const msgUser = msg.querySelector('.my-msg__user');
-            const msgTime = msg.querySelector('.my-msg__timestamp');
-            const msgText = msg.querySelector('.my-msg__text');
-            const myMsgDate = msg.querySelector('.my-msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            msgUser.innerHTML = '你';
-            msgTime.innerHTML = hh + ":" + mm;
-            msgText.innerHTML = text;
-            chatRoom.appendChild(msg);
-        }
+    const uuid = numberArrayToUUIDString(message.UUID?.data);
+
+    const msg = msgPrefab.cloneNode(true);
+
+
+    if (message.IsSelf) {
+        msg.classList.add('my')
+    }
+    const msgUser   = msg.querySelector('.msg__user');
+    const msgTime   = msg.querySelector('.msg__timestamp');
+    const msgText   = msg.querySelector('.msg__text');
+    const msgDate   = msg.querySelector('.msg__date');
+
+    msg.dataset.userUuid = uuid;
+    msgDate.dataset.contentAfter = YMDhm;
+    msgText.innerHTML = message.Content;
+    msgTime.innerHTML = hh + ":" + mm;
+    if (message.isSelf) {
+        msgUser.innerHTML = '你';
     }
     else {
-        if(user === userAbove) {
-            const msg = msgPrefab.cloneNode(true);
-            const msgText = msg.querySelector('.msg__text');
-            const myMsgDate = msg.querySelector('.msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            msgText.innerHTML = text;
-            chatRoom.appendChild(msg);
-        }else {
-            const { name } = await getUserData(user) || { name: "???" };
-            const msg = msgPrefab.cloneNode(true);
-            const msgUser = msg.querySelector('.msg__user');
-            const msgTime = msg.querySelector('.msg__timestamp');
-            const msgText = msg.querySelector('.msg__text');
-            const myMsgDate = msg.querySelector('.msg__date');
-            myMsgDate.attributes[1].value = YMDhm;
-            const { host } = ( await getDoc(callDoc)).data();
-            if ( user === host ) {
-                msgUser.innerHTML = name + '老師';
-                msgUser.classList.add('host');
-            }else {
-                msgUser.innerHTML = '匿名者';
-            }
-            msgTime.innerHTML = hh + ":" + mm;
-            msgText.innerHTML = text;
-            chatRoom.appendChild(msg);
+        msgUser.innerHTML = message.UserName;
+        if (message.IsHost) {
+            msgUser.classList.add('host');
         }
     }
 
-    userAbove = user;
+    if (noHeader) {
+        msg.querySelector('.msg__header').remove();
+    }
+
+    return msg;
+}
+
+let userAbove;
+
+async function addMessageToChat(message) {
+    // {UserId, Email, UserName, PhotoURL, Content, Timestamp}
+
+    const uuid = numberArrayToUUIDString(message.UUID?.data);
+    chatRoom.appendChild(generateMessage(message, uuid === userAbove));
+
+    userAbove = uuid;
 }
 
 function dockListener() {

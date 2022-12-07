@@ -10,13 +10,12 @@
     width: var(--width);
     border-radius: calc( var(--width) / 2 );
     cursor: pointer;
-    background: var(--toggle-color);
+    background: var(--clr-component-700);
+    transition: var(--transition-color);
 
-    &.open {
-        background: var(--clr-primary-700);
-        &::before {
-            left: calc( 3 * var(--width) / 4 - var(--button-size) / 2 );
-         }
+    &:hover,
+    &:focus {
+        background: var(--clr-primary-500);
     }
 
     &::before {
@@ -28,7 +27,20 @@
         top: 50%;
         left: calc( (var(--width) / 2 - var(--button-size)) / 2 );
         transform: translateY(-50%);
-        background: var(--sidebar-color);
-        transition: var(--tran-03);
+        background: var(--clr-component-500);
+        transition: var(--transition-color), var(--transition-inset);
+    }
+
+    &.open {
+        background: var(--clr-primary-500);
+
+        &:hover,
+        &:focus {
+            background: var(--clr-primary-300);
+        }
+
+        &::before {
+            left: calc( 3 * var(--width) / 4 - var(--button-size) / 2 );
+         }
     }
 }

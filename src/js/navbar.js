@@ -1,49 +1,29 @@
-import { auth } from "./firebase-config.js";
-import { onAuthStateChanged, signInWithRedirect, signOut, GoogleAuthProvider } from "firebase/auth";
-
-const body       = document.querySelector('body');
-const profile    = document.querySelector('#navbar-profile');
-const profilePic = document.querySelector('#navbar-profile__picture');
-const loginText  = document.querySelector('#login-text');
-const signInBtn  = document.querySelector('#sign-in');
-const signOutBtn = document.querySelector('#sign-out');
-const modeText   = document.querySelector('#mode-text');
-const modeSwitch = document.querySelector('#mode-switch');
-
-const provider = new GoogleAuthProvider();
+const profile           = document.querySelector('#navbar-profile');
+const profileCloseBtn   = document.querySelector('#navbar-profile__close-btn');
+const loginText         = document.querySelector('#login-text');
+const signInBtn         = document.querySelector('#sign-in');
+const signOutBtn        = document.querySelector('#sign-out');
+const modeText          = document.querySelector('#mode-text');
+const modeSwitch        = document.querySelector('#mode-switch');
 
 if (document.querySelector('#navbar') !== null) {
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            loginText.innerHTML = user.displayName;
-            profilePic.src = user.photoURL
-            signInBtn.hidden = true;
-            signOutBtn.hidden = false;
-        }
-        else {
-            loginText.innerHTML = '未登入';
-            signInBtn.hidden = false;
-            signOutBtn.hidden = true;
-        }
-    })
 
-    signInBtn.addEventListener('click', async () => {
-        // window.location.href = `/login${window.location.pathname}`;
-        signInWithRedirect(auth, provider);
+    signInBtn?.addEventListener('click', async () => {
+        window.location.href = "/auth/google";
     });
 
-    signOutBtn.addEventListener('click', async () => {
-        await signOut(auth);
-        window.location.href = "/";
+    signOutBtn?.addEventListener('click', async () => {
+        window.location.href = "/logout";
     });
 
-    profilePic.addEventListener('click', () => {
-        if (profile.classList.contains('open')) {
-            profile.classList.remove('open');
-        }
-        else {
-            profile.classList.add('open');
-        }
+    profile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profile.setAttribute("aria-expanded", "true");
+        profile.classList.add('open');
+    });
+    profileCloseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profile.setAttribute("aria-expanded", "false");
     });
 
     if (localStorage.getItem('color-scheme') === "dark") {
@@ -55,12 +35,12 @@ if (document.querySelector('#navbar') !== null) {
         modeSwitch.classList.toggle("open");
 
         if (modeSwitch.classList.contains("open")){
-            body.classList.add("dark");
+            document.documentElement.classList.add("dark");
             localStorage.setItem('color-scheme', 'dark');
             modeText.innerHTML = "燈光模式";
         }
         else{
-            body.classList.remove("dark");
+            document.documentElement.classList.remove("dark");
             localStorage.setItem('color-scheme', 'light');
             modeText.innerHTML = "黑暗模式";
         }

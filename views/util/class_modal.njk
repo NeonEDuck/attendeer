@@ -3,35 +3,71 @@
         <tr class="attendee-row" data-id="">
             <td class="attendee-row__name"></td>
             <td class="attendee-row__email"></td>
+            <td class="attendee-row__remove" style="min-width: min-content;"><button type="button" class="attendee-row__remove-btn btn-red">{% include 'svg/cross.svg' %}</button></td>
         </tr>
     </table>
 </div>
 
 <dialog id="class-modal">
+    <span id="modal-error-message">message</span>
     <div class="flex flex-column gap-4">
         <h1 id="class-modal__title">設定</h1>
 
-        <button id="close-modal-btn" class="btn-round btn-red">{% include 'svg/cross.svg' %}</button>
+        <button id="close-modal-btn" class="btn-round btn-red" data-tooltip="取消" data-tooltip-bottom>{% include 'svg/cross.svg' %}</button>
         <form id="close-modal__form" class="flex flex-column gap-4">
-            <input id="class-modal__class-id" name="class-id" type="text" hidden>
-
             <fieldset>
                 <legend>資訊</legend>
                 <div class="field">
                     <label for="class-modal__class-name">課程名稱:</label>
-                    <input id="class-modal__class-name" name="class-name" type="text" autocomplete="off" required>
+                    <input id="class-modal__class-name" class="flex-item-1" name="class-name" type="text" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label for="class-modal__school-select">時課表:</label>
+                    <select id="class-modal__school-select" class="flex-item-1" name="school-select">
+                        <option value="" selected disabled></option>
+                        {% for school in schools %}
+                            <option value="{{ school.SchoolId }}">{{ school.SchoolName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <p>課程卡片顏色:</p>
+                    <div id="class-modal__color-group">
+                        <input id="class-modal__class-color--1"  name="class-color" type="radio" value="1" checked>
+                        <input id="class-modal__class-color--2"  name="class-color" type="radio" value="2">
+                        <input id="class-modal__class-color--3"  name="class-color" type="radio" value="3">
+                        <input id="class-modal__class-color--4"  name="class-color" type="radio" value="4">
+                        <input id="class-modal__class-color--5"  name="class-color" type="radio" value="5">
+                        <input id="class-modal__class-color--6"  name="class-color" type="radio" value="6">
+                        <input id="class-modal__class-color--7"  name="class-color" type="radio" value="7">
+                        <input id="class-modal__class-color--8"  name="class-color" type="radio" value="8">
+                        <input id="class-modal__class-color--9"  name="class-color" type="radio" value="9">
+                        <input id="class-modal__class-color--10" name="class-color" type="radio" value="10">
+                        <nav>
+                            <label for="class-modal__class-color--1"  style="color: var(--clr-class-1)" class="checked"></label>
+                            <label for="class-modal__class-color--2"  style="color: var(--clr-class-2)"></label>
+                            <label for="class-modal__class-color--3"  style="color: var(--clr-class-3)"></label>
+                            <label for="class-modal__class-color--4"  style="color: var(--clr-class-4)"></label>
+                            <label for="class-modal__class-color--5"  style="color: var(--clr-class-5)"></label>
+                            <label for="class-modal__class-color--6"  style="color: var(--clr-class-6)"></label>
+                            <label for="class-modal__class-color--7"  style="color: var(--clr-class-7)"></label>
+                            <label for="class-modal__class-color--8"  style="color: var(--clr-class-8)"></label>
+                            <label for="class-modal__class-color--9"  style="color: var(--clr-class-9)"></label>
+                            <label for="class-modal__class-color--10" style="color: var(--clr-class-10)"></label>
+                        </nav>
+                    </div>
                 </div>
             </fieldset>
             <fieldset>
                 <legend>警醒</legend>
                 <div class="field">
                     <label for="class-modal__alert-interval">警醒間隔:</label>
-                    <input id="class-modal__alert-interval" name="alert-interval" type="number" min="5" max="50" required>
+                    <input id="class-modal__alert-interval" class="flex-item-1" name="alert-interval" type="number" min="5" max="50" required>
                     <label for="class-modal__alert-interval">分鐘</label>
                 </div>
                 <div class="field">
                     <label for="class-modal__alert-time">警醒持續時間:</label>
-                    <input id="class-modal__alert-time" name="alert-time" type="number" min="1" max="3" required>
+                    <input id="class-modal__alert-time" class="flex-item-1" name="alert-time" type="number" min="1" max="3" required>
                     <label for="class-modal__alert-time">分鐘</label>
                 </div>
             </fieldset>
@@ -39,20 +75,32 @@
                 <legend>參與者</legend>
                 <div class="field">
                     <label for="attendee-input">Email:</label>
-                    <input id="attendee-input" name="attendee-input" type="text" autocomplete="off">
+                    <input id="attendee-input" class="flex-item-1" name="attendee-input" type="text" autocomplete="off">
                     <button type="button" id="add-attendee-btn" class="btn-primary">新增參與者</button>
                 </div>
                 <table id="attendee-table">
                     <thead>
                         <th>email</th>
                         <th>名字</th>
+                        <th></th>
                     </thead>
                     <tbody></tbody>
                 </table>
             </fieldset>
             <input type="submit" id="submit-form" hidden disabled/>
         </form>
-        <button type="button" id="submit-class" class="margin-inline-start-auto btn-primary">建立課程</button>
-        <button type="button" id="submit-setting" class="margin-inline-start-auto btn-primary">確定</button>
+        <div class="flex flex-row gap-2 flex-justify-end">
+            <button type="button" id="submit-class" class="btn-primary">建立課程</button>
+            <button type="button" id="submit-delete" class="btn-red" data-tooltip="刪除">{% include 'svg/trashcan.svg' %}</button>
+            <button type="button" id="submit-setting" class="btn-primary" data-tooltip="儲存">{% include 'svg/save.svg' %}</button>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="confirm-delete-modal">
+    <h1>你確定要刪除此課程?</h1>
+    <div class="flex flex-row gap-2 flex-justify-end">
+        <button type="button" id="close-confirm-delete-modal-btn" class="btn-round btn-red" data-tooltip="取消">{% include 'svg/cross.svg' %}</button>
+        <button type="button" id="confirm-delete" class="btn-red" data-tooltip="刪除">{% include 'svg/trashcan.svg' %}</button>
     </div>
 </dialog>

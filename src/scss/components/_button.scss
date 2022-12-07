@@ -1,38 +1,81 @@
-@import '../base/base';
-
 @mixin content-color($color) {
     color: $color;
 
-    path, circle {
+    path, circle, polygon {
         fill: $color;
+        background-color: $color;
     }
 }
 
-button {
+button,
+a.btn {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: row;
+    gap: 0.5em;
     text-decoration: none;
     border: none;
-    font-size: 1em;
+    font-size: 1rem;
     line-height: 1em;
     margin: 0;
     padding: 0.5em;
     border-radius: 1000000px;
-    background-color: var(--clr-active-700);
-    @include content-color(white);
+    min-height: 1.5em;
+    transition: var(--transition-color);
+
+    @extend .btn-primary;
     cursor: pointer;
     svg {
-        width: 1.5em;
-        height: 1.5em;
+        aspect-ratio: 1 / 1;
+        width: 1em;
+        height: 1em;
         margin: 0;
         padding: 0;
     }
 
-    &:has(svg) {
-        aspect-ratio: 1 / 1;
-        border-radius: 50%;
+    &[data-tooltip]::after {
+        content: attr(data-tooltip);
+        display: block;
+        display: none;
+        position: absolute;
+        bottom: calc(100% + 0.5em);
+        background-color: var(--clr-component-300);
+        color: var(--clr-text-500);
+        box-shadow: var(--box-shadow-300);
+        padding: 0.5em 1em;
+        border-radius: 0.5em;
+        width: max-content;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &:hover,
+    &:focus {
+        &::after {
+            display: block;
+            animation: to-top 0.25s forwards;
+        }
+    }
+
+
+    &[data-tooltip][data-tooltip-bottom]::after {
+        bottom: initial;
+        top: calc(100% + 0.5em);
+    }
+
+    &[data-tooltip-bottom] {
+        &:hover,
+        &:focus {
+            &::after {
+                animation: to-bottom 0.25s forwards;
+            }
+        }
+    }
+
+    &:disabled {
+        background-color: var(--clr-component-700) !important;
     }
 }
 
@@ -43,14 +86,14 @@ button {
 
 .btn-switch {
     &.btn-on {
-        @extend .btn-red;
-        > :not(:last-child) {
+        @extend .btn-primary;
+        > :not(:first-child) {
             display: none;
         }
     }
     &:not(.btn-on) {
-        @extend .btn-primary;
-        > :not(:first-child) {
+        @extend .btn-red;
+        > :not(:last-child) {
             display: none;
         }
     }
@@ -78,11 +121,6 @@ button {
         height: 2em;
         min-width: 6em;
         padding-inline: 1em;
-        background-color: var(--color-component-500);
-        @include content-color(var(--text-color));
-        &.btn-on {
-            background-color: var(--color-component-700);
-        }
     }
 
     &-right,
@@ -90,31 +128,85 @@ button {
         width: 2em;
         min-height: 6em;
         padding-block: 1em;
-        background-color: var(--color-component-500);
-        @include content-color(var(--text-color));
+    }
+
+    &-top, &-bottem, &-right, &-left {
+        background-color: var(--clr-component-700);
+        @include content-color(var(--clr-text-500));
+        &:hover,
+        &:focus {
+            background-color: var(--clr-component-500);
+        }
         &.btn-on {
-            background-color: var(--color-component-700);
+            background-color: var(--clr-component-500);
         }
     }
 }
 
 .btn-transparent {
     background-color: transparent;
-    @include content-color(black);
+    @include content-color(var(--clr-text-500));
+
+    &:hover,
+    &:focus {
+        background-color: var(--clr-transparent-500);
+    }
 }
 
 .btn-link {
     background-color: transparent;
     text-decoration: underline;
-    @include content-color(var(--clr-link));
+    @include content-color(var(--clr-primary-500));
+
+    &:hover,
+    &:focus {
+        background-color: initial;
+    }
+
+    &:disabled {
+        color: var(--clr-text-white);
+        text-decoration: none;
+    }
 }
 
 .btn-red {
-    background-color: red;
+    background-color: var(--clr-cancel-500);
     @include content-color(white);
+
+    &:hover,
+    &:focus {
+        background-color: var(--clr-cancel-700);
+    }
 }
 
 .btn-primary {
-    background-color: var(--clr-primary-700);
+    background-color: var(--clr-primary-500);
     @include content-color(white);
+
+    &:hover,
+    &:focus {
+        background-color: var(--clr-primary-700);
+    }
+}
+
+@keyframes to-top {
+    0% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes to-bottom {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }

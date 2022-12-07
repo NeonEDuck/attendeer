@@ -1,12 +1,38 @@
 dialog {
-    --padding: 1rem;
+    --padding: 2rem;
     border: none;
     border-radius: 1em;
     padding: var(--padding);
-    background-color: white;
+    background-color: var(--clr-component-500);
     #close-modal-btn{
         position: absolute;
         top: calc(var(--padding) / 2);
         right: calc(var(--padding) / 2);
+    }
+    #modal-error-message {
+        position: absolute;
+        top: -100%;
+        left: -100%;
+        padding: 0.5em;
+        background-color: var(--clr-cancel-500);
+        color: var(--clr-text-white);
+        border-radius: 0 100000px 100000px 100000px;
+        z-index: 100000;
+        opacity: 1;
+        transition: none;
+        &.show {
+            opacity: 0;
+            transition: opacity 1000ms cubic-bezier(1,0,.96,.33);
+        }
+    }
+}
+
+dialog::backdrop {
+    background: hsl(0 0% 0% / 0.75);
+}
+
+@supports selctor(:has) {
+    html:has(:modal) {
+        overflow: hidden;
     }
 }

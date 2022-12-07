@@ -3,6 +3,7 @@
 {% block script %}
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="/js/meeting.js" type="module" defer></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 {% endblock script %}
 
 {% block navbar %}
@@ -11,39 +12,50 @@
 {% block prefab %}
     <div class="cam">
         <video class="cam__video" autoplay playsinline control=false></video>
-        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture">
-        {# <div id="cam__menu" class="cam__menu close">
-            <li class="cam__li" style="--i:0;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:1;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-            <li class="cam__li" style="--i:2;" >
-                <button><i class='bx bx-pin'></i></button>
-            </li>
-        </div> #}
+        <img class="cam__profile" src="/imgs/dummy_profile.png" alt="profile_picture" referrerpolicy="no-referrer">
+        <div class="cam__menu">
+            <button class="cam__pin-btn" data-tooltip="釘選"><i class='bx bx-pin'></i></button>
+        </div>
         <span class="cam__name"></span>
         <span class="cam__warning" hidden>!</span>
     </div>
     <li class="msg">
-        <p>
+        <div class="msg__header">
             <span class="msg__user"></span>
             <span class="msg__timestamp"></span>
-        </p>
+        </div>
         <div class="msg__date" data-content-after=":after">
             <p class="msg__text" ></p>
         </div>
     </li>
-    <li class="my-msg">
-        <p>
-            <span class="my-msg__timestamp"></span>
-            <span class="my-msg__user"></span>
-        </p>
-        <div class="my-msg__date" data-content-before=":before">
-            <p class="my-msg__text" ></p>
+
+    <div class="toast">
+        <div class="toast-content">
+
+            <div class="message">
+                <span class="text text-1"></span>
+                <span class="text text-2"></span>
+            </div>
         </div>
+        <i class='bx bx-x close-toast'></i>
+
+        <div class="progress"></div>
+    </div>
+
+    <li class="notification" data-type="generic">
+        <header>
+            {% include 'svg/bell.svg' %}
+        </header>
+        <div class="flex-item-1">
+            <h3 class="notification__title">下課提醒</h3>
+            <p class="notification__text">現在是下課時間</p>
+        </div>
+        <footer>
+            <button class="notification__close-btn btn-red">{% include 'svg/cross.svg' %}</button>
+        </footer>
     </li>
+
+
 {% endblock prefab %}
 
 {% block content %}
@@ -58,8 +70,8 @@
                     </span>
 
                     <div class="text header-text">
-                        <span class="name">應用統計學</span>
-                        <span class="profession">xxx-xxx</span>
+                        <span class="sidebar__class-name">{{ className }}</span>
+                        <span class="sidebar__class-id">{{ classId }}</span>
                     </div>
                 </div>
             </header>
@@ -71,32 +83,32 @@
                 <div class="menu">
                     <ul class="menu-links">
                         <li class="nav-link">
-                            <button class="nav-btn" disabled="disabled">
-                                <i class='bx bxs-cog icon' style="color: #818181;"></i>
-                                <span class="text nav-text" style="text-decoration:line-through;color: #818181;">尚無功能</span>
-                                {# 裝置設定 #}
-                            </button>
-                        </li>
-                        <li class="nav-link">
-                            <button class="nav-btn" disabled="disabled">
-                                <i class='bx bxs-cog icon' style="color: #818181;"></i>
-                                <span class="text nav-text" style="text-decoration:line-through;color: #818181;">尚無功能</span>
-                                {# 會議選項 #}
-                            </button>
-                        </li>
-                        <li class="nav-link">
-                            <button class="nav-btn" disabled="disabled">
-                                <i class='bx bxs-cog icon' style="color: #818181;"></i>
-                                <span class="text nav-text" style="text-decoration:line-through;color: #818181;">尚無功能</span> 
-                                {# 會議資訊 #}
-                            </button>
-                        </li>
-                        <li class="nav-link">
                             <button class="nav-btn">
-                                <i class='bx bxs-cog icon'></i>
-                                <span class="text nav-text">警醒資訊</span>
+                                {% include 'svg/setting.svg' %}
+                                <span class="text nav-text">裝置設定</span>
                             </button>
                         </li>
+                        {# 會議選項 #}
+                        {# 會議資訊 #}
+
+                        {% if isHost %}
+
+                            <li class="nav-link">
+                                <button class="nav-btn">
+                                    {% include 'svg/setting.svg' %}
+                                    <span class="text nav-text">警醒紀錄</span>
+                                </button>
+                            </li>
+                            <li class="nav-link">
+                                <button class="nav-btn">
+                                    {% include 'svg/setting.svg' %}
+                                    <span class="text nav-text">警醒資訊</span>
+                                </button>
+                            </li>
+
+                        {% else %}
+
+                        {% endif %}
                     </ul>
                 </div>
 
@@ -115,29 +127,45 @@
             </div>
         </nav>
 
-        <div class="floating-container">
+        <div class="floating-container" hidden>
 
             <div class="floating">
-                <div id="test" style="text-align: center;" hidden >目前只提供會議主辦者警醒設定！</div>
                 <div class="close-floating_button">
                     <i class='bx bx-x-circle'></i>
                 </div>
 
-                {% include './sidebar/alert-info.njk' %}
+                <div class="floating__body">
+                    {% if isHost %}
 
+                        {% include './sidebar/alert-record.njk' %}
+
+                        {% include './sidebar/alert-info.njk' %}
+
+                    {% endif %}
+
+                    {% include './sidebar/user-media.njk' %}
+                </div>
             </div>
         </div>
 
+        <ul id="notification-container">
+        </ul>
+
         <div id="meeting-panel__left">
             <div id="cam-area">
+                <div id="pinned-cam-container">
+
+                </div>
                 <div id="cam-container">
 
                 </div>
-
                 <div id='alert' hidden>
 
                 </div>
 
+                <div id="toasts">
+
+                </div>
             </div>
 
             <div id="toolbar">
@@ -156,7 +184,17 @@
                             <div class="name">螢幕分享</div>
                             <div class="ico" id="ico"><button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include './svg/screen_share.svg' %}</button></div>
                         </li>
-                        <li class="li-bin li-4">
+                        <li class="li-4">
+                            <div class="name">
+                                {% if isHost %}
+                                    開始下課
+                                {% else %}
+                                    提醒下課
+                                {% endif %}
+                            </div>
+                            <div class="ico" id="ico"><button id="notify-dismiss-btn" class="btn-primary btn-round" disabled>{% include './svg/bell.svg' %}</button></div>
+                        </li>
+                        <li class="li-bin li-5">
                             <div class="name">退出會議</div>
                             <div class="ico" id="ico"><button id="hang-up-btn" class="btn-red btn-round" disabled>{% include './svg/hang_up.svg' %}</button></div>
                         </li>
@@ -164,47 +202,50 @@
                     </div>
                 </div>
 
-                {# <span id="call-id">{{ callId }}</span> #}
-                <input id="call-id" type="text" value="{{ callId }}" hidden>
-                {# <input id="call-input" type="text"> #}
-                {# <button id="screen-share-btn" class="btn-primary btn-round" disabled>{% include 'svg/screen_share.svg' %}</button>
-                <button id="hang-up-btn" class="btn-red btn-round" disabled>{% include 'svg/hang_up.svg' %}</button>
-                <button id="message-btn" class="btn-primary btn-round">{% include 'svg/message.svg' %}</button> #}
+                <input id="class-id" type="text" value="{{ classId }}" hidden>
+                <input id="user-id" type="text" value="{{ userId }}" hidden>
+                <input id="user-name" type="text" value="{{ displayName }}" hidden>
+                <input id="photo-URL" type="text" value="{{ photoURL }}" hidden>
+                <input id="host-id" type="text" value="{{ hostId }}" hidden>
 
-
-                <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
             </div>
         </div>
 
         <div id="meeting-panel__right" class="sidebar-right close">
-            <header>
-                <div class="segmented-control">
+            <button id="message-btn" class="btn-primary btn-round">{% include './svg/message.svg' %}</button>
+            <div id="tab-group--section" class="tab-group no-background">
+                <nav>
+                    <div class="slider"></div>
+                    <label for="tab--chat">聊天室</label>
+                    <input type="radio" name="tab" data-section="chat" id="tab--chat" checked/>
 
-                    <input type="radio" name="radio2" value="3" id="tab-1" checked/>
-                    <label for="tab-1" class= "segmented-control__1">
-                        <p>聊天室</p></label>
+                    <label for="tab--member">參與者</label>
+                    <input type="radio" name="tab" data-section="member" id="tab--member" />
+                </nav>
+            </div>
 
-                    <input type="radio" name="radio2" value="4" id="tab-2" />
-                    <label for="tab-2" class= "segmented-control__2">
-                        <p>參與者</p></label>
+            <div id="section">
+                <div id="chat" data-section="chat">
+                    <ul id="chat__room" data-fetching-message="讀取中..." data-finish-message="已到最頂點" data-status="idle" class="margin-block-end-2"></ul>
 
-                    <div class="segmented-control__color"></div>
-
+                    <div id="chat__bar">
+                        <input
+                            id="msg-input"
+                            name="msg-input"
+                            type="text"
+                            placeholder="輸入訊息"
+                            autocomplete="off"
+                            required
+                        />
+                        <button id="send-msg-btn" class="btn-primary">{% include 'svg/airplane.svg' %}</button>
+                    </div>
                 </div>
-            </header>
-            <div id="chat">
-                <ul id="chat__room" class="margin-block-end-2"></ul>
 
-                <div id="chat__bar">
-                    <input
-                        id="msg-input"
-                        name="msg-input"
-                        type="text"
-                        placeholder="輸入訊息"
-                        autocomplete="off"
-                        required
-                    />
-                    <button id="send-msg-btn" class="btn-primary"><i class='bx bx-send'></i></button>
+                <div id="member-list" data-section="member" hidden>
+                    <div class="member-item">
+                        <img src="{{ photoURL }}" alt="profile_picture" referrerpolicy="no-referrer">
+                        <p>{{ displayName }}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -221,7 +262,7 @@
         <div class="flex flex-row gap-2">
             <button id="mic-btn" class="btn-switch btn-round btn-on" disabled>{% include 'svg/mic.svg' %}{% include 'svg/mic_off.svg' %}</button>
             <button id="webcam-btn" class="btn-switch btn-round" disabled>{% include 'svg/webcam.svg' %}{% include 'svg/webcam_off.svg' %}</button>
-            <button id="enter-btn" class="btn-round" disabled>{% include 'svg/right_arrow.svg' %}</button>
+            <button id="enter-btn" class="btn-round" data-tooltip="進入會議" disabled>{% include 'svg/right_arrow.svg' %}</button>
         </div>
     </div>
 {% endblock content %}

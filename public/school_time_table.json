@@ -1,0 +1,366 @@
+[
+    {
+        "id": "ccu1",
+        "name": "國立中正大學",
+        "data": [
+            {"name": "1", "start": {"hour":  7, "minute": 10}, "end": {"hour":  8, "minute":  0}},
+            {"name": "2", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "3", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "4", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "5", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "6", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "7", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "8", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "9", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "10", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "11", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "12", "start": {"hour": 18, "minute": 10}, "end": {"hour": 19, "minute":  0}},
+            {"name": "13", "start": {"hour": 19, "minute": 10}, "end": {"hour": 20, "minute":  0}},
+            {"name": "14", "start": {"hour": 20, "minute": 10}, "end": {"hour": 21, "minute":  0}},
+            {"name": "15", "start": {"hour": 21, "minute": 10}, "end": {"hour": 22, "minute":  0}}
+        ]
+    },
+    {
+        "id": "ccu2",
+        "name": "國立中正大學A組",
+        "data": [
+            {"name": "1", "start": {"hour":  7, "minute": 15}, "end": {"hour":  8, "minute": 30}},
+            {"name": "2", "start": {"hour":  8, "minute": 45}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 15}, "end": {"hour": 11, "minute": 30}},
+            {"name": "4", "start": {"hour": 11, "minute": 45}, "end": {"hour": 13, "minute":  0}},
+            {"name": "5", "start": {"hour": 13, "minute": 15}, "end": {"hour": 14, "minute": 30}},
+            {"name": "6", "start": {"hour": 14, "minute": 45}, "end": {"hour": 16, "minute":  0}},
+            {"name": "7", "start": {"hour": 16, "minute": 15}, "end": {"hour": 17, "minute": 30}},
+            {"name": "8", "start": {"hour": 17, "minute": 45}, "end": {"hour": 19, "minute":  0}},
+            {"name": "9", "start": {"hour": 19, "minute": 15}, "end": {"hour": 20, "minute": 30}},
+            {"name": "10", "start": {"hour": 20, "minute": 45}, "end": {"hour": 22, "minute":  0}}
+        ]
+    },
+    {
+        "id": "nyust",
+        "name": "國立雲林科技大學",
+        "data": [
+            {"name": "W", "start": {"hour":  6, "minute": 10}, "end": {"hour":  7, "minute":  0}},
+            {"name": "X", "start": {"hour":  7, "minute": 10}, "end": {"hour":  8, "minute":  0}},
+            {"name": "A", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "B", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "C", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "D", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "Y", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "E", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "F", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "G", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "H", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "Z", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "I", "start": {"hour": 18, "minute": 10}, "end": {"hour": 19, "minute":  0}},
+            {"name": "J", "start": {"hour": 19, "minute": 10}, "end": {"hour": 20, "minute":  0}},
+            {"name": "K", "start": {"hour": 20, "minute": 10}, "end": {"hour": 21, "minute":  0}},
+            {"name": "L", "start": {"hour": 21, "minute": 10}, "end": {"hour": 22, "minute":  0}}
+        ]
+    },
+    {
+        "id": "ntut",
+        "name": "國立臺北科技大學",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "5", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "6", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "7", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "8", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "9", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "10", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}}
+        ]
+    },
+    {
+        "id": "nptu",
+        "name": "國立屏東大學",
+        "data": [
+            {"name": "M", "start": {"hour":  7, "minute":  0}, "end": {"hour":  7, "minute": 50}},
+            {"name": "01", "start": {"hour":  8, "minute":  0}, "end": {"hour":  8, "minute": 50}},
+            {"name": "02", "start": {"hour":  9, "minute":  0}, "end": {"hour":  9, "minute": 50}},
+            {"name": "03", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "04", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "N", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "05", "start": {"hour": 13, "minute": 30}, "end": {"hour": 14, "minute": 20}},
+            {"name": "06", "start": {"hour": 14, "minute": 30}, "end": {"hour": 15, "minute": 20}},
+            {"name": "07", "start": {"hour": 15, "minute": 40}, "end": {"hour": 16, "minute": 30}},
+            {"name": "08", "start": {"hour": 16, "minute": 40}, "end": {"hour": 17, "minute": 30}},
+            {"name": "09", "start": {"hour": 17, "minute": 35}, "end": {"hour": 18, "minute": 25}},
+            {"name": "A", "start": {"hour": 18, "minute": 30}, "end": {"hour": 19, "minute": 15}},
+            {"name": "B", "start": {"hour": 19, "minute": 20}, "end": {"hour": 20, "minute":  5}}
+        ]
+    },
+    {
+        "id": "ncyu",
+        "name": "國立嘉義大學",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "N", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "5", "start": {"hour": 13, "minute": 20}, "end": {"hour": 14, "minute": 10}},
+            {"name": "6", "start": {"hour": 14, "minute": 20}, "end": {"hour": 15, "minute": 10}},
+            {"name": "7", "start": {"hour": 15, "minute": 20}, "end": {"hour": 16, "minute": 10}},
+            {"name": "8", "start": {"hour": 16, "minute": 20}, "end": {"hour": 17, "minute": 10}},
+            {"name": "9", "start": {"hour": 17, "minute": 20}, "end": {"hour": 18, "minute": 10}},
+            {"name": "A", "start": {"hour": 18, "minute": 30}, "end": {"hour": 19, "minute": 15}},
+            {"name": "B", "start": {"hour": 19, "minute": 20}, "end": {"hour": 20, "minute":  5}},
+            {"name": "C", "start": {"hour": 20, "minute": 10}, "end": {"hour": 20, "minute": 55}},
+            {"name": "D", "start": {"hour": 21, "minute":  0}, "end": {"hour": 21, "minute": 45}}
+        ]
+    },
+    {
+        "id": "ncyu",
+        "name": "國立嘉義大學",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 30}, "end": {"hour":  9, "minute": 20}},
+            {"name": "2", "start": {"hour":  9, "minute": 25}, "end": {"hour": 10, "minute": 15}},
+            {"name": "3", "start": {"hour": 10, "minute": 25}, "end": {"hour": 11, "minute": 15}},
+            {"name": "4", "start": {"hour": 11, "minute": 20}, "end": {"hour": 12, "minute": 10}},
+            {"name": "中午", "start": {"hour": 12, "minute": 30}, "end": {"hour": 13, "minute": 20}},
+            {"name": "5", "start": {"hour": 13, "minute": 30}, "end": {"hour": 14, "minute": 20}},
+            {"name": "6", "start": {"hour": 14, "minute": 30}, "end": {"hour": 15, "minute": 20}},
+            {"name": "7", "start": {"hour": 15, "minute": 30}, "end": {"hour": 16, "minute": 20}},
+            {"name": "8", "start": {"hour": 16, "minute": 30}, "end": {"hour": 17, "minute": 20}},
+            {"name": "9", "start": {"hour": 17, "minute": 30}, "end": {"hour": 18, "minute": 20}},
+            {"name": "A", "start": {"hour": 18, "minute": 25}, "end": {"hour": 19, "minute": 10}},
+            {"name": "B", "start": {"hour": 19, "minute": 10}, "end": {"hour": 19, "minute": 55}},
+            {"name": "C", "start": {"hour": 20, "minute":  0}, "end": {"hour": 20, "minute": 45}},
+            {"name": "D", "start": {"hour": 20, "minute": 50}, "end": {"hour": 21, "minute": 35}},
+            {"name": "E", "start": {"hour": 21, "minute": 35}, "end": {"hour": 22, "minute": 20}}
+        ]
+    },
+    {
+        "id": "fju",
+        "name": "天主教輔仁大學",
+        "data": [
+            {"name": "D1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "D2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "D3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "D4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "D5", "start": {"hour": 13, "minute": 40}, "end": {"hour": 14, "minute": 30}},
+            {"name": "D6", "start": {"hour": 14, "minute": 40}, "end": {"hour": 15, "minute": 30}},
+            {"name": "D7", "start": {"hour": 15, "minute": 40}, "end": {"hour": 16, "minute": 30}},
+            {"name": "D8", "start": {"hour": 16, "minute": 40}, "end": {"hour": 17, "minute": 30}},
+            {"name": "D9", "start": {"hour": 17, "minute": 40}, "end": {"hour": 18, "minute": 30}},
+            {"name": "E1", "start": {"hour": 18, "minute": 40}, "end": {"hour": 19, "minute": 30}},
+            {"name": "E2", "start": {"hour": 19, "minute": 35}, "end": {"hour": 19, "minute": 20}},
+            {"name": "E3", "start": {"hour": 20, "minute": 30}, "end": {"hour": 20, "minute": 20}}
+        ]
+    },
+    {
+        "id": "niu",
+        "name": "國立宜蘭大學",
+        "data": [
+            {"name": "特早課", "start": {"hour":  7, "minute": 10}, "end": {"hour":  8, "minute":  0}},
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "5", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "6", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "7", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "8", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "9", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "A", "start": {"hour": 18, "minute": 20}, "end": {"hour": 19, "minute": 10}}
+        ]
+    },
+    {
+        "id": "nuk",
+        "name": "國立高雄大學",
+        "data": [
+            {"name": "X", "start": {"hour":  7, "minute":  5}, "end": {"hour":  7, "minute": 55}},
+            {"name": "1", "start": {"hour":  8, "minute":  5}, "end": {"hour":  8, "minute": 55}},
+            {"name": "2", "start": {"hour":  9, "minute":  5}, "end": {"hour":  9, "minute": 55}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "Y", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "5", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "6", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "7", "start": {"hour": 15, "minute": 15}, "end": {"hour": 16, "minute":  5}},
+            {"name": "8", "start": {"hour": 16, "minute": 20}, "end": {"hour": 17, "minute": 10}}
+        ]
+    },
+    {
+        "id": "csmu",
+        "name": "中山醫學大學",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute":  0}, "end": {"hour":  9, "minute": 50}},
+            {"name": "3", "start": {"hour": 10, "minute":  0}, "end": {"hour": 10, "minute": 50}},
+            {"name": "4", "start": {"hour": 10, "minute": 50}, "end": {"hour": 11, "minute": 40}},
+            {"name": "5", "start": {"hour": 13, "minute": 30}, "end": {"hour": 14, "minute": 20}},
+            {"name": "6", "start": {"hour": 14, "minute": 20}, "end": {"hour": 15, "minute": 10}},
+            {"name": "7", "start": {"hour": 15, "minute": 20}, "end": {"hour": 16, "minute": 10}},
+            {"name": "8", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "9", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "10", "start": {"hour": 18, "minute": 20}, "end": {"hour": 19, "minute": 10}},
+            {"name": "11", "start": {"hour": 19, "minute": 10}, "end": {"hour": 20, "minute":  0}},
+            {"name": "12", "start": {"hour": 20, "minute": 10}, "end": {"hour": 21, "minute":  0}},
+            {"name": "13", "start": {"hour": 21, "minute":  0}, "end": {"hour": 21, "minute": 50}},
+            {"name": "14", "start": {"hour": 22, "minute":  0}, "end": {"hour": 22, "minute": 50}}
+        ]
+    },
+    {
+        "id": "ncue",
+        "name": "國立彰化師範大學",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute":  5}, "end": {"hour":  9, "minute": 55}},
+            {"name": "3", "start": {"hour": 10, "minute": 15}, "end": {"hour": 11, "minute":  5}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "14", "start": {"hour": 12, "minute":  5}, "end": {"hour": 12, "minute": 55}},
+            {"name": "5", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "6", "start": {"hour": 14, "minute":  5}, "end": {"hour": 14, "minute": 55}},
+            {"name": "7", "start": {"hour": 15, "minute": 15}, "end": {"hour": 16, "minute":  5}},
+            {"name": "8", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "9", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "10", "start": {"hour": 18, "minute": 20}, "end": {"hour": 19, "minute": 10}},
+            {"name": "11", "start": {"hour": 19, "minute": 15}, "end": {"hour": 20, "minute":  5}},
+            {"name": "12", "start": {"hour": 20, "minute": 10}, "end": {"hour": 21, "minute":  0}},
+            {"name": "13", "start": {"hour": 21, "minute":  5}, "end": {"hour": 21, "minute": 55}}
+        ]
+    },
+    {
+        "id": "tumt1",
+        "name": "台北海洋科技大學 淡水校園",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "5", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "6", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "7", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "8", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "9", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "10", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "11", "start": {"hour": 18, "minute": 10}, "end": {"hour": 19, "minute":  0}},
+            {"name": "12", "start": {"hour": 19, "minute": 10}, "end": {"hour": 20, "minute":  0}},
+            {"name": "13", "start": {"hour": 20, "minute": 10}, "end": {"hour": 21, "minute":  0}},
+            {"name": "14", "start": {"hour": 21, "minute": 10}, "end": {"hour": 22, "minute":  0}}
+        ]
+    },
+    {
+        "id": "tumt2",
+        "name": "台北海洋科技大學 蘭陽校園",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "5", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "6", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "7", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "8", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "9", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "10", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "11", "start": {"hour": 18, "minute": 10}, "end": {"hour": 19, "minute":  0}},
+            {"name": "12", "start": {"hour": 19, "minute": 10}, "end": {"hour": 20, "minute":  0}},
+            {"name": "13", "start": {"hour": 20, "minute": 10}, "end": {"hour": 21, "minute":  0}},
+            {"name": "14", "start": {"hour": 21, "minute": 10}, "end": {"hour": 22, "minute":  0}}
+        ]
+    },
+    {
+        "id": "tumt3",
+        "name": "台北海洋科技大學 台北校園",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "5", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "6", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "7", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "8", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "9", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "10", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "11", "start": {"hour": 18, "minute": 20}, "end": {"hour": 19, "minute": 10}},
+            {"name": "12", "start": {"hour": 19, "minute": 20}, "end": {"hour": 20, "minute": 10}},
+            {"name": "13", "start": {"hour": 20, "minute": 20}, "end": {"hour": 21, "minute": 10}},
+            {"name": "14", "start": {"hour": 21, "minute": 20}, "end": {"hour": 22, "minute": 10}}
+        ]
+    },
+    {
+        "id": "tut",
+        "name": "台南應用科技大學",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "5", "start": {"hour": 12, "minute":  5}, "end": {"hour": 12, "minute": 55}},
+            {"name": "6", "start": {"hour": 13, "minute":  0}, "end": {"hour": 13, "minute": 50}},
+            {"name": "7", "start": {"hour": 14, "minute":  0}, "end": {"hour": 14, "minute": 50}},
+            {"name": "8", "start": {"hour": 15, "minute":  0}, "end": {"hour": 15, "minute": 50}},
+            {"name": "9", "start": {"hour": 16, "minute":  0}, "end": {"hour": 16, "minute": 50}},
+            {"name": "10", "start": {"hour": 16, "minute": 55}, "end": {"hour": 17, "minute": 45}}
+        ]
+    },
+    {
+        "id": "clut",
+        "name": "致理科技大學",
+        "data": [
+            {"name": "A01", "start": {"hour":  8, "minute": 20}, "end": {"hour":  9, "minute": 10}},
+            {"name": "A02", "start": {"hour":  9, "minute": 20}, "end": {"hour": 10, "minute": 10}},
+            {"name": "A03", "start": {"hour": 10, "minute": 20}, "end": {"hour": 11, "minute": 10}},
+            {"name": "A04", "start": {"hour": 11, "minute": 20}, "end": {"hour": 12, "minute": 10}},
+            {"name": "A05", "start": {"hour": 12, "minute": 20}, "end": {"hour": 13, "minute": 10}},
+            {"name": "A06", "start": {"hour": 13, "minute": 20}, "end": {"hour": 14, "minute": 10}},
+            {"name": "A07", "start": {"hour": 14, "minute": 20}, "end": {"hour": 15, "minute": 10}},
+            {"name": "A08", "start": {"hour": 15, "minute": 20}, "end": {"hour": 16, "minute": 10}},
+            {"name": "A09", "start": {"hour": 16, "minute": 20}, "end": {"hour": 17, "minute": 10}},
+            {"name": "特別01", "start": {"hour": 17, "minute": 20}, "end": {"hour": 18, "minute": 10}},
+            {"name": "B01", "start": {"hour": 18, "minute": 20}, "end": {"hour": 19, "minute":  5}},
+            {"name": "B02", "start": {"hour": 19, "minute": 10}, "end": {"hour": 19, "minute": 55}},
+            {"name": "B03", "start": {"hour": 20, "minute":  5}, "end": {"hour": 20, "minute": 50}},
+            {"name": "B04", "start": {"hour": 20, "minute": 55}, "end": {"hour": 21, "minute": 40}}
+        ]
+    },
+    {
+        "id": "ntub",
+        "name": "國立臺北商業大學",
+        "data": [
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "5", "start": {"hour": 13, "minute": 30}, "end": {"hour": 14, "minute": 20}},
+            {"name": "6", "start": {"hour": 14, "minute": 25}, "end": {"hour": 15, "minute": 15}},
+            {"name": "7", "start": {"hour": 15, "minute": 25}, "end": {"hour": 16, "minute": 15}},
+            {"name": "8", "start": {"hour": 16, "minute": 20}, "end": {"hour": 17, "minute": 10}},
+            {"name": "9", "start": {"hour": 17, "minute": 15}, "end": {"hour": 18, "minute":  5}},
+            {"name": "10", "start": {"hour": 18, "minute":  5}, "end": {"hour": 18, "minute":  5}},
+            {"name": "11", "start": {"hour": 18, "minute": 30}, "end": {"hour": 19, "minute": 15}},
+            {"name": "12", "start": {"hour": 19, "minute": 20}, "end": {"hour": 20, "minute":  5}},
+            {"name": "13", "start": {"hour": 20, "minute": 15}, "end": {"hour": 21, "minute":  0}},
+            {"name": "14", "start": {"hour": 21, "minute":  5}, "end": {"hour": 21, "minute": 50}}
+        ]
+    },
+    {
+        "id": "nccu",
+        "name": "國立政治大學",
+        "data": [
+            {"name": "A", "start": {"hour":  6, "minute": 10}, "end": {"hour":  7, "minute":  0}},
+            {"name": "B", "start": {"hour":  7, "minute": 10}, "end": {"hour":  8, "minute":  0}},
+            {"name": "1", "start": {"hour":  8, "minute": 10}, "end": {"hour":  9, "minute":  0}},
+            {"name": "2", "start": {"hour":  9, "minute": 10}, "end": {"hour": 10, "minute":  0}},
+            {"name": "3", "start": {"hour": 10, "minute": 10}, "end": {"hour": 11, "minute":  0}},
+            {"name": "4", "start": {"hour": 11, "minute": 10}, "end": {"hour": 12, "minute":  0}},
+            {"name": "C", "start": {"hour": 12, "minute": 10}, "end": {"hour": 13, "minute":  0}},
+            {"name": "D", "start": {"hour": 13, "minute": 10}, "end": {"hour": 14, "minute":  0}},
+            {"name": "5", "start": {"hour": 14, "minute": 10}, "end": {"hour": 15, "minute":  0}},
+            {"name": "6", "start": {"hour": 15, "minute": 10}, "end": {"hour": 16, "minute":  0}},
+            {"name": "7", "start": {"hour": 16, "minute": 10}, "end": {"hour": 17, "minute":  0}},
+            {"name": "8", "start": {"hour": 17, "minute": 10}, "end": {"hour": 18, "minute":  0}},
+            {"name": "E", "start": {"hour": 18, "minute": 10}, "end": {"hour": 19, "minute":  0}},
+            {"name": "F", "start": {"hour": 19, "minute": 10}, "end": {"hour": 20, "minute":  0}},
+            {"name": "G", "start": {"hour": 20, "minute": 10}, "end": {"hour": 21, "minute":  0}},
+            {"name": "H", "start": {"hour": 21, "minute": 10}, "end": {"hour": 22, "minute":  0}}
+        ]
+    }
+]
