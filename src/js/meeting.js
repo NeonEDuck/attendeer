@@ -78,6 +78,7 @@ let schoolPeriods;
 let notifyDismissCoolDownTimeInMinute = 1;
 let inNotifyDismissCoolDown = false;
 let dismissedClasses = [];
+let currentRecordId = null;
 export let globalAlertType;
 export let globalInterval;
 export let globalTime;
@@ -422,9 +423,16 @@ enterBtn.addEventListener('click', async () => {
         spawnDismissTimerNotification(new Date(time));
     });
 
-    socket.on('catch-inform-status', (data) => {
+    socket.on('catch-inform-status', async (data) => {
         console.log(`catch inform status`);
         console.log(data);
+
+        if (data.currentRecordId) {
+            const response = await apiCall('getAlertRecord', {classId, recordId: data.currentRecordId});
+            const alertRecord = await response.json();
+            console.log(alertRecord);
+            setupAlertListener(alertRecord);
+        }
 
         dismissedClasses = data.dismissedClasses;
         if (dismissedClasses.length > 0) {
@@ -489,7 +497,7 @@ enterBtn.addEventListener('click', async () => {
 
         socket.on('catch-request-status', (socketId) => {
             console.log('catch request status');
-            socket.emit('throw-inform-status', socketId, {dismissedClasses, inNotifyDismissCoolDown});
+            socket.emit('throw-inform-status', socketId, {dismissedClasses, inNotifyDismissCoolDown, currentRecordId});
         });
 
         setIntervalImmediately(() => {
@@ -1066,6 +1074,7 @@ async function startAlert() {
             await delay( globalInterval * MINUTE );
 
             await apiCall('turnOnRecord', { classId, recordId });
+            currentRecordId = recordId;
             socket.emit('throw-alert-start', recordId);
             console.log(`throw ${recordId}`)
 
@@ -1084,6 +1093,7 @@ async function startAlert() {
                 else { // outdated
 
                 }
+                currentRecordId = null;
             }
             // if (outdated === true) {
             //     await apiCall('DeleteAlertRecord', { classId, recordId })
@@ -1141,200 +1151,207 @@ export async function setupAlertListener(alertRecord) {
         const response = await apiCall('getAlertRecordReact', {classId, recordId: alertRecord.RecordId});
         let click = true
 
-        let reactId = (await response.json()).ReactId;
+        let reactId = null;
+        if (response.status === 200) {
+            const recordReact = await response.json();
+            reactId = recordReact.ReactId;
+            click = recordReact.Clicked == 1;
+        }
 
-            if( !reactId ) {
-                console.log('no react')
-                const response = await apiCall('addAlertRecordReact', {classId,  recordId: alertRecord.RecordId})
-                const { insertId } = await response.json()
-                reactId = insertId;
-                click = false;
-                console.log('click:' + click)
+        if( !reactId ) {
+            console.log('no react')
+            const response = await apiCall('addAlertRecordReact', {classId,  recordId: alertRecord.RecordId})
+            const { insertId } = await response.json()
+            reactId = insertId;
+            click = false;
+            console.log('click:' + click)
+        }
+
+        console.log("REACTID: " + reactId);
+
+        if( click == false ) {
+            console.log('see alert');
+            alertModule.hidden = false;
+            const alertShow = document.createElement('div');
+            alertShow.classList.add('alert-show')
+            alertModule.appendChild(alertShow);
+
+            if(alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice) {
+                const textarea = document.createElement('textarea');
+                textarea.setAttribute("readonly", "readonly");
+                textarea.classList.add('qst_show')
+                textarea.innerHTML = alertRecord.Question;
+                alertShow.appendChild(textarea);
+                for (let i = 0; i < alertRecord.MultipleChoice.length; i++) {
+                    const field = document.createElement('div');
+                    field.classList.add('field')
+                    alertShow.appendChild(field);
+                    const span = document.createElement('span');
+                    span.classList.add('span_No');
+                    span.innerHTML = i+1;
+                    field.appendChild(span);
+                    const input = document.createElement('input');
+                    input.classList.add('option_input')
+                    input.setAttribute("readonly", "readonly");
+                    input.value = alertRecord.MultipleChoice[i];
+                    field.appendChild(input);
+
+                    span.addEventListener('click', () => {
+                        let no = alertShow.querySelectorAll(".span_No");
+                        Array.from(no).forEach((item) => {
+                            item.classList.remove("chosen");
+                        });
+                        span.classList.toggle("chosen");
+                    });
+                }
+            }else if(alertRecord.AlertTypeId === AlertTypeEnum.EssayQuestion) {
+                const textarea = document.createElement('textarea');
+                textarea.setAttribute("readonly", "readonly");
+                textarea.classList.add('qst_show')
+                textarea.innerHTML = alertRecord.Question;
+                alertShow.appendChild(textarea);
+                const div = document.createElement('div');
+                alertShow.appendChild(div);
+                const textarea1 = document.createElement('textarea');
+                textarea1.classList.add('qst_show_answear')
+                div.appendChild(textarea1);
+            }else if(alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
+                const textarea = document.createElement('textarea');
+                textarea.setAttribute("readonly", "readonly");
+                textarea.classList.add('qst_show')
+                textarea.innerHTML = alertRecord.Question;
+                alertShow.appendChild(textarea);
+                const divRadios = document.createElement('div');
+                divRadios.classList.add('radios')
+                alertShow.appendChild(divRadios);
+                for (let i = 0; i < alertRecord.MultipleChoice.length; i++) {
+                    const divRadio = document.createElement('div');
+                    divRadio.classList.add('radio')
+                    divRadios.appendChild(divRadio);
+                    const input = document.createElement('input');
+                    input.setAttribute("id", "radio" + (i+1) );
+                    input.setAttribute("type", "radio");
+                    input.setAttribute("name", "radio");
+                    input.setAttribute("value", i+1 );
+                    divRadio.appendChild(input);
+                    const label = document.createElement('label');
+                    label.setAttribute("for", "radio" + (i+1) );
+                    divRadio.appendChild(label);
+                    label.innerHTML = alertRecord.MultipleChoice[i];
+                }
             }
 
-            if( click === false ) {
-                console.log('see alert');
-                alertModule.hidden = false;
-                const alertShow = document.createElement('div');
-                alertShow.classList.add('alert-show')
-                alertModule.appendChild(alertShow);
+            const alertBtnDiv = document.createElement('div');
+            alertBtnDiv.classList.add('alert-btn-div')
+            alertShow.appendChild(alertBtnDiv);
+            const alertBtn = document.createElement('button');
+            alertBtn.setAttribute('id','alert-btn');
+            alertBtnDiv.appendChild(alertBtn);
+            const alertBtnText = document.createElement('p');
+            alertBtnText.setAttribute('id','alert-btn__text');
+            alertBtnText.innerHTML = '警醒按鈕';
+            alertBtn.appendChild(alertBtnText);
+            const alertBtnTime = document.createElement('span');
+            alertBtnTime.setAttribute('id','alert-btn__time');
+            alertBtnTime.innerHTML = '00:00';
+            alertBtn.appendChild(alertBtnTime);
 
-                if(alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice) {
-                    const textarea = document.createElement('textarea');
-                    textarea.setAttribute("readonly", "readonly");
-                    textarea.classList.add('qst_show')
-                    textarea.innerHTML = alertRecord.Question;
-                    alertShow.appendChild(textarea);
-                    for (let i = 0; i < alertRecord.MultipleChoice.length; i++) {
-                        const field = document.createElement('div');
-                        field.classList.add('field')
-                        alertShow.appendChild(field);
-                        const span = document.createElement('span');
-                        span.classList.add('span_No');
-                        span.innerHTML = i+1;
-                        field.appendChild(span);
-                        const input = document.createElement('input');
-                        input.classList.add('option_input')
-                        input.setAttribute("readonly", "readonly");
-                        input.value = alertRecord.MultipleChoice[i];
-                        field.appendChild(input);
+            alertBtn.addEventListener('click', async () => {
+                const answearChosen = document.querySelector(".chosen");
+                const qstShowAnswear = document.querySelector(".qst_show_answear");
 
-                        span.addEventListener('click', () => {
-                            let no = alertShow.querySelectorAll(".span_No");
-                            Array.from(no).forEach((item) => {
-                                item.classList.remove("chosen");
-                            });
-                            span.classList.toggle("chosen");
-                        });
+                let DoneClick = false;
+                let data;
+
+                if( alertRecord.AlertTypeId === AlertTypeEnum.Click) {
+                    DoneClick = true;
+                    data = {
+                        click : true,
                     }
-                }else if(alertRecord.AlertTypeId === AlertTypeEnum.EssayQuestion) {
-                    const textarea = document.createElement('textarea');
-                    textarea.setAttribute("readonly", "readonly");
-                    textarea.classList.add('qst_show')
-                    textarea.innerHTML = alertRecord.Question;
-                    alertShow.appendChild(textarea);
-                    const div = document.createElement('div');
-                    alertShow.appendChild(div);
-                    const textarea1 = document.createElement('textarea');
-                    textarea1.classList.add('qst_show_answear')
-                    div.appendChild(textarea1);
-                }else if(alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
-                    const textarea = document.createElement('textarea');
-                    textarea.setAttribute("readonly", "readonly");
-                    textarea.classList.add('qst_show')
-                    textarea.innerHTML = alertRecord.Question;
-                    alertShow.appendChild(textarea);
-                    const divRadios = document.createElement('div');
-                    divRadios.classList.add('radios')
-                    alertShow.appendChild(divRadios);
-                    for (let i = 0; i < alertRecord.MultipleChoice.length; i++) {
-                        const divRadio = document.createElement('div');
-                        divRadio.classList.add('radio')
-                        divRadios.appendChild(divRadio);
-                        const input = document.createElement('input');
-                        input.setAttribute("id", "radio" + (i+1) );
-                        input.setAttribute("type", "radio");
-                        input.setAttribute("name", "radio");
-                        input.setAttribute("value", i+1 );
-                        divRadio.appendChild(input);
-                        const label = document.createElement('label');
-                        label.setAttribute("for", "radio" + (i+1) );
-                        divRadio.appendChild(label);
-                        label.innerHTML = alertRecord.MultipleChoice[i];
-                    }
-                }
+                }else if(alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice) {
+                    if(answearChosen != null) {
 
-                const alertBtnDiv = document.createElement('div');
-                alertBtnDiv.classList.add('alert-btn-div')
-                alertShow.appendChild(alertBtnDiv);
-                const alertBtn = document.createElement('button');
-                alertBtn.setAttribute('id','alert-btn');
-                alertBtnDiv.appendChild(alertBtn);
-                const alertBtnText = document.createElement('p');
-                alertBtnText.setAttribute('id','alert-btn__text');
-                alertBtnText.innerHTML = '警醒按鈕';
-                alertBtn.appendChild(alertBtnText);
-                const alertBtnTime = document.createElement('span');
-                alertBtnTime.setAttribute('id','alert-btn__time');
-                alertBtnTime.innerHTML = '00:00';
-                alertBtn.appendChild(alertBtnTime);
-
-                alertBtn.addEventListener('click', async () => {
-                    const answearChosen = document.querySelector(".chosen");
-                    const qstShowAnswear = document.querySelector(".qst_show_answear");
-
-                    let DoneClick = false;
-                    let data;
-
-                    if( alertRecord.AlertTypeId === AlertTypeEnum.Click) {
                         DoneClick = true;
                         data = {
-                            click : true,
+                            click: true,
+                            answear: answearChosen.innerHTML,
                         }
-                    }else if(alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice) {
-                        if(answearChosen != null) {
-
+                    }
+                }else if(alertRecord.AlertTypeId === AlertTypeEnum.EssayQuestion) {
+                    if(qstShowAnswear.value != '') {
+                        DoneClick = true;
+                        data = {
+                            click: true,
+                            answear: qstShowAnswear.value,
+                        }
+                    }
+                }else if(alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
+                    const radio = document.querySelector(".radios").querySelectorAll('input');
+                    for (let x = 0; x < radio.length; x ++) {
+                        if (radio[x].checked) {
                             DoneClick = true;
                             data = {
                                 click: true,
-                                answear: answearChosen.innerHTML,
+                                answear: radio[x].value,
                             }
-                        }
-                    }else if(alertRecord.AlertTypeId === AlertTypeEnum.EssayQuestion) {
-                        if(qstShowAnswear.value != '') {
-                            DoneClick = true;
-                            data = {
-                                click: true,
-                                answear: qstShowAnswear.value,
-                            }
-                        }
-                    }else if(alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
-                        const radio = document.querySelector(".radios").querySelectorAll('input');
-                        for (let x = 0; x < radio.length; x ++) {
-                            if (radio[x].checked) {
-                                DoneClick = true;
-                                data = {
-                                    click: true,
-                                    answear: radio[x].value,
-                                }
-                                break;
-                            }
+                            break;
                         }
                     }
-
-                    if ( DoneClick === true ) {
-                        await apiCall('updateAlertRecordReact', {classId, reactId, data})
-                        // await updateDoc(userDoc, data);
-                        alertBtnTime.hidden = true;
-                        alertBtnText.innerHTML = '簽到完成';
-                        alertBtn.classList.add('active');
-                        await delay(1000);
-                        alertBtn.hidden = true;
-                        alertBtnTime.hidden = false;
-                        alertBtnText.innerHTML = '警醒按鈕';
-                        alertBtn.classList.remove('active');
-                        alertModule.hidden = true;
-                    }
-                });
-
-                // alertBtn.dataset.id = alertRecord.RecordId;
-
-                if (Math.random() < 0.5) {
-                    alertModule.style.left  = `${getRandom(50)}%`;
-                    alertModule.style.right = `initial`;
-                }
-                else {
-                    alertModule.style.right = `${getRandom(50)}%`;
-                    alertModule.style.left  = `initial`;
                 }
 
-                if (Math.random() < 0.5) {
-                    alertModule.style.top     = `${getRandom(50)}%`;
-                    alertModule.style.bottom  = `initial`;
-                }
-                else {
-                    alertModule.style.bottom  = `${getRandom(50)}%`;
-                    alertModule.style.top     = `initial`;
-                }
-
-                const countDownInterval = setIntervalImmediately(() => {
-                    const now = new Date();
-
-                    const distance = timestampEnd.getTime() - now.getTime();
-
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                    alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
-                }, 1000);
-
-                const now = new Date();
-                setTimeout(() => {
-                    clearInterval(countDownInterval);
+                if ( DoneClick === true ) {
+                    await apiCall('updateAlertRecordReact', {classId, reactId, data})
+                    // await updateDoc(userDoc, data);
+                    alertBtnTime.hidden = true;
+                    alertBtnText.innerHTML = '簽到完成';
+                    alertBtn.classList.add('active');
+                    await delay(1000);
+                    alertBtn.hidden = true;
+                    alertBtnTime.hidden = false;
+                    alertBtnText.innerHTML = '警醒按鈕';
+                    alertBtn.classList.remove('active');
                     alertModule.hidden = true;
-                    alertShow.remove();
-                }, timestampEnd.getTime() - now.getTime());
+                }
+            });
+
+            // alertBtn.dataset.id = alertRecord.RecordId;
+
+            if (Math.random() < 0.5) {
+                alertModule.style.left  = `${getRandom(50)}%`;
+                alertModule.style.right = `initial`;
             }
+            else {
+                alertModule.style.right = `${getRandom(50)}%`;
+                alertModule.style.left  = `initial`;
+            }
+
+            if (Math.random() < 0.5) {
+                alertModule.style.top     = `${getRandom(50)}%`;
+                alertModule.style.bottom  = `initial`;
+            }
+            else {
+                alertModule.style.bottom  = `${getRandom(50)}%`;
+                alertModule.style.top     = `initial`;
+            }
+
+            const countDownInterval = setIntervalImmediately(() => {
+                const now = new Date();
+
+                const distance = timestampEnd.getTime() - now.getTime();
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                alertBtnTime.innerHTML = `${minutes}`.padStart(2, '0') + ':' + `${seconds}`.padStart(2, '0')
+            }, 1000);
+
+            const now = new Date();
+            setTimeout(() => {
+                clearInterval(countDownInterval);
+                alertModule.hidden = true;
+                alertShow.remove();
+            }, timestampEnd.getTime() - now.getTime());
+        }
 
     }else if (alertRecord.Finished == false && alertRecord.Outdated == true) {
         const alertShows = document.querySelectorAll('.alert-show');
