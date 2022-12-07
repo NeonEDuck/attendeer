@@ -864,16 +864,16 @@ body.dark {
                             padding: 5px;
                         }
                         .field {
-                            // button {
-                            //     width: 90%;
-                            //     height: 45px;
-                            //     border-radius: 5px;
-                            // }
-                            // i {
-                            //     color: #f00;
-                            //     font-size: 40px;
-                            //     display: none;
-                            // }
+                            button {
+                                width: 100%;
+                                height: 45px;
+                                border-radius: 5px;
+                            }
+                            i {
+                                color: #f00;
+                                font-size: 40px;
+                                display: none;
+                            }
                         }
                         input {
                             height: 45px;
