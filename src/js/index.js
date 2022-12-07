@@ -13,7 +13,13 @@ async function refreshClasses() {
     const response = await apiCall('getClasses');
     const classes = await response.json();
     classList.querySelectorAll('.class-card').forEach((e) => {
-        e.remove();
+        const idx = classes.findIndex((x) => x.ClassId === e.dataset.classId);
+        if (idx === -1) {
+            e.remove();
+        }
+        else {
+            classes.splice(idx, 1);
+        }
     });
     for (const classData of classes) {
         const classCard           = classCardPrefab.cloneNode(true);
@@ -23,6 +29,7 @@ async function refreshClasses() {
         const classCardClasssId   = classCard.querySelector('.class-card__class-id');
         const classCardHost       = classCard.querySelector('.class-card__host');
         classCard.style.setProperty('--class-color', `var(--clr-class-${classData.ClassColor})`);
+        classCard.dataset.classId = classData.ClassId;
         classCardName.innerHTML = classData.ClassName;
         classCardBtn.addEventListener('click', () => {
             window.location.href = `/${classData.ClassId}`;
