@@ -182,14 +182,14 @@
             border-radius: 30px;
             background-color: transparent;
             transition: var(--tran-03);
-        }
+            &:hover,
+            &:focus {
+                background: var(--primary-color);
 
-        button:hover {
-            background: var(--primary-color);
-
-            .icon,
-            .text {
-                color: var(--sidebar-color);
+                .icon,
+                .text {
+                    color: var(--sidebar-color);
+                }
             }
         }
 
@@ -258,7 +258,8 @@ body.dark {
         color: var(--clr-text);
     }
 
-    .sidebar li button:hover {
+    .sidebar li button:hover,
+    .sidebar li button:focus {
 
         .icon,
         .text {
@@ -309,7 +310,8 @@ body.dark {
         p {
             color: var(--text-color);
         }
-        &:hover {
+        &:hover,
+        &:focus {
             color: var(--button-hov-color);
         }
         &:active {
@@ -631,7 +633,8 @@ body.dark {
             p {
                 color: var(--text-color);
             }
-            &:hover {
+            &:hover,
+            &:focus {
                 color: var(--button-hov-color);
             }
             &:active {
@@ -964,7 +967,8 @@ body.dark {
     // overflow: hidden;
     transition: var(--tran-05);
 
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: var(--clr-component-300);
         .cam__menu {
             opacity: 1;
@@ -985,7 +989,8 @@ body.dark {
         height: 100%;
         transition: opacity var(--transition-timing);
 
-        &:hover {
+        &:hover,
+        &:focus {
             opacity: 0.3;
         }
     }
@@ -1144,7 +1149,8 @@ body.dark {
             transition: 0.2s;
             transform-origin: 50% 100%;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 margin: 0px 13px 0px 13px;
                 .name {
                     visibility: visible !important;
@@ -1188,7 +1194,8 @@ body.dark {
                 object-fit: cover;
                 transition: 0.2s;
 
-                &:hover {
+                &:hover,
+                &:focus {
                     margin-left: 10px;
                 }
             }
@@ -1279,7 +1286,8 @@ body.dark {
             transition: initial;
         }
 
-        .my.msg .msg__date:hover::after {
+        .my.msg .msg__date:hover::after,
+        .my.msg .msg__date:focus::after {
             content: attr(data-content-after);
             position: absolute;
             width: fit-content;
@@ -1290,7 +1298,8 @@ body.dark {
             padding: 5px;
         }
 
-        .msg__date:hover::after {
+        .msg__date:hover::after,
+        .msg__date:focus::after {
             content: attr(data-content-after);
             position: absolute;
             width: fit-content;
@@ -1428,7 +1437,8 @@ body.dark {
             cursor: pointer;
             opacity: 0.5;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 opacity: 1;
             }
         }
@@ -1463,7 +1473,8 @@ body.dark {
                 }
             }
         }
-        &:hover {
+        &:hover,
+        &:focus {
             opacity: 1;
         }
     }

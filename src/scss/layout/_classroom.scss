@@ -173,7 +173,8 @@
         td, th {
             padding-block: 0.5em;
             transition: var(--transition-color);
-            &:hover {
+            &:hover,
+            &:focus {
                 background-color: var(--clr-component-300);
             }
             &:not(:first-child) {
@@ -181,7 +182,8 @@
             }
             &.on {
                 background-color: var(--clr-primary-500);
-                &:hover {
+                &:hover,
+                &:focus {
                     background-color: var(--clr-primary-300);
                 }
             }
@@ -253,9 +255,12 @@
         tbody {
             tr {
                 background-color: var(--clr-component-700);
-                &:hover:not(.header) {
-                    background-color: var(--border--color);;
-                    cursor: pointer;
+                &:hover,
+                &:focus {
+                    &:not(.header) {
+                        background-color: var(--border--color);;
+                        cursor: pointer;
+                    }
                 }
                 &:nth-child(2n) {
                     background-color: var(--clr-component-700);

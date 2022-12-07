@@ -95,21 +95,22 @@
             }
         }
 
-        &:not(.open) {
+        &:not([aria-expanded="true"]) {
             transition: background-color var(--transition-timing), box-shadow var(--transition-timing);
-            &:hover {
+            &:hover,
+            &:focus {
                 background-color: var(--clr-component-500);
                 box-shadow: var(--box-shadow-500);
             }
             cursor: pointer;
         }
 
-        &.open {
+        &[aria-expanded="true"] {
             background-color: var(--clr-component-500);
             box-shadow: var(--box-shadow-500);
         }
 
-        &.open &__dropdown {
+        &[aria-expanded="true"] &__dropdown {
             display: flex;
             flex-direction: column;
             justify-content: center;

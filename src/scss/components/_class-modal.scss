@@ -24,9 +24,12 @@
                     outline: 0.125em solid var(--clr-component-700-reverse);
                 }
 
-                &:not(.checked):hover {
-                    border: 0.125em solid var(--clr-text-white);
-                    outline: 0.125em solid currentColor;
+                &:not(.checked){
+                    :hover,
+                    :focus {
+                        border: 0.125em solid var(--clr-text-white);
+                        outline: 0.125em solid currentColor;
+                    }
                 }
             }
         }

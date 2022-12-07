@@ -15,7 +15,8 @@
     transition: transform var(--transition-timing), box-shadow var(--transition-timing);
 
 
-    &:hover{
+    &:hover,
+    &:focus {
         box-shadow: 0 10px 15px rgb(0, 0, 0, 0.4);
         transform: perspective(50em) translateZ(1em);
         z-index: 50;
@@ -26,7 +27,8 @@
     font-size: 4em;
     color: var(--clr-text-500-reverse);
     background-color: var(--clr-component-500-reverse);
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: var(--clr-component-700-reverse);
     }
 }
@@ -115,7 +117,8 @@
             }
         }
 
-        &:hover {
+        &:hover,
+        &:focus {
             width: 5em;
             background-color: var(--clr-component-500-reverse);
 

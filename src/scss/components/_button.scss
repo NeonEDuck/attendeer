@@ -51,9 +51,12 @@ a.btn {
         pointer-events: none;
     }
 
-    &:hover::after {
-        display: block;
-        animation: to-top 0.25s forwards;
+    &:hover,
+    &:focus {
+        &::after {
+            display: block;
+            animation: to-top 0.25s forwards;
+        }
     }
 
 
@@ -62,8 +65,13 @@ a.btn {
         top: calc(100% + 0.5em);
     }
 
-    &[data-tooltip-bottom]:hover::after {
-        animation: to-bottom 0.25s forwards;
+    &[data-tooltip-bottom] {
+        &:hover,
+        &:focus {
+            &::after {
+                animation: to-bottom 0.25s forwards;
+            }
+        }
     }
 
     &:disabled {
@@ -125,7 +133,8 @@ a.btn {
     &-top, &-bottem, &-right, &-left {
         background-color: var(--clr-component-700);
         @include content-color(var(--clr-text-500));
-        &:hover {
+        &:hover,
+        &:focus {
             background-color: var(--clr-component-500);
         }
         &.btn-on {
@@ -138,7 +147,8 @@ a.btn {
     background-color: transparent;
     @include content-color(var(--clr-text-500));
 
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: var(--clr-transparent-500);
     }
 }
@@ -148,8 +158,14 @@ a.btn {
     text-decoration: underline;
     @include content-color(var(--clr-primary-500));
 
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: initial;
+    }
+
+    &:disabled {
+        color: var(--clr-text-white);
+        text-decoration: none;
     }
 }
 
@@ -157,7 +173,8 @@ a.btn {
     background-color: var(--clr-cancel-500);
     @include content-color(white);
 
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: var(--clr-cancel-700);
     }
 }
@@ -166,7 +183,8 @@ a.btn {
     background-color: var(--clr-primary-500);
     @include content-color(white);
 
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: var(--clr-primary-700);
     }
 }

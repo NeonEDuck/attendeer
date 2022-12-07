@@ -70,10 +70,13 @@
                 outline-offset var(--transition-timing);
 }
 
-.calendar-days div:hover {
-    animation: hover-out var(--transition-duration) forwards;
-    background-color: hsl(var(--hsl-component-300) / 0.5);
-    z-index: 50;
+.calendar-days div {
+    :hover,
+    :focus {
+        animation: hover-out var(--transition-duration) forwards;
+        background-color: hsl(var(--hsl-component-300) / 0.5);
+        z-index: 50;
+    }
 }
 
 .calendar-days .current-selected-day{
@@ -84,28 +87,33 @@
     outline-width: 0.25em;
     outline-color: var(--clr-primary-500);
     outline-offset: 0.125em;
-    &:hover  {
+    &:hover,
+    &:focus {
         background-color: var(--clr-primary-300);
         outline-color: var(--clr-primary-300);
     }
 }
 
 
-.calendar-days .curr-date,
-.calendar-days .curr-date:hover {
-    background-color: var(--clr-primary-300);
-    outline-color: var(--clr-primary-300);
-    color: var(--clr-text-white);
-    border-radius: 50%;
+.calendar-days .curr-date {
+    &,
+    &:hover,
+    &:focus {
+        background-color: var(--clr-primary-300);
+        outline-color: var(--clr-primary-300);
+        color: var(--clr-text-white);
+        border-radius: 50%;
 
-    &.current-selected-day {
-        background-color: var(--clr-primary-700);
-        outline-color: var(--clr-primary-700);
+        &.current-selected-day {
+            background-color: var(--clr-primary-700);
+            outline-color: var(--clr-primary-700);
+        }
     }
 }
 
 .calendar-days .detailed-date,
-.calendar-days .detailed-date:hover {
+.calendar-days .detailed-date:hover,
+.calendar-days .detailed-date:focus {
     background-color: var(--clr-primary-300);
     outline-color: var(--clr-primary-300);
     color: var(--white);
@@ -144,7 +152,8 @@ span#month {
     animation: hover-in var(--transition-duration) forwards;
     transition: var(--transition-color);
 
-    &:hover {
+    &:hover,
+    &:focus {
         animation: hover-out var(--transition-duration) forwards;
         background-color: var(--clr-component-300);
     }
@@ -217,8 +226,11 @@ span#month {
     color: var(--clr-text-500);
 }
 
-.month-list > div > div:hover {
-    background-color: var(--clr-component-300);
+.month-list > div > div {
+    &:hover,
+    &:focus {
+        background-color: var(--clr-component-300);
+    }
 }
 
 @media only screen and (max-width: 900px) and (min-width: 750px) {

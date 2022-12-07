@@ -13,7 +13,8 @@
     background: var(--clr-component-700);
     transition: var(--transition-color);
 
-    &:hover {
+    &:hover,
+    &:focus {
         background: var(--clr-primary-500);
     }
 
@@ -33,7 +34,8 @@
     &.open {
         background: var(--clr-primary-500);
 
-        &:hover {
+        &:hover,
+        &:focus {
             background: var(--clr-primary-300);
         }
 
