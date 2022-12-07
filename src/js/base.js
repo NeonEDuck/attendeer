@@ -49,3 +49,41 @@ setIntervalImmediately(() => {
         });
     });
 });
+
+[...document.querySelectorAll('[data-behavior="menu"]')].forEach((menu) => {
+    const attrs = {
+        "tabindex": "0",
+        "role": "button",
+        "aria-expanded": "false",
+    };
+    for (const attr in attrs) {
+        if (!menu.hasAttribute(attr)) {
+            menu.setAttribute(attr, attrs[attr]);
+        }
+    }
+
+    menu.addEventListener("keydown", (e) => {
+        if (e.key === " " || e.key === "Enter" || e.key === "Spacebar") {
+            menu.click();
+        }
+    });
+});
+
+[...document.querySelectorAll('[data-behavior="toggle-button"]')].forEach((btn) => {
+    const attrs = {
+        "tabindex": "0",
+        "role": "button",
+        "aria-pressed": "false",
+    };
+    for (const attr in attrs) {
+        if (!btn.hasAttribute(attr)) {
+            btn.setAttribute(attr, attrs[attr]);
+        }
+    }
+
+    btn.addEventListener("keydown", (e) => {
+        if (e.key === " " || e.key === "Enter" || e.key === "Spacebar") {
+            btn.click();
+        }
+    });
+});

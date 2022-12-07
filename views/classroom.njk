@@ -147,13 +147,13 @@
                 <div id="tab-group" class="tab-group" style="--length: 4">
                     <nav>
                         <div class="slider"></div>
-                        <label for="entire-tab">公告</label><input type="radio" name="slider" data-catagory="entire" id="entire-tab">
+                        <label for="entire-tab" data-behavior="toggle-button">公告</label><input type="radio" name="slider" data-catagory="entire" id="entire-tab">
                         {% if isHost %}
-                            <label for="write-tab">新增貼文</label><input type="radio" name="slider" data-catagory="write" id="write-tab" checked>
+                            <label for="write-tab" data-behavior="toggle-button">新增貼文</label><input type="radio" name="slider" data-catagory="write" id="write-tab" checked>
                         {% endif %}
-                        <label for="chat-tab">聊天紀錄</label><input type="radio" name="slider" data-catagory="chat" id="chat-tab">
+                        <label for="chat-tab" data-behavior="toggle-button">聊天紀錄</label><input type="radio" name="slider" data-catagory="chat" id="chat-tab">
                         {% if isHost %}
-                            <label for="alert-tab">警醒紀錄</label><input type="radio" name="slider" data-catagory="alert" id="alert-tab">
+                            <label for="alert-tab" data-behavior="toggle-button">警醒紀錄</label><input type="radio" name="slider" data-catagory="alert" id="alert-tab">
                         {% endif %}
                     </nav>
                 </div>
@@ -190,7 +190,7 @@
                                 <h1>聊天紀錄</h1>
                                 <button id="download-chat-btn">下載</button>
                             </div>
-                            <button id="load-message-btn">讀取更多</button>
+                            <button id="load-message-btn" class="btn-link">讀取更多</button>
                             <p id="finish-message">已到最頂點</p>
                             <ul id="chat-log">
                             </ul>

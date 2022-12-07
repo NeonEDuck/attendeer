@@ -18,11 +18,12 @@ if (document.querySelector('#navbar') !== null) {
 
     profile.addEventListener('click', (e) => {
         e.stopPropagation();
+        profile.setAttribute("aria-expanded", "true");
         profile.classList.add('open');
     });
     profileCloseBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        profile.classList.remove('open');
+        profile.setAttribute("aria-expanded", "false");
     });
 
     if (localStorage.getItem('color-scheme') === "dark") {
