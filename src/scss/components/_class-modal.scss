@@ -1,9 +1,12 @@
+@use '../base';
+
 #class-modal {
     &__color-group {
         input[type="radio"] {
-            display: none;
+            @extend .visually-hidden;
         }
         nav {
+            position: relative;
             display: flex;
             flex-direction: row;
             justify-content: flex-start;
@@ -12,24 +15,54 @@
             gap: 0.5em;
 
             label {
+                position: relative;
                 color: var(--clr-class-1);
                 background-color: currentColor;
                 width: 2em;
                 height: 2em;
                 border-radius: 1em;
                 cursor: pointer;
-                // transition: border var(--transition-timing);
+                transform: perspective(500px) translateZ(0px);
+                transition: transform var(--transition-timing);
 
-                &.checked {
-                    outline: 0.125em solid var(--clr-component-700-reverse);
+                $check-width: 0.2em;
+                $check-height: 1em;
+
+                &::after,
+                &::before {
+                    content: "";
+                    position: absolute;
+                    display: block;
+                    transform-origin: calc($check-width/2) calc($check-width/2);
+                    width: $check-width;
+                    height: 0;
+                    background-color: var(--clr-text-white);
+                    top: calc(50% + $check-height / 4);
+                    left: calc(50% - 0.5em + $check-width);
+                    transition: height var(--transition-timing);
                 }
 
-                &:not(.checked){
-                    :hover,
-                    :focus {
-                        border: 0.125em solid var(--clr-text-white);
-                        outline: 0.125em solid currentColor;
+                &::before {
+                    transform: rotateZ(135deg);
+                }
+
+                &::after {
+                    transform: rotateZ(225deg);
+                }
+
+                &.checked {
+                    &::before {
+                        height: calc($check-height / 3 + $check-width);
                     }
+
+                    &::after {
+                        height: $check-height + $check-width;
+                    }
+                }
+
+                &:hover,
+                &:focus-within {
+                    transform: perspective(500px) translateZ(100px);
                 }
             }
         }
