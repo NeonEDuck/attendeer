@@ -4,16 +4,21 @@
     top: 0%;
     z-index: 100;
     .alert-show{
-        background-color: var(--floating--color-1);
         padding: 10px;
-        border-radius: 8px;
-        box-shadow: inset 2px 2px 4px var(--floating--color-2), inset -2px -2px 4px var(--floating--color-3);
         cursor: pointer;
+        background-color: var(--clr-component-500);
+        box-shadow: var(--box-shadow-500);
+        border-radius: 1em;
+        .qst_show {
+            font-weight: bold;
+            color: var(--clr-text-700);
+            font-size: 20px;
+        }
         .qst_show, .qst_show_answear {
             top: 40px;
-            width: 318px;
-            height: 50px;
-            font-size: 20px;
+            width: 100%;
+            height: 100%;
+            font-size: 16px;
             margin: 4px 0;
             padding-left: 25px;
             color: var(--text-color);
@@ -64,7 +69,7 @@
                     background-color: var(--primary-color);
                 }
             }
-            .option_Input {
+            .option_input {
                 width: 270px;
                 height: 40px;
                 margin: 4px 0;

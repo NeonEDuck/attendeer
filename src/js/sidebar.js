@@ -1067,7 +1067,7 @@ function addEventListeners() {
             }else if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
                 errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
                 return;
-            }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
+            }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
                 errorText.innerHTML = '持續時間範圍：1 ~ 3';
                 return;
             }
@@ -1182,7 +1182,7 @@ function addEventListeners() {
             if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
                 errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
                 return;
-            }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 10) {
+            }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
                 errorText.innerHTML = '持續時間範圍：1 ~ 3';
                 return;
             }
