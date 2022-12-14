@@ -8,6 +8,7 @@ const pool = createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     timezone: 'utc',
+    connectionLimit: 10,
 });
 pool.on('error', (err) => {
     console.log('caught error!');

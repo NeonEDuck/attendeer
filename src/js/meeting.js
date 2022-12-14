@@ -79,6 +79,7 @@ let notifyDismissCoolDownTimeInMinute = 1;
 let inNotifyDismissCoolDown = false;
 let dismissedClasses = [];
 let currentRecordId = null;
+let hungUp = false;
 export let globalAlertType;
 export let globalInterval;
 export let globalTime;
@@ -672,6 +673,7 @@ hangUpBtn.addEventListener('click', async () => {
             localStreams[streamType] = null;
         }
     }
+    hungUp = true;
 
     meetingPanel.hidden = true;
     hangUpBtn.disabled = true;
@@ -1061,6 +1063,7 @@ async function startAlert() {
                 dataNormal = Object.assign(dataNormal, dataMultipleChoice );
             }
 
+            if (hungUp) break;
             //INSERT INTO AlertRecords VALUES (dataNormal)
             const response = await apiCall('addAlertRecord', dataNormal)
             const { insertId: recordId } = await response.json();
@@ -1073,6 +1076,7 @@ async function startAlert() {
             console.log(MINUTE);
             await delay( globalInterval * MINUTE );
 
+            if (hungUp) break;
             await apiCall('turnOnRecord', { classId, recordId });
             currentRecordId = recordId;
             socket.emit('throw-alert-start', recordId);
@@ -1084,6 +1088,7 @@ async function startAlert() {
 
             await delay( globalTime * MINUTE );
 
+            if (hungUp) break;
             const response2 = await apiCall('finishRecord', { classId, recordId })
             if (response2.status === 200) {
                 const { action } = await response2.json();

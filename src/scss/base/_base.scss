@@ -15,6 +15,16 @@ html, body, input, button, textarea {
 [hidden] {
     display: none !important;
 }
+.visually-hidden {
+    position: absolute;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
 
 fieldset {
     display: flex;
@@ -117,4 +127,12 @@ $scroolbar-border-width: 4px;
     border: $scroolbar-border-width solid transparent;
     background-clip: content-box;
     border-radius: $scroolbar-width;
+}
+
+:focus {
+    outline: none;
+    outline-style: solid;
+    outline-color: var(--clr-primary-300);
+    outline-width: 0.125rem;
+    outline-offset: 0.25rem;
 }

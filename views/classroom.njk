@@ -148,9 +148,6 @@
                     <nav>
                         <div class="slider"></div>
                         <label for="entire-tab" data-behavior="toggle-button">公告</label><input type="radio" name="slider" data-catagory="entire" id="entire-tab">
-                        {% if isHost %}
-                            <label for="write-tab" data-behavior="toggle-button">新增貼文</label><input type="radio" name="slider" data-catagory="write" id="write-tab" checked>
-                        {% endif %}
                         <label for="chat-tab" data-behavior="toggle-button">聊天紀錄</label><input type="radio" name="slider" data-catagory="chat" id="chat-tab">
                         {% if isHost %}
                             <label for="alert-tab" data-behavior="toggle-button">警醒紀錄</label><input type="radio" name="slider" data-catagory="alert" id="alert-tab">
@@ -160,30 +157,6 @@
 
 
                 <div id="bulletin">
-                    <div data-catagory="write" hidden>
-                        <div class="post">
-                            <h1>新增貼文</h1>
-                            <div class="flex flex-row gap-4">
-                                <div class="flex flex-column gap-4" hidden>
-                                    <p>種類</p>
-                                    <select name="write-catagory" id="write-catagory">
-                                        <option value="announce">公告</option>
-                                        <option value="homework">作業</option>
-                                    </select>
-                                </div>
-                                <div class="flex flex-column gap-4 flex-item-1">
-                                    <p>標題</p>
-                                    <input type="text" id="write-title" style="width: 100%;">
-                                </div>
-                            </div>
-                            <p>內容</p>
-                            <div class="flex flex-row">
-                                <textarea type="text" id="write-content" style="height: 11em; resize: vertical; width: 100%;"></textarea>
-                            </div>
-                            <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
-                        </div>
-                    </div>
-
                     <div data-catagory="chat" hidden>
                         <div class="flex flex-column gap-4">
                             <div class="flex flex-row flex-align gap-4 flex-item-1">
@@ -247,6 +220,33 @@
                     </div>
 
                     <div data-catagory="entire" hidden>
+
+                        {% if isHost %}
+                            <div class="post">
+                                <div class="flex flex-row gap-4">
+                                    <div class="flex flex-column gap-4" hidden>
+                                        <p>種類</p>
+                                        <select name="write-catagory" id="write-catagory">
+                                            <option value="announce">公告</option>
+                                            <option value="homework">作業</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-row gap-4 flex-item-1">
+                                        <p>標題</p>
+                                        <input type="text" id="write-title" class="flex-item-1">
+                                    </div>
+                                </div>
+                                <div class="flex flex-row gap-4">
+                                    <p>內容</p>
+                                    <textarea type="text" id="write-content" class="flex-item-1" style="height: 11em; min-height: 2em; resize: vertical;"></textarea>
+                                </div>
+                                <button id="write-submit-btn" class="margin-inline-start-auto">張貼</button>
+                            </div>
+                        {% endif %}
+
+                        <div id="post-container" data-empty-message="無貼文">
+
+                        </div>
                     </div>
 
                     <div data-catagory="homework" hidden>

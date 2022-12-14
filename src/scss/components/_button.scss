@@ -59,7 +59,6 @@ a.btn {
         }
     }
 
-
     &[data-tooltip][data-tooltip-bottom]::after {
         bottom: initial;
         top: calc(100% + 0.5em);

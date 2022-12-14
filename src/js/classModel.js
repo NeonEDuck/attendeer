@@ -62,13 +62,13 @@ export class ClassModal {
         attendeeInput.addEventListener('keydown', (e) => {
             this._attendeeInput(e);
         });
-        colorGroup.querySelectorAll('input[type="radio"]').forEach((r) => {
-            const label = colorGroup.querySelector(`nav label[for="${r.id}"]`);
-            r.addEventListener('click', (_) => {
+        colorGroupLabels.forEach((lbl) => {
+            const rdo = lbl.querySelector(`input[type="radio"]`);
+            rdo.addEventListener('click', (_) => {
                 colorGroupLabels.forEach((e) => {
                     e.classList.remove('checked');
                 })
-                label.classList.add('checked');
+                lbl.classList.add('checked');
             })
         });
     }
