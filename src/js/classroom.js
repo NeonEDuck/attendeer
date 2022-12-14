@@ -325,6 +325,7 @@ scheduleEditBtn?.addEventListener('click', () => {
 });
 
 let generator = null;
+const postContainer = document.querySelector('#post-container');
 
 tabGroupTabs.forEach((tab, idx) => {
     tab.addEventListener('click', async () => {
@@ -343,7 +344,7 @@ tabGroupTabs.forEach((tab, idx) => {
                 }
                 const posts = await response.json()
                 if (!generatedPosts[0]) {
-                    targetPage.innerHTML = '';
+                    postContainer.innerHTML = '';
                 }
                 const promises = [];
                 for (const post of posts) {
@@ -357,7 +358,7 @@ tabGroupTabs.forEach((tab, idx) => {
 
                 const postElements = await Promise.all(promises);
                 for (const postElement of postElements.reverse()) {
-                    targetPage.insertBefore(postElement, targetPage.firstChild);
+                    postContainer.insertBefore(postElement, postContainer.firstChild);
                 }
 
             }, 20 * SECOND);
@@ -387,8 +388,9 @@ tabGroupTabs.forEach((tab, idx) => {
     });
 });
 
-writeSubmitBtn.addEventListener('click', async () => {
+writeSubmitBtn?.addEventListener('click', async () => {
     // const catagory = writeCatagory.options[writeCatagory.selectedIndex].value;
+    writeSubmitBtn.disabled = true;
     const title = writeTitle.value.trim();
     const content = writeContent.value;
 
@@ -403,11 +405,12 @@ writeSubmitBtn.addEventListener('click', async () => {
         await apiCall('addClassPost', {classId, title, content})
 
         // await addDoc(posts, data);
+        writeCatagory.selectedIndex = 0;
+        writeTitle.value = '';
+        writeContent.value = '';
+        entireTab.click();
     }
-    writeCatagory.selectedIndex = 0;
-    writeTitle.value = '';
-    writeContent.value = '';
-    entireTab.click();
+    writeSubmitBtn.disabled = false;
 });
 
 loadMessageBtn.addEventListener('click', async () => {
