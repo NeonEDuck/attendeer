@@ -128,3 +128,11 @@ $scroolbar-border-width: 4px;
     background-clip: content-box;
     border-radius: $scroolbar-width;
 }
+
+:focus {
+    outline: none;
+    outline-style: solid;
+    outline-color: var(--clr-primary-300);
+    outline-width: 0.125rem;
+    outline-offset: 0.25rem;
+}
