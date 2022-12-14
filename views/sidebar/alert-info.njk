@@ -4,9 +4,13 @@
         <div class="container">
             <fieldset class="fieldset-alert">
                 <legend>警醒</legend>
+                <div class="field">
+                    <input type="checkbox" id="alert-random" name="alert-random">
+                    <label for="alert-random">隨機時間觸發</label>
+                </div>
                 <label for="alert-interval">警醒間隔:</label>
                 <div class="field">
-                    <input id="alert-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" required="" min="10" max="50">
+                    <input id="alert-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" required="" min="1" max="50">
                     <label for="alert-interval">分鐘</label>
                 </div>
                 <label for="alert-time">警醒持續時間:</label>
@@ -79,9 +83,13 @@
                         <div class="title">警醒設定</div>
                         <fieldset>
                             <legend>警醒</legend>
+                            <div class="field">
+                                <input type="checkbox" id="alert-random" name="alert-random">
+                                <label for="alert-random">隨機時間觸發</label>
+                            </div>
                             <label for="alert-interval">警醒間隔:</label>
                             <div class="field">
-                                <input id="alert-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" required="" min="10" max="50">
+                                <input id="alert-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" required="" min="1" max="50">
                                 <label for="alert-interval">分鐘</label>
                             </div>
                             <label for="alert-time">警醒持續時間:</label>
@@ -155,15 +163,17 @@
                     <div class="field" id="alertType">
                         <label for="info-type">警醒類型:</label>
                         <label id="info-type" class="alert-type"></label>
+                        <input type="checkbox" id="info-random" name="alert-random" disabled="disabled">
+                        <label for="info-random">隨機時間觸發</label>
                     </div>
                     <label for="info-interval">警醒間隔:</label>
                     <div class="field">
-                        <input id="info-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" readonly='readonly' min="10" max="50" required>
+                        <input id="info-interval" class="alert-interval flex-item-1" name="alert-interval" type="number" min="1" max="50" required>
                         <label for="info-interval">分鐘</label>
                     </div>
                     <label for="info-time">警醒持續時間:</label>
                     <div class="field">
-                        <input id="info-time" class="alert-time flex-item-1" name="alert-time" type="number" readonly='readonly' min="1" max="3" required>
+                        <input id="info-time" class="alert-time flex-item-1" name="alert-time" type="number" min="1" max="3" required>
                         <label for="info-time">分鐘</label>
                     </div>
                 </fieldset>

@@ -34,6 +34,7 @@ const fltCntr             = document.querySelector(".floating-container"),
       floatingAlertRecord   = fltCntr.querySelector('#floating-alert-record'),
       alertInfo           = fltCntr.querySelector('.alert-info'),
       infoType            = fltCntr.querySelector('#info-type'),
+      infoRandom         = fltCntr.querySelector('#info-random'),
       infoInterval        = fltCntr.querySelector("#info-interval"),
       infoTime            = fltCntr.querySelector("#info-time"),
       centerBtns          = fltCntr.querySelectorAll('.center-btn'),
@@ -370,7 +371,6 @@ function hiddenAllFloating() {
     alertStepProgress.forEach( alertStepProgress => {
         alertStepProgress.innerHTML = '';
     })
-    alertInfo.classList.remove('Revise');
 }
 
 //警醒浮動視窗 開啟
@@ -380,12 +380,9 @@ async function closeModalForm() {
 
     alertInfo.hidden = false;
 
-    infoInterval.setAttribute("readonly", "readonly");
-    infoTime.setAttribute("readonly", "readonly");
-
-    infoInterval.classList.remove('Revise');
-    infoTime.classList.remove('Revise');
-    alertInfo.classList.remove('Revise');
+    infoRandom.disabled = true;
+    infoInterval.disabled = true;
+    infoTime.disabled = true;
 
     centerBtns[0].hidden = false;
     centerBtns[1].hidden = true;
@@ -393,7 +390,15 @@ async function closeModalForm() {
     floatingAlert.style.opacity = 1;
 
     infoType.innerHTML = getKeyByValue(AlertTypeEnum, globalAlertType);
-    infoInterval.value = globalInterval;
+
+    infoRandom.checked = false;
+    if ( globalInterval === 0 ) { 
+        infoRandom.checked = true;
+        infoInterval.value = '';
+    } else {
+        infoInterval.value = globalInterval;
+    }
+    
     infoTime.value     = globalTime;
     fieldset.innerHTML = '';
 
@@ -411,7 +416,7 @@ async function closeModalForm() {
         fieldset.appendChild(div);
         div.appendChild(label);
         textarea.classList.add("info-textarea");
-        textarea.setAttribute("readonly", "readonly");
+        textarea.disabled = true;
         textarea.innerHTML = globalQuestion;
         fieldset.appendChild(textarea);
     }
@@ -426,7 +431,7 @@ async function closeModalForm() {
             const icon = option.querySelector('.bx-x');
             fieldset.appendChild(option);
             icon.remove();
-            input.setAttribute("readonly", "readonly");
+            input.disabled = true;
             spanNo.innerHTML = i+1;
             input.value = globalMultipleChoice[i];
             if(globalAnswear === (i+1).toString()){
@@ -453,19 +458,28 @@ async function closeModalForm() {
             const input = document.createElement('input');
             input.classList.add("option_input");
             input.setAttribute("type", "text");
-            input.setAttribute("readonly", "readonly");
+            input.disabled = true;
             input.value = multipleChoice[i];
             div2.appendChild(input);
         }
     }
 }
+function alertRandomClickEvent(random, interval) {
+    if ( random.checked ) {
+        interval.disabled = true;
+    }else {
+        interval.disabled = false;
+    }
+}
+infoRandom.addEventListener('click', async () => { 
+    alertRandomClickEvent(infoRandom, infoInterval);
+});
 
 function addEventListeners() {
     //修改警醒資訊
     settingBtn.addEventListener('click', async () => {
         centerBtns[0].hidden = true;
         centerBtns[1].hidden = false;
-        alertInfo.classList.add('Revise');
 
         const infoInterval = alertInfo.querySelector("#info-interval");
         const infoTime     = alertInfo.querySelector("#info-time");
@@ -474,16 +488,21 @@ function addEventListeners() {
         const spanNo = alertInfo.querySelectorAll('.span_No');
         const fieldset = alertInfo.querySelector('.fieldset');
 
-        infoInterval.removeAttribute('readonly');
-        infoTime.removeAttribute('readonly');
+        infoRandom.disabled = false;
+        infoInterval.disabled = false;
+        infoTime.disabled = false;
+
+        if ( globalInterval === 0 ) { 
+            infoInterval.disabled = true;
+        }
 
         if( globalAlertType != AlertTypeEnum.Click ) {
-            textarea.removeAttribute('readonly');
+            textarea.disabled = false;
         }
         if( globalAlertType === AlertTypeEnum.MultipleChoice ) {
             optionsTotal = 0;
             input.forEach(input => {
-                input.removeAttribute('readonly');
+                input.disabled = false;
                 optionsTotal ++;
             });
             spanNo.forEach(spanNo => {
@@ -602,12 +621,12 @@ function addEventListeners() {
                 button.style.display = "none";
             }
         }else if( globalAlertType === AlertTypeEnum.EssayQuestion ) {
-            textarea.removeAttribute('readonly');
+            textarea.disabled = false;
         }else if( globalAlertType === AlertTypeEnum.Vote ) {
-            textarea.removeAttribute('readonly');
+            textarea.disabled = false;
             let i = 0;
             input.forEach(input => {
-                input.removeAttribute('readonly');
+                input.disabled = false;
                 i++;
             });
             const selectOptions = alertInfo.querySelector('.select');
@@ -641,8 +660,8 @@ function addEventListeners() {
         const spanNoAnswear = alertInfo.querySelector(".answear");
         const optionInput = alertInfo.querySelectorAll(".option_input");
 
-        if( Number(infoInterval.value) < 10 || Number(infoInterval.value) > 50 ) {
-            alertInfoErrorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+        if( !infoRandom.checked && (Number(infoInterval.value) < 1 || Number(infoInterval.value) > 50) ) {
+            alertInfoErrorText.innerHTML = '警醒間隔範圍：1 ~ 50';
         }else if( Number(infoTime.value) < 1 || Number(infoTime.value) > 3) {
             alertInfoErrorText.innerHTML = '持續時間範圍：1 ~ 3';
         }else {
@@ -720,12 +739,13 @@ function addEventListeners() {
                 }
             }
 
-            infoInterval.classList.remove('Revise');
-            infoTime.classList.remove('Revise');
-
             interval = Number(infoInterval.value);
             time     = Number(infoTime.value);
             alertType = globalAlertType;
+
+            if ( infoRandom.checked ) {
+                interval = 0;
+            }
 
             const data = {
                 classId,
@@ -742,8 +762,9 @@ function addEventListeners() {
             centerBtns[0].hidden = false;
             centerBtns[1].hidden = true;
 
-            infoInterval.setAttribute('readonly','true');
-            infoTime.setAttribute('readonly','true');
+            infoRandom.disabled = true;
+            infoInterval.disabled = true;
+            infoTime.disabled = true;
 
             closeModalForm();
             AlertReplace();
@@ -774,15 +795,29 @@ function addEventListeners() {
         const alertFinish = alert.querySelector('#alert-finish');
         const alertReturn = alert.querySelector('#alert-return');
         const errorText = alert.querySelector('.error-text');
+        const alertRandom = alert.querySelector('#alert-random');
         title.innerHTML = "警醒按鈕設定";
         alertInterval.value = globalInterval;
         alertTime.value = globalTime;
         alertButtonSetting.appendChild(title);
         alertButtonSetting.appendChild(container);
 
+        alertRandom.checked = false;
+        if ( globalInterval === 0 ) { 
+            alertInterval.disabled = true;
+            alertRandom.checked = true;
+            alertInterval.value = '';
+        } else {
+            alertInterval.value = globalInterval;
+        }
+
+        alertRandom.addEventListener('click', async () => { 
+            alertRandomClickEvent(alertRandom, alertInterval);
+        });
+
         alertFinish.addEventListener('click', async () => {
-            if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
-                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            if( !alertRandom.checked && (Number(alertInterval.value) < 1 || Number(alertInterval.value) > 50) ) {
+                errorText.innerHTML = '警醒間隔範圍：1 ~ 50';
                 return;
             }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3 ) {
                 errorText.innerHTML = '持續時間範圍：1 ~ 3';
@@ -800,6 +835,10 @@ function addEventListeners() {
                 // }
                 // const callDoc = doc(calls, classId);
                 // await updateDoc(callDoc, data);
+
+                if ( alertRandom.checked ) {
+                    interval = 0;
+                }
 
                 const data = {
                     classId,
@@ -852,11 +891,25 @@ function addEventListeners() {
         const bullet         = alert.querySelectorAll(".step .bullet");
         const qstText        = alert.querySelectorAll(".qst_text");
         const container      = alert.querySelector('.container');
+        const alertRandom    = alert.querySelector('#alert-random');
         multipleChoiceSetting.appendChild(title);
         multipleChoiceSetting.appendChild(container);
 
         alertInterval.value = globalInterval;
         alertTime.value     = globalTime;
+
+        alertRandom.checked = false;
+        if ( globalInterval === 0 ) { 
+            alertInterval.disabled = true;
+            alertRandom.checked = true;
+            alertInterval.value = '';
+        } else {
+            alertInterval.value = globalInterval;
+        }
+
+        alertRandom.addEventListener('click', async () => { 
+            alertRandomClickEvent(alertRandom, alertInterval);
+        });
 
         prev1.addEventListener('click', () => {
             multipleChoiceSetting.hidden = true;
@@ -920,8 +973,8 @@ function addEventListeners() {
 
         next3.addEventListener('click', async () => {
 
-            if ( Number(alertInterval.value) < 10 || Number(alertInterval.value) >50 ) {
-                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            if( !alertRandom.checked && (Number(alertInterval.value) < 1 || Number(alertInterval.value) > 50) ) {
+                errorText.innerHTML = '警醒間隔範圍：1 ~ 50';
                 return;
             }else if ( Number(alertTime.value) < 1 || Number(alertTime.value) > 3 ) {
                 errorText.innerHTML = '持續時間範圍：1 ~ 3';
@@ -943,6 +996,10 @@ function addEventListeners() {
                 interval = Number(alertInterval.value);
                 time     = Number(alertTime.value);
                 alertType = AlertTypeEnum.MultipleChoice;
+
+                if ( alertRandom.checked ) {
+                    interval = 0;
+                }
 
                 setGlobalAlert(alertType, interval, time, question, answearID, multipleChoice);
 
@@ -1048,6 +1105,7 @@ function addEventListeners() {
         const errorText = alert.querySelector('.error-text');
         const container = alert.querySelector('.container');
         const fieldsetAlert = alert.querySelector('.fieldset-alert');
+        const alertRandom    = alert.querySelector('#alert-random');
         essayQuestionSetting.appendChild(title);
         essayQuestionSetting.appendChild(container);
         const alertqst = alertEssayQuestionSetting.cloneNode(true);
@@ -1059,13 +1117,26 @@ function addEventListeners() {
         alertInterval.value = globalInterval;
         alertTime.value = globalTime;
 
+        alertRandom.checked = false;
+        if ( globalInterval === 0 ) { 
+            alertInterval.disabled = true;
+            alertRandom.checked = true;
+            alertInterval.value = '';
+        } else {
+            alertInterval.value = globalInterval;
+        }
+
+        alertRandom.addEventListener('click', async () => { 
+            alertRandomClickEvent(alertRandom, alertInterval);
+        });
+
         alertFinish.addEventListener('click', async () => {
 
             if( qstText.value === '' ) {
                 errorText.innerHTML = '問題禁止為空字串';
                 return;
-            }else if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
-                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            }else if( !alertRandom.checked && (Number(alertInterval.value) < 1 || Number(alertInterval.value) > 50) ) {
+                errorText.innerHTML = '警醒間隔範圍：1 ~ 50';
                 return;
             }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
                 errorText.innerHTML = '持續時間範圍：1 ~ 3';
@@ -1090,6 +1161,10 @@ function addEventListeners() {
             // }
             // const callDoc = doc(calls, classId);
             // await updateDoc(callDoc, dataAlert);
+
+            if ( alertRandom.checked ) {
+                interval = 0;
+            }
 
             const data = {
                 classId,
@@ -1130,6 +1205,7 @@ function addEventListeners() {
         const errorText = alert.querySelector('.error-text');
         const container = alert.querySelector('.container');
         const fieldsetAlert = alert.querySelector('.fieldset-alert');
+        const alertRandom = alert.querySelector('#alert-random');
         voteSetting.appendChild(title);
         voteSetting.appendChild(container);
         const alertvote = alertVoteSetting.cloneNode(true);
@@ -1161,6 +1237,19 @@ function addEventListeners() {
             }
         }
 
+        alertRandom.checked = false;
+        if ( globalInterval === 0 ) { 
+            alertInterval.disabled = true;
+            alertRandom.checked = true;
+            alertInterval.value = '';
+        } else {
+            alertInterval.value = globalInterval;
+        }
+
+        alertRandom.addEventListener('click', async () => { 
+            alertRandomClickEvent(alertRandom, alertInterval);
+        });
+
         alertFinish.addEventListener("click", async () =>{
             if( qstText.value === '' ) {
                 errorText.innerHTML = '問題禁止為空字串';
@@ -1179,8 +1268,8 @@ function addEventListeners() {
                 }
             })
             if( i > 0 ) { return; }
-            if( Number(alertInterval.value) < 10 || Number(alertInterval.value) > 50 ) {
-                errorText.innerHTML = '警醒間隔範圍：10 ~ 50';
+            if( !alertRandom.checked && (Number(alertInterval.value) < 1 || Number(alertInterval.value) > 50) ) {
+                errorText.innerHTML = '警醒間隔範圍：1 ~ 50';
                 return;
             }else if( Number(alertTime.value) < 1 || Number(alertTime.value) > 3) {
                 errorText.innerHTML = '持續時間範圍：1 ~ 3';
@@ -1212,6 +1301,10 @@ function addEventListeners() {
 
             // const callDoc = doc(calls, classId);
             // await updateDoc(callDoc, dataAlert);
+
+            if ( alertRandom.checked ) {
+                interval = 0;
+            }
 
             const data = {
                 classId,
