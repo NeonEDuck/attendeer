@@ -399,7 +399,7 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
         const amount = reacts.filter((y) => (y.Answer === x.Answer)).length;
         const total  = reacts.filter((y) => (y.Answer !== null)).length;
         console.log(JSON.parse(x.MultipleChoice)?.map((y, idx) => {
-            const amount = reacts.filter((z) => (z.RecordId === x.RecordId && z.Answer === idx.toString())).length;
+            const amount = reacts.filter((z) => (z.RecordId === x.RecordId && z.Answer === (idx+1).toString())).length;
             const total  = reacts.filter((z) => (z.RecordId === x.RecordId && z.Answer !== null)).length;
             console.log(amount, total);
             return amount / total;
@@ -412,7 +412,7 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
             選項: (x.AlertTypeId === 1 || x.AlertTypeId === 3)?'-' : x.MultipleChoice,
             比例: (x.AlertTypeId === 1 || x.AlertTypeId === 3)?'-' : JSON.stringify(
                 JSON.parse(x.MultipleChoice).map((_, idx) => {
-                    const amount = reacts.filter((y) => (y.RecordId === x.RecordId && y.Answer === idx.toString())).length;
+                    const amount = reacts.filter((y) => (y.RecordId === x.RecordId && y.Answer === (idx+1).toString())).length;
                     const total  = reacts.filter((y) => (y.RecordId === x.RecordId && y.Answer !== null)).length;
                     return (amount / total) * 100;
                 })
@@ -428,7 +428,7 @@ router.post('/api/getAlertLog', checkHost, async (req, res) => {
     const sheets = []
     for (let i = 0; i < records.length; i++) {
         const sheetName = `警醒${i+1}`;
-        mainsheet[`G${i+1}`].l = { Target: `#${sheetName}!A1` };
+        mainsheet[`H${i+1}`].l = { Target: `#${sheetName}!A1` };
         const reactsJson = reacts.filter((x) => (x.RecordId === records[i].RecordId)).map((x) => {return {
             姓名: x.UserName,
             點擊狀態: (x.Clicked === null)?'未加入會議' : ((x.Clicked)?'點擊' : '未點擊'),

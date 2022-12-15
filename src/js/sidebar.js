@@ -306,14 +306,14 @@ function generateAlertSummary(alertRecord, alertReacts) {
 
         if (alertRecord.AlertTypeId === AlertTypeEnum.MultipleChoice || alertRecord.AlertTypeId === AlertTypeEnum.Vote) {
             const alertSummary = htmlToElement(`<div id="alert-summary"></div>`);
-            let i = 0;
+            let i = 1;
             for (const option of alertRecord.MultipleChoice) {
                 const amount = alertReacts.filter((x) => (x.Answer === i.toString())).length;
                 const total  = alertReacts.filter((x) => (x.Answer !== null)).length;
 
                 alertSummary.appendChild(htmlToElement(`
                     <div class="alert-summary__option ${(alertRecord.Answer === i.toString())?'answer' : ''}">
-                        <p>( ${i+1} ) ${option}</p>
+                        <p>( ${i} ) ${option}</p>
                         <p>${amount}人</p>
                         <p>${total>0 ? amount/total*100 : 0}%</p>
                     </div>
