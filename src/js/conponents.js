@@ -60,7 +60,11 @@ export class Cam {
     }
 
     static resizeAll() {
-        const em = 16;
+        const em = parseFloat(
+            getComputedStyle(
+                document.querySelector('body')
+            )['font-size']
+        );
         const containerWidth = Cam.container.clientWidth - (4*em);
         const containerHeight = Cam.container.clientHeight - (4*em);
         const camWidth = 15*em;
