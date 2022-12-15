@@ -795,7 +795,7 @@ async function resetAudio() {
 }
 
 export async function refreshStream() {
-    if (webcamOn) {
+    if (webcamOn && !localStreams.webcam) {
         localStreams.webcam = webcamStream;
         for (const [id, peer] of Object.entries(Peer.peers)) {
             localStreams.webcam.getTracks().forEach((track) => {
@@ -1406,6 +1406,9 @@ async function getNewMessage(messageId) {
 
     const originalScroll = chatRoom.scrollTop;
     const originalHeight = chatRoom.scrollHeight;
+    if (lastMessageId === null) {
+        lastMessageId = messageId;
+    }
     await addMessageToChat( message );
 
     if (approximatelyEqual(originalScroll+chatRoom.clientHeight, originalHeight, 5)) {
