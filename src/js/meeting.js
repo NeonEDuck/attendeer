@@ -1398,6 +1398,8 @@ chatRoom.addEventListener("scroll", async () => {
     }
 });
 
+let lastMessageScrollIntervals;
+
 async function getNewMessage(messageId) {
     const response =  await apiCall('getClassMessage', { classId, messageId });
     const message = await response.json();
@@ -1407,8 +1409,14 @@ async function getNewMessage(messageId) {
     await addMessageToChat( message );
 
     if (approximatelyEqual(originalScroll+chatRoom.clientHeight, originalHeight, 5)) {
-        setIntervalImmediately((interval) => {
+        if (lastMessageScrollIntervals) {
+            clearInterval(lastMessageScrollIntervals);
+        }
+        lastMessageScrollIntervals = setIntervalImmediately((interval) => {
             if (originalHeight !== chatRoom.scrollHeight) {
+                console.log(originalHeight)
+                console.log(chatRoom.scrollHeight)
+                console.log(originalHeight !== chatRoom.scrollHeight)
                 chatRoom.scrollTop = chatRoom.scrollHeight;
                 clearInterval(interval);
             }
