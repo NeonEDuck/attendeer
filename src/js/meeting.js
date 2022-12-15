@@ -1406,7 +1406,7 @@ async function getNewMessage(messageId) {
 
     const originalScroll = chatRoom.scrollTop;
     const originalHeight = chatRoom.scrollHeight;
-    if (lastMessageId === null) {
+    if (!lastMessageId) {
         lastMessageId = messageId;
     }
     await addMessageToChat( message );
