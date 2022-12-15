@@ -39,7 +39,6 @@
                     display: none;
                 }
                 label {
-                    box-shadow: 0.3rem 0.3rem 0.6rem var(--button-color-2), -0.2rem -0.2rem 0.5rem var(--clr-component-500);
                     position: relative;
                     display: flex;
                     justify-content: center;
@@ -47,9 +46,14 @@
                     cursor: pointer;
                     width: 100%;
                     height: 50px;
+                    background-color: var(--clr-component-500-reverse);
+                    color: var(--clr-text-700-reverse);
+                    transition: background var(--transition-timing), color var(--transition-timing);
+                    border-radius: 1em;
                 }
                 input:checked ~ label{
-                    box-shadow: inset 0.2rem 0.2rem 0.5rem var(--button-color-2), inset -0.2rem -0.2rem 0.5rem var(--clr-component-500);
+                    background-color: var(--clr-primary-500);
+                    color: var(--clr-text-700);
                 }
             }
         }
@@ -107,10 +111,10 @@
                     transition: 1s;
                     p {
                         transition: 1s;
-                    } 
+                    }
                 }
             }
-        
+
         }
     }
 }
