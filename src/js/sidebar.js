@@ -392,13 +392,13 @@ async function closeModalForm() {
     infoType.innerHTML = getKeyByValue(AlertTypeEnum, globalAlertType);
 
     infoRandom.checked = false;
-    if ( globalInterval === 0 ) { 
+    if ( globalInterval === 0 ) {
         infoRandom.checked = true;
         infoInterval.value = '';
     } else {
         infoInterval.value = globalInterval;
     }
-    
+
     infoTime.value     = globalTime;
     fieldset.innerHTML = '';
 
@@ -471,7 +471,7 @@ function alertRandomClickEvent(random, interval) {
         interval.disabled = false;
     }
 }
-infoRandom.addEventListener('click', async () => { 
+infoRandom?.addEventListener('click', async () => {
     alertRandomClickEvent(infoRandom, infoInterval);
 });
 
@@ -492,7 +492,7 @@ function addEventListeners() {
         infoInterval.disabled = false;
         infoTime.disabled = false;
 
-        if ( globalInterval === 0 ) { 
+        if ( globalInterval === 0 ) {
             infoInterval.disabled = true;
         }
 
@@ -803,7 +803,7 @@ function addEventListeners() {
         alertButtonSetting.appendChild(container);
 
         alertRandom.checked = false;
-        if ( globalInterval === 0 ) { 
+        if ( globalInterval === 0 ) {
             alertInterval.disabled = true;
             alertRandom.checked = true;
             alertInterval.value = '';
@@ -811,7 +811,7 @@ function addEventListeners() {
             alertInterval.value = globalInterval;
         }
 
-        alertRandom.addEventListener('click', async () => { 
+        alertRandom.addEventListener('click', async () => {
             alertRandomClickEvent(alertRandom, alertInterval);
         });
 
@@ -899,7 +899,7 @@ function addEventListeners() {
         alertTime.value     = globalTime;
 
         alertRandom.checked = false;
-        if ( globalInterval === 0 ) { 
+        if ( globalInterval === 0 ) {
             alertInterval.disabled = true;
             alertRandom.checked = true;
             alertInterval.value = '';
@@ -907,7 +907,7 @@ function addEventListeners() {
             alertInterval.value = globalInterval;
         }
 
-        alertRandom.addEventListener('click', async () => { 
+        alertRandom.addEventListener('click', async () => {
             alertRandomClickEvent(alertRandom, alertInterval);
         });
 
@@ -1118,7 +1118,7 @@ function addEventListeners() {
         alertTime.value = globalTime;
 
         alertRandom.checked = false;
-        if ( globalInterval === 0 ) { 
+        if ( globalInterval === 0 ) {
             alertInterval.disabled = true;
             alertRandom.checked = true;
             alertInterval.value = '';
@@ -1126,7 +1126,7 @@ function addEventListeners() {
             alertInterval.value = globalInterval;
         }
 
-        alertRandom.addEventListener('click', async () => { 
+        alertRandom.addEventListener('click', async () => {
             alertRandomClickEvent(alertRandom, alertInterval);
         });
 
@@ -1238,7 +1238,7 @@ function addEventListeners() {
         }
 
         alertRandom.checked = false;
-        if ( globalInterval === 0 ) { 
+        if ( globalInterval === 0 ) {
             alertInterval.disabled = true;
             alertRandom.checked = true;
             alertInterval.value = '';
@@ -1246,7 +1246,7 @@ function addEventListeners() {
             alertInterval.value = globalInterval;
         }
 
-        alertRandom.addEventListener('click', async () => { 
+        alertRandom.addEventListener('click', async () => {
             alertRandomClickEvent(alertRandom, alertInterval);
         });
 
