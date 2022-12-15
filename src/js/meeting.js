@@ -1371,7 +1371,7 @@ export async function setupAlertListener(alertRecord) {
     }
 }
 
-window.onresize = () => {Cam.resizeAll()};
+new ResizeObserver(() => {Cam.resizeAll()}).observe(camArea)
 
 chatRoom.addEventListener("scroll", async () => {
     if (chatRoom.scrollTop === 0 && chatRoom.dataset.status === 'idle'){
