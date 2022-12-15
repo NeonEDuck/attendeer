@@ -1,3 +1,4 @@
+@use '../abstracts';
 @use '../base';
 
 #class-modal {
@@ -25,40 +26,7 @@
                 transform: perspective(500px) translateZ(0px);
                 transition: transform var(--transition-timing);
 
-                $check-width: 0.2em;
-                $check-height: 1em;
-
-                &::after,
-                &::before {
-                    content: "";
-                    position: absolute;
-                    display: block;
-                    transform-origin: calc($check-width/2) calc($check-width/2);
-                    width: $check-width;
-                    height: 0;
-                    background-color: var(--clr-text-white);
-                    top: calc(50% + $check-height / 4);
-                    left: calc(50% - 0.5em + $check-width);
-                    transition: height var(--transition-timing);
-                }
-
-                &::before {
-                    transform: rotateZ(135deg);
-                }
-
-                &::after {
-                    transform: rotateZ(225deg);
-                }
-
-                &.checked {
-                    &::before {
-                        height: calc($check-height / 3 + $check-width);
-                    }
-
-                    &::after {
-                        height: $check-height + $check-width;
-                    }
-                }
+                @include abstracts.add-check-psuedo-element();
 
                 &:hover,
                 &:focus-within {

@@ -1,0 +1,37 @@
+@mixin add-check-psuedo-element($check-color: var(--clr-text-white)) {
+    $check-width: 0.2em;
+    $check-height: 1em;
+
+    &::after,
+    &::before {
+        content: "";
+        position: absolute;
+        display: block;
+        transform-origin: calc($check-width/2) calc($check-width/2);
+        width: $check-width;
+        height: 0;
+        background-color: $check-color;
+        top: calc(50% + $check-height / 4);
+        left: calc(50% - 0.5em + $check-width);
+        transition: height var(--transition-timing);
+    }
+
+    &::before {
+        transform: rotateZ(135deg);
+    }
+
+    &::after {
+        transform: rotateZ(225deg);
+    }
+
+    &.checked,
+    &:checked {
+        &::before {
+            height: calc($check-height / 3 + $check-width);
+        }
+
+        &::after {
+            height: $check-height + $check-width;
+        }
+    }
+}

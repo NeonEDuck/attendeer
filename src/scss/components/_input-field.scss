@@ -1,3 +1,5 @@
+@use '../abstracts';
+
 $border-radius: 0.5em;
 
 @mixin rounded-input() {
@@ -43,22 +45,49 @@ input[type=number] {
     }
 }
 
+input[type=checkbox] {
+    appearance: none;
+    border: 0.125em solid var(--clr-text-300);
+    border-radius: 0.25em;
+    aspect-ratio: 1 / 1;
+    background-color: var(--clr-component-500);
+    cursor: pointer;
+
+    @include abstracts.add-check-psuedo-element(var(--clr-text-500));
+}
+
 input:disabled {
     background: var(--clr-gray-700) !important;
 }
 
 textarea {
     @include rounded-input();
-    border-radius: $border-radius $border-radius 0 $border-radius;
+    border-radius: $border-radius;
     height: 5em;
     resize: none;
+
+    &.resize--verticle {
+        border-radius: $border-radius $border-radius 0 $border-radius;
+        resize: vertical;
+    }
+
+    &.resize--horizontal {
+        border-radius: $border-radius $border-radius 0 $border-radius;
+        resize: horizontal;
+    }
+
+    &.resize--both {
+        border-radius: $border-radius $border-radius 0 $border-radius;
+        resize: both;
+    }
+
+    &.resize--auto {
+        height: 2em;
+        border-radius: $border-radius;
+        resize: none;
+    }
 }
 
-textarea.auto-resize {
-    height: 2em;
-    border-radius: $border-radius;
-    resize: none;
-}
 
 select {
     @include rounded-input();

@@ -71,8 +71,12 @@
             <fieldset>
                 <legend>警醒</legend>
                 <div class="field">
+                    <input type="checkbox" name="class-modal__alert-random-interval" id="class-modal__alert-random-interval">
+                    <label for="class-modal__alert-random-interval">隨機警醒間隔</label>
+                </div>
+                <div class="field">
                     <label for="class-modal__alert-interval">警醒間隔:</label>
-                    <input id="class-modal__alert-interval" class="flex-item-1" name="alert-interval" type="number" min="5" max="50" required>
+                    <input id="class-modal__alert-interval" class="flex-item-1" name="alert-interval" type="number" min="1" max="50" required>
                     <label for="class-modal__alert-interval">分鐘</label>
                 </div>
                 <div class="field">
