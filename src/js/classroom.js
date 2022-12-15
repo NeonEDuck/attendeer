@@ -202,7 +202,7 @@ alertSearch?.addEventListener('keyup', () => {
     const rows = alertLog.querySelectorAll('tr');
 
     for (const row of rows) {
-        const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
+        const text = [...row.querySelectorAll("td")].map((e) => {return e.textContent || e.innerText}).join('').toUpperCase()
 
         if (text.indexOf(filter) !== -1) {
             row.style.display = "";

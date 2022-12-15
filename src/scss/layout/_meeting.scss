@@ -370,7 +370,7 @@ body.dark {
     pointer-events: auto;
     position: relative;
     width: 50%;
-    width: 30em;
+    width: 40em;
     max-width: calc(100% - 10vw);
     height: calc(100% - 150px);
     background-color: var(--clr-component-500);
@@ -670,20 +670,24 @@ body.dark {
             width: 100%;
 
             #alert-lookup {
-                height: calc(100% - 2rem - 15px);
+                // height: calc(100% - 2rem - 15px);
 
                 #alert-lookup__search {
-                    height: 6%;
+                    // height: 6%;
                 }
 
                 #alert-lookup__list {
-                    height: calc(100% - 6% );
+                    // height: calc(100% - 6% );
+                    flex: 1 0 0;
                     overflow: auto;
+                    border-radius: 1em;
+                    box-shadow: var(--box-shadow-500);
 
                     .alert-lookup__table {
                         height: 100%;
                         background-color: transparent;
                         min-width: 35em;
+                        border-radius: 0;
                         #alert-log {
                             height: 100%;
                             overflow: auto;
@@ -1009,7 +1013,7 @@ body.dark {
         background-color: var(--clr-component-700);
         border-radius: 3em;
         padding: 0.5em;
-        color: white;
+        color: var(--clr-text-white);
     }
 
     &__profiles {

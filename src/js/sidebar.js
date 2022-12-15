@@ -110,21 +110,21 @@ modeSwitch.addEventListener("click", () =>{
 if (isHost){
     addEventListeners();
     generateAlertLog();
-    alertSearch.addEventListener('keyup', () => {
-        const filter = alertSearch.value.toUpperCase();
-        const rows = alertLog.querySelectorAll('tr');
+    // alertSearch.addEventListener('keyup', () => {
+    //     const filter = alertSearch.value.toUpperCase();
+    //     const rows = alertLog.querySelectorAll('tr');
 
-        for (const row of rows) {
-            const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
+    //     for (const row of rows) {
+    //         const text = [...row.querySelectorAll("td")].map((e) => {return e.textContent || e.innerText}).join('').toUpperCase()
 
-            if (text.indexOf(filter) !== -1) {
-                row.style.display = "none";
-            }
-            else {
-                row.style.display = "";
-            }
-        }
-    })
+    //         if (text.indexOf(filter) !== -1) {
+    //             row.style.display = "";
+    //         }
+    //         else {
+    //             row.style.display = "none";
+    //         }
+    //     }
+    // })
 
     multipleChoiceSetting.onkeydown = function() {
         if (event.keyCode == 9) {
@@ -250,13 +250,13 @@ async function generateAlertLog() {
         const rows = alertLog.querySelectorAll('tr');
 
         for (const row of rows) {
-            const text = [...row.querySelectorAll("td")].map((e) => {e.textContent || e.innerText}).join('').toUpperCase()
+            const text = [...row.querySelectorAll("td")].map((e) => {return e.textContent || e.innerText}).join('').toUpperCase()
 
             if (text.indexOf(filter) !== -1) {
-                row.style.display = "none";
+                row.style.display = "";
             }
             else {
-                row.style.display = "";
+                row.style.display = "none";
             }
         }
     })
