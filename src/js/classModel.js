@@ -11,6 +11,7 @@ const className          = document.querySelector('#class-modal__class-name');
 const schoolSelect       = document.querySelector('#class-modal__school-select');
 const colorGroup         = document.querySelector('#class-modal__color-group');
 const colorGroupLabels   = colorGroup.querySelectorAll('nav label');
+const alertCheckBox      = document.querySelector('#class-modal__alert-random-interval');
 const alertInterval      = document.querySelector('#class-modal__alert-interval');
 const alertTime          = document.querySelector('#class-modal__alert-time');
 
@@ -62,6 +63,9 @@ export class ClassModal {
         attendeeInput.addEventListener('keydown', (e) => {
             this._attendeeInput(e);
         });
+        alertCheckBox.addEventListener('click', (e) => {
+            this._toggleAlertCheckBox(e);
+        })
         colorGroupLabels.forEach((lbl) => {
             const rdo = lbl.querySelector(`input[type="radio"]`);
             rdo.addEventListener('click', (_) => {
@@ -103,9 +107,13 @@ export class ClassModal {
         className.value     = classInfo.ClassName;
         schoolSelect.value  = classInfo.SchoolId;
         colorGroup.querySelectorAll('input[type="radio"]')?.[classInfo.ClassColor-1]?.click();
-        alertInterval.value = classInfo.Interval;
+        alertInterval.value = classInfo.Interval || '';
         alertTime.value     = classInfo.Duration;
         attendeeInput.value = '';
+
+        if (classInfo.Interval === 0) {
+            alertCheckBox.click();
+        }
 
         attendeeTableTBody.innerHTML = '';
         for (const attnedee of attendees) {
@@ -186,7 +194,7 @@ export class ClassModal {
         const name     = className.value.trim();
         const schoolId = schoolSelect.value;
         const color    = colorGroup.querySelector('input[type="radio"]:checked').value;
-        const interval = Number(alertInterval.value);
+        const interval = (alertCheckBox.checked)? 0 : Number(alertInterval.value);
         const duration = Number(alertTime.value);
 
         const data = {
@@ -260,6 +268,17 @@ export class ClassModal {
     _attendeeInput(e) {
         if (e.keyCode === 13) {
             addAttendeeBtn.click();
+        }
+    }
+
+    _toggleAlertCheckBox(e) {
+        if (alertCheckBox.checked) {
+            alertInterval.disabled = true;
+            alertInterval.required = false;
+        }
+        else {
+            alertInterval.disabled = false;
+            alertInterval.required = true;
         }
     }
 

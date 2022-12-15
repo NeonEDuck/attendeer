@@ -2,7 +2,7 @@ import './navbar.js'
 import { setIntervalImmediately } from './util.js'
 
 setIntervalImmediately(() => {
-    const textareas = document.querySelectorAll('main textarea.auto-resize:not(.settle)');
+    const textareas = document.querySelectorAll('main textarea.resize--auto:not(.settle)');
 
     for (const textarea of textareas) {
         textarea.style.height = "2em";

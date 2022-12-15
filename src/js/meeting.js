@@ -1052,10 +1052,15 @@ async function startAlert() {
 
             // alertDocCurrently = doc(alertRecords);
 
+            let localInterval = globalInterval;
+            if ( localInterval === 0 ) {
+                localInterval = 1 + getRandom(50);
+            }
+
             let dataNormal = {
                 classId,
                 alertType: globalAlertType,
-                interval: globalInterval,
+                interval: localInterval,
                 duration: globalTime,
             };
 
@@ -1074,7 +1079,7 @@ async function startAlert() {
 
             // let alertPrevious = alertDocCurrently;
             console.log(MINUTE);
-            await delay( globalInterval * MINUTE );
+            await delay( localInterval * MINUTE );
 
             if (hungUp) break;
             await apiCall('turnOnRecord', { classId, recordId });
