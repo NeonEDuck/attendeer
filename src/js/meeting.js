@@ -539,7 +539,7 @@ enterBtn.addEventListener('click', async () => {
     }
 
     chatRoom.scrollTop = chatRoom.scrollHeight;
-    lastMessageId = messages[0].MessageId;
+    lastMessageId = messages[0]?.MessageId;
 
     socket.on('catch-text-message', async (messageId) => {
         await getNewMessage(messageId);
