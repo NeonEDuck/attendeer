@@ -58,13 +58,14 @@ legend {
 }
 
 table {
-    background-color: var(--clr-gray-300);
+    background-color: var(--clr-component-700);
+    color: var(--clr-text-500);
     th {
-        background-color: var(--clr-gray-400);
+        background-color: var(--clr-component-600);
     }
 
     tr:nth-child(2n) {
-        background-color: var(--clr-gray-400);
+        background-color: var(--clr-component-600);
     }
 }
 

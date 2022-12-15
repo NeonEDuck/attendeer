@@ -1,6 +1,7 @@
 #attendee-table {
     width: 100%;
     border-radius: 0.5em;
+    box-shadow: var(--box-shadow-300);
     overflow: hidden;
     tbody {
         height: 0.5em; // min-height

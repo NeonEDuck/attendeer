@@ -74,15 +74,19 @@
 
     --hsl-component-300: 204 54% 88%;
     --hsl-component-500: 206 23% 94%;
+    --hsl-component-600: 200 4% 86%;
     --hsl-component-700: 0 0% 68%;
     --hsl-component-300-reverse: 210 5% 30%;
     --hsl-component-500-reverse: 210 6% 16%;
+    --hsl-component-600-reverse: 210 5% 14%;
     --hsl-component-700-reverse: 210 4% 12%;
     --clr-component-300: hsl(var(--hsl-component-300));
     --clr-component-500: hsl(var(--hsl-component-500));
+    --clr-component-600: hsl(var(--hsl-component-600));
     --clr-component-700: hsl(var(--hsl-component-700));
     --clr-component-300-reverse: hsl(var(--hsl-component-300-reverse));
     --clr-component-500-reverse: hsl(var(--hsl-component-500-reverse));
+    --clr-component-600-reverse: hsl(var(--hsl-component-600-reverse));
     --clr-component-700-reverse: hsl(var(--hsl-component-700-reverse));
 
     --clr-primary-300: hsl(265 90% 65%);
@@ -166,15 +170,19 @@
 
         --hsl-component-300: 210 5% 30%;
         --hsl-component-500: 210 6% 16%;
+        --hsl-component-600: 210 5% 14%;
         --hsl-component-700: 210 4% 12%;
         --hsl-component-300-reverse: 204 100% 96%;
         --hsl-component-500-reverse: 206 23% 94%;
+        --hsl-component-600-reverse: 200 4% 86%;
         --hsl-component-700-reverse: 0 0% 68%;
         --clr-component-300: hsl(var(--hsl-component-300));
         --clr-component-500: hsl(var(--hsl-component-500));
+        --clr-component-600: hsl(var(--hsl-component-600));
         --clr-component-700: hsl(var(--hsl-component-700));
         --clr-component-300-reverse: hsl(var(--hsl-component-300-reverse));
         --clr-component-500-reverse: hsl(var(--hsl-component-500-reverse));
+        --clr-component-600-reverse: hsl(var(--hsl-component-600-reverse));
         --clr-component-700-reverse: hsl(var(--hsl-component-700-reverse));
 
         --clr-primary-300: hsl(194 80% 43%);
@@ -203,7 +211,7 @@
         --clr-bubble-other: hsl(216 18% 31%);
 
         --clr-shadow-300: hsl(240 5% 41% / 20%);
-        --clr-shadow-500: hsl(0 5% 20% / 80%);
+        --clr-shadow-500: hsl(0 5% 10% / 80%);
         --clr-shadow-700: hsl(0 0% 0%);
 
         --box-shadow-500: 0.1rem 0.1rem 1rem var(--clr-shadow-700), -0.1rem -0.1rem 1rem var(--clr-shadow-500);
