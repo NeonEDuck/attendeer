@@ -17,7 +17,12 @@ setIntervalImmediately(() => {
 
 [...document.querySelectorAll('button[href]')].forEach((e) => {
     e.addEventListener('click', () => {
-        window.location.href = e.getAttribute('href');
+        if (e.getAttribute('target') === '_blank') {
+            window.open(link);
+        }
+        else {
+            window.location.href = e.getAttribute('href');
+        }
     });
 });
 

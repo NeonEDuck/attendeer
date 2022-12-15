@@ -224,10 +224,6 @@ classModal._submitForm = async (e) => {
     }
 }
 
-callBtn.addEventListener('click', () => {
-    window.location.href = `/${classId}/meeting`
-});
-
 function toggleScheduleCell(cell) {
     if (editingSchedule) {
         if (cell.classList.contains('on')) {
